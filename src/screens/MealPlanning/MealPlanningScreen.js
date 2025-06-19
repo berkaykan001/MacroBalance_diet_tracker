@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Slider from '@react-native-community/slider';
 import { useFood } from '../../context/FoodContext';
 import { useMeal } from '../../context/MealContext';
 import { CalculationService } from '../../services/calculationService';
+
+const { width } = Dimensions.get('window');
 
 export default function MealPlanningScreen() {
   const { foods, filteredFoods } = useFood();
@@ -25,14 +29,10 @@ export default function MealPlanningScreen() {
   };
 
   const updatePortion = (foodId, newPortion) => {
-    const optimized = CalculationService.optimizePortions(
-      selectedFoods, 
-      foods, 
-      selectedMeal?.macroTargets || {}, 
-      foodId, 
-      newPortion
+    const updatedFoods = selectedFoods.map(food => 
+      food.foodId === foodId ? { ...food, portionGrams: Math.round(newPortion) } : food
     );
-    setSelectedFoods(optimized);
+    setSelectedFoods(updatedFoods);
   };
 
   const currentMacros = selectedFoods.length > 0 
@@ -47,288 +47,530 @@ export default function MealPlanningScreen() {
     const food = foods.find(f => f.id === item.foodId);
     if (!food) return null;
 
+    const macros = CalculationService.calculateMacrosForPortion(food, item.portionGrams);
+
     return (
-      <View style={styles.selectedFood}>
+      <LinearGradient
+        colors={['#1A1A1A', '#2A2A2A']}
+        style={styles.selectedFood}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
         <View style={styles.foodHeader}>
-          <Text style={styles.foodName}>{food.name}</Text>
-          <TouchableOpacity onPress={() => removeFood(food.id)}>
-            <Text style={styles.removeButton}>×</Text>
+          <View style={styles.foodInfo}>
+            <Text style={styles.foodName}>{food.name}</Text>
+            <Text style={styles.foodCategory}>{food.category}</Text>
+          </View>
+          <TouchableOpacity onPress={() => removeFood(food.id)} style={styles.removeButton}>
+            <Text style={styles.removeButtonText}>×</Text>
           </TouchableOpacity>
         </View>
-        <View style={styles.portionRow}>
-          <Text style={styles.portionLabel}>Portion: {item.portionGrams}g</Text>
-          <View style={styles.portionButtons}>
-            <TouchableOpacity 
-              style={styles.portionButton}
-              onPress={() => updatePortion(food.id, Math.max(10, item.portionGrams - 10))}
-            >
-              <Text style={styles.portionButtonText}>-</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.portionButton}
-              onPress={() => updatePortion(food.id, item.portionGrams + 10)}
-            >
-              <Text style={styles.portionButtonText}>+</Text>
-            </TouchableOpacity>
+        
+        <View style={styles.macroDisplay}>
+          <View style={styles.macroItem}>
+            <Text style={styles.macroValue}>{macros.protein}g</Text>
+            <Text style={styles.macroLabel}>Protein</Text>
+          </View>
+          <View style={styles.macroItem}>
+            <Text style={styles.macroValue}>{macros.carbs}g</Text>
+            <Text style={styles.macroLabel}>Carbs</Text>
+          </View>
+          <View style={styles.macroItem}>
+            <Text style={styles.macroValue}>{macros.fat}g</Text>
+            <Text style={styles.macroLabel}>Fat</Text>
+          </View>
+          <View style={styles.macroItem}>
+            <Text style={styles.macroValue}>{macros.calories}</Text>
+            <Text style={styles.macroLabel}>Cal</Text>
           </View>
         </View>
-      </View>
+
+        <View style={styles.sliderContainer}>
+          <Text style={styles.portionLabel}>{item.portionGrams}g</Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={10}
+            maximumValue={500}
+            value={item.portionGrams}
+            onValueChange={(value) => updatePortion(food.id, value)}
+            minimumTrackTintColor="#007AFF"
+            maximumTrackTintColor="#3A3A3A"
+            thumbStyle={styles.sliderThumb}
+            trackStyle={styles.sliderTrack}
+            step={5}
+          />
+          <View style={styles.sliderLabels}>
+            <Text style={styles.sliderLabelText}>10g</Text>
+            <Text style={styles.sliderLabelText}>500g</Text>
+          </View>
+        </View>
+      </LinearGradient>
     );
   };
 
   const renderAvailableFood = ({ item }) => (
     <TouchableOpacity style={styles.availableFood} onPress={() => addFood(item)}>
-      <Text style={styles.availableFoodName}>{item.name}</Text>
-      <Text style={styles.availableFoodCategory}>{item.category}</Text>
+      <LinearGradient
+        colors={['#1A1A1A', '#2A2A2A']}
+        style={styles.availableFoodGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <Text style={styles.availableFoodName}>{item.name}</Text>
+        <Text style={styles.availableFoodCategory}>{item.category}</Text>
+      </LinearGradient>
     </TouchableOpacity>
   );
 
+  const renderProgressBar = (label, current, target, status) => {
+    const percentage = target > 0 ? Math.min(100, (current / target) * 100) : 0;
+    return (
+      <View style={styles.progressBarContainer}>
+        <View style={styles.progressBarHeader}>
+          <Text style={styles.progressBarLabel}>{label}</Text>
+          <Text style={[styles.progressBarValue, {color: status === 'met' ? '#00D084' : '#FF453A'}]}>
+            {current}g / {target}g
+          </Text>
+        </View>
+        <View style={styles.progressBarTrack}>
+          <LinearGradient
+            colors={status === 'met' ? ['#00D084', '#00A86B'] : ['#FF453A', '#FF6B6B']}
+            style={[styles.progressBarFill, { width: `${percentage}%` }]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          />
+        </View>
+      </View>
+    );
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Plan Your Meal</Text>
-        
+    <LinearGradient
+      colors={['#0A0A0A', '#1A1A1A']}
+      style={styles.container}
+    >
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Plan Your Meal</Text>
+          <Text style={styles.subtitle}>Optimize your nutrition with precision</Text>
+        </View>
+
         {selectedMeal && (
-          <View style={styles.targetCard}>
-            <Text style={styles.mealName}>{selectedMeal.name} Targets</Text>
-            <View style={styles.targetRow}>
-              <Text style={styles.targetText}>Protein: {selectedMeal.macroTargets.protein}g</Text>
-              <Text style={styles.targetText}>Carbs: {selectedMeal.macroTargets.carbs}g</Text>
-              <Text style={styles.targetText}>Fat: {selectedMeal.macroTargets.fat}g</Text>
+          <LinearGradient
+            colors={['#007AFF', '#0051D5']}
+            style={styles.targetCard}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.mealName}>{selectedMeal.name}</Text>
+            <View style={styles.targetGrid}>
+              <View style={styles.targetItem}>
+                <Text style={styles.targetValue}>{selectedMeal.macroTargets.protein}g</Text>
+                <Text style={styles.targetLabel}>Protein</Text>
+              </View>
+              <View style={styles.targetItem}>
+                <Text style={styles.targetValue}>{selectedMeal.macroTargets.carbs}g</Text>
+                <Text style={styles.targetLabel}>Carbs</Text>
+              </View>
+              <View style={styles.targetItem}>
+                <Text style={styles.targetValue}>{selectedMeal.macroTargets.fat}g</Text>
+                <Text style={styles.targetLabel}>Fat</Text>
+              </View>
+            </View>
+          </LinearGradient>
+        )}
+
+        {progress && selectedMeal && (
+          <View style={styles.progressSection}>
+            <Text style={styles.progressTitle}>Progress Overview</Text>
+            {renderProgressBar('Protein', currentMacros.protein, selectedMeal.macroTargets.protein, progress.protein.status)}
+            {renderProgressBar('Carbs', currentMacros.carbs, selectedMeal.macroTargets.carbs, progress.carbs.status)}
+            {renderProgressBar('Fat', currentMacros.fat, selectedMeal.macroTargets.fat, progress.fat.status)}
+            
+            <View style={styles.totalCalories}>
+              <Text style={styles.caloriesLabel}>Total Calories</Text>
+              <Text style={styles.caloriesValue}>{currentMacros.calories}</Text>
             </View>
           </View>
         )}
-      </View>
 
-      {progress && (
-        <View style={styles.progressCard}>
-          <Text style={styles.progressTitle}>Current Progress</Text>
-          <View style={styles.macroRow}>
-            <View style={styles.macroItem}>
-              <Text style={styles.macroLabel}>Protein</Text>
-              <Text style={[styles.macroValue, {color: progress.protein.status === 'met' ? '#00D084' : '#FF453A'}]}>
-                {currentMacros.protein}g ({progress.protein.percentage}%)
-              </Text>
-            </View>
-            <View style={styles.macroItem}>
-              <Text style={styles.macroLabel}>Carbs</Text>
-              <Text style={[styles.macroValue, {color: progress.carbs.status === 'met' ? '#00D084' : '#FF453A'}]}>
-                {currentMacros.carbs}g ({progress.carbs.percentage}%)
-              </Text>
-            </View>
-            <View style={styles.macroItem}>
-              <Text style={styles.macroLabel}>Fat</Text>
-              <Text style={[styles.macroValue, {color: progress.fat.status === 'met' ? '#00D084' : '#FF453A'}]}>
-                {currentMacros.fat}g ({progress.fat.percentage}%)
-              </Text>
-            </View>
+        <LinearGradient
+          colors={['#007AFF', '#0051D5']}
+          style={styles.addFoodButton}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <TouchableOpacity 
+            style={styles.addFoodButtonInner}
+            onPress={() => setShowFoodList(!showFoodList)}
+          >
+            <Text style={styles.addFoodButtonText}>
+              {showFoodList ? '✕ Hide Foods' : '+ Add Foods'}
+            </Text>
+          </TouchableOpacity>
+        </LinearGradient>
+
+        {showFoodList && (
+          <View style={styles.foodListContainer}>
+            <Text style={styles.foodListTitle}>Available Foods</Text>
+            <FlatList
+              data={filteredFoods.slice(0, 8)}
+              renderItem={renderAvailableFood}
+              keyExtractor={(item) => item.id}
+              scrollEnabled={false}
+              numColumns={2}
+              columnWrapperStyle={styles.foodListRow}
+            />
           </View>
-          <Text style={styles.caloriesText}>Total Calories: {currentMacros.calories}</Text>
-        </View>
-      )}
-
-      <TouchableOpacity 
-        style={styles.addFoodButton}
-        onPress={() => setShowFoodList(!showFoodList)}
-      >
-        <Text style={styles.addFoodButtonText}>
-          {showFoodList ? 'Hide Foods' : 'Add Foods'}
-        </Text>
-      </TouchableOpacity>
-
-      {showFoodList && (
-        <View style={styles.foodList}>
-          <FlatList
-            data={filteredFoods.slice(0, 10)}
-            renderItem={renderAvailableFood}
-            keyExtractor={(item) => item.id}
-            scrollEnabled={false}
-          />
-        </View>
-      )}
-
-      <View style={styles.selectedFoodsContainer}>
-        <Text style={styles.sectionTitle}>Selected Foods</Text>
-        {selectedFoods.length === 0 ? (
-          <Text style={styles.emptyText}>No foods selected. Add foods to start planning!</Text>
-        ) : (
-          <FlatList
-            data={selectedFoods}
-            renderItem={renderFoodItem}
-            keyExtractor={(item) => item.foodId}
-            scrollEnabled={false}
-          />
         )}
-      </View>
-    </ScrollView>
+
+        <View style={styles.selectedFoodsContainer}>
+          <Text style={styles.sectionTitle}>Selected Foods</Text>
+          {selectedFoods.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyIcon}>🍽️</Text>
+              <Text style={styles.emptyText}>No foods selected yet</Text>
+              <Text style={styles.emptySubtext}>Add foods above to start planning your perfect meal</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={selectedFoods}
+              renderItem={renderFoodItem}
+              keyExtractor={(item) => item.foodId}
+              scrollEnabled={false}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
+        
+        <View style={styles.bottomSpacer} />
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+  },
+  scrollView: {
+    flex: 1,
   },
   header: {
-    padding: 20,
+    padding: 24,
+    paddingTop: 16,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '800',
     color: '#FFFFFF',
-    marginBottom: 15,
+    marginBottom: 4,
+    letterSpacing: -0.5,
   },
+  subtitle: {
+    fontSize: 16,
+    color: '#8E8E93',
+    fontWeight: '400',
+  },
+  
+  // Target Card
   targetCard: {
-    backgroundColor: '#1C1C1E',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 10,
+    marginHorizontal: 20,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
   },
   mealName: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 22,
+    fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 10,
+    marginBottom: 16,
+    textAlign: 'center',
   },
-  targetRow: {
+  targetGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  targetText: {
-    color: '#8E8E93',
-    fontSize: 14,
+  targetItem: {
+    alignItems: 'center',
+    flex: 1,
   },
-  progressCard: {
-    backgroundColor: '#1C1C1E',
-    borderRadius: 12,
-    padding: 15,
+  targetValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  targetLabel: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '500',
+  },
+
+  // Progress Section
+  progressSection: {
     marginHorizontal: 20,
-    marginBottom: 15,
+    marginBottom: 20,
   },
   progressTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 16,
+  },
+  progressBarContainer: {
+    marginBottom: 16,
+  },
+  progressBarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  progressBarLabel: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 10,
   },
-  macroRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  macroItem: {
-    alignItems: 'center',
-  },
-  macroLabel: {
-    color: '#8E8E93',
-    fontSize: 12,
-    marginBottom: 5,
-  },
-  macroValue: {
+  progressBarValue: {
     fontSize: 14,
     fontWeight: '600',
   },
-  caloriesText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 5,
+  progressBarTrack: {
+    height: 8,
+    backgroundColor: '#2A2A2A',
+    borderRadius: 4,
+    overflow: 'hidden',
   },
-  addFoodButton: {
-    backgroundColor: '#007AFF',
-    marginHorizontal: 20,
-    padding: 15,
-    borderRadius: 8,
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  totalCalories: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 15,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  caloriesLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  caloriesValue: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#00D084',
+  },
+
+  // Add Food Button
+  addFoodButton: {
+    marginHorizontal: 20,
+    borderRadius: 16,
+    marginBottom: 20,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  addFoodButtonInner: {
+    padding: 18,
+    alignItems: 'center',
   },
   addFoodButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 18,
+    fontWeight: '700',
   },
-  foodList: {
-    backgroundColor: '#1C1C1E',
+
+  // Food List
+  foodListContainer: {
     marginHorizontal: 20,
-    borderRadius: 8,
-    marginBottom: 15,
+    marginBottom: 20,
+  },
+  foodListTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 16,
+  },
+  foodListRow: {
+    justifyContent: 'space-between',
   },
   availableFood: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#38383A',
+    flex: 1,
+    margin: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  availableFoodGradient: {
+    padding: 16,
+    alignItems: 'center',
+    minHeight: 80,
+    justifyContent: 'center',
   },
   availableFoodName: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 4,
   },
   availableFoodCategory: {
     color: '#8E8E93',
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: 11,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
+
+  // Selected Foods
   selectedFoodsContainer: {
-    padding: 20,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 15,
+    marginBottom: 16,
+  },
+  emptyState: {
+    alignItems: 'center',
+    padding: 40,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
   },
   emptyText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  emptySubtext: {
     color: '#8E8E93',
     fontSize: 14,
     textAlign: 'center',
-    fontStyle: 'italic',
+    lineHeight: 20,
   },
+  
+  // Selected Food Card
   selectedFood: {
-    backgroundColor: '#1C1C1E',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 10,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   foodHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  foodInfo: {
+    flex: 1,
   },
   foodName: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  foodCategory: {
+    color: '#8E8E93',
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   removeButton: {
-    color: '#FF453A',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  portionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  portionLabel: {
-    color: '#8E8E93',
-    fontSize: 14,
-  },
-  portionButtons: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  portionButton: {
-    backgroundColor: '#007AFF',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,69,58,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  portionButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+  removeButtonText: {
+    color: '#FF453A',
+    fontSize: 18,
     fontWeight: 'bold',
+  },
+
+  // Macro Display
+  macroDisplay: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 12,
+    padding: 16,
+  },
+  macroItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  macroValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#00D084',
+    marginBottom: 4,
+  },
+  macroLabel: {
+    fontSize: 11,
+    color: '#8E8E93',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  // Slider
+  sliderContainer: {
+    marginTop: 8,
+  },
+  portionLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#007AFF',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
+  },
+  sliderThumb: {
+    backgroundColor: '#007AFF',
+    width: 24,
+    height: 24,
+  },
+  sliderTrack: {
+    height: 6,
+    borderRadius: 3,
+  },
+  sliderLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  sliderLabelText: {
+    fontSize: 12,
+    color: '#8E8E93',
+  },
+
+  bottomSpacer: {
+    height: 40,
   },
 });

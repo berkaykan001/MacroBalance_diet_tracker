@@ -186,54 +186,24 @@ export default function MealPlanningScreen() {
       colors={['#0A0A0A', '#1A1A1A']}
       style={styles.container}
     >
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Plan Your Meal</Text>
-          <Text style={styles.subtitle}>Optimize your nutrition with precision</Text>
-        </View>
-
-        {selectedMeal && (
-          <LinearGradient
-            colors={['#007AFF', '#0051D5']}
-            style={styles.targetCard}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Text style={styles.mealName}>{selectedMeal.name}</Text>
-            <View style={styles.targetGrid}>
-              <View style={styles.targetItem}>
-                <Text style={styles.targetValue}>{selectedMeal.macroTargets.protein}g</Text>
-                <Text style={styles.targetLabel}>Protein</Text>
-              </View>
-              <View style={styles.targetItem}>
-                <Text style={styles.targetValue}>{selectedMeal.macroTargets.carbs}g</Text>
-                <Text style={styles.targetLabel}>Carbs</Text>
-              </View>
-              <View style={styles.targetItem}>
-                <Text style={styles.targetValue}>{selectedMeal.macroTargets.fat}g</Text>
-                <Text style={styles.targetLabel}>Fat</Text>
-              </View>
-            </View>
-          </LinearGradient>
-        )}
-
-        {progress && selectedMeal && (
-          <View style={styles.progressSection}>
-            <Text style={styles.progressTitle}>Progress Overview</Text>
+      {/* Fixed Header Section - Compact */}
+      <View style={styles.fixedHeader}>
+        {progress && selectedMeal && selectedFoods.length > 0 && (
+          <View style={styles.compactProgressSection}>
             {renderProgressBar('Protein', currentMacros.protein, selectedMeal.macroTargets.protein, progress.protein.status)}
             {renderProgressBar('Carbs', currentMacros.carbs, selectedMeal.macroTargets.carbs, progress.carbs.status)}
             {renderProgressBar('Fat', currentMacros.fat, selectedMeal.macroTargets.fat, progress.fat.status)}
             
-            <View style={styles.totalCalories}>
-              <Text style={styles.caloriesLabel}>Total Calories</Text>
-              <Text style={styles.caloriesValue}>{currentMacros.calories}</Text>
+            <View style={styles.compactCalories}>
+              <Text style={styles.compactCaloriesLabel}>Total: </Text>
+              <Text style={styles.compactCaloriesValue}>{currentMacros.calories} cal</Text>
             </View>
           </View>
         )}
 
         <LinearGradient
           colors={['#007AFF', '#0051D5']}
-          style={styles.addFoodButton}
+          style={styles.addFoodButtonCompact}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
@@ -246,16 +216,19 @@ export default function MealPlanningScreen() {
             </Text>
           </TouchableOpacity>
         </LinearGradient>
+      </View>
 
+      {/* Scrollable Content Section */}
+      <ScrollView style={styles.scrollableContent} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {showFoodList && (
           <View style={styles.foodListContainer}>
             <Text style={styles.foodListTitle}>Available Foods</Text>
             <FlatList
-              data={filteredFoods.slice(0, 8)}
+              data={filteredFoods.slice(0, 12)}
               renderItem={renderAvailableFood}
               keyExtractor={(item) => item.id}
               scrollEnabled={false}
-              numColumns={2}
+              numColumns={3}
               columnWrapperStyle={styles.foodListRow}
             />
           </View>
@@ -290,8 +263,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
+  fixedHeader: {
+    backgroundColor: 'transparent',
+    paddingTop: 10,
+    paddingHorizontal: 16,
+  },
+  scrollableContent: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingTop: 8,
   },
   header: {
     padding: 16,
@@ -480,29 +461,29 @@ const styles = StyleSheet.create({
   },
   availableFood: {
     flex: 1,
-    margin: 3,
-    borderRadius: 8,
+    margin: 2,
+    borderRadius: 6,
     overflow: 'hidden',
   },
   availableFoodGradient: {
-    padding: 10,
+    padding: 8,
     alignItems: 'center',
-    minHeight: 60,
+    minHeight: 50,
     justifyContent: 'center',
   },
   availableFoodName: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
     textAlign: 'center',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   availableFoodCategory: {
     color: '#8E8E93',
-    fontSize: 9,
+    fontSize: 8,
     textAlign: 'center',
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
 
   // Selected Foods
@@ -644,5 +625,40 @@ const styles = StyleSheet.create({
 
   bottomSpacer: {
     height: 20,
+  },
+
+  // Compact Progress Section
+  compactProgressSection: {
+    marginBottom: 8,
+  },
+
+  // Compact Calories
+  compactCalories: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  compactCaloriesLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#8E8E93',
+  },
+  compactCaloriesValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#00D084',
+  },
+
+  // Compact Add Food Button
+  addFoodButtonCompact: {
+    borderRadius: 8,
+    marginBottom: 8,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
 });

@@ -70,10 +70,15 @@ export class CalculationService {
 
     const optimizedOthers = this.redistributePortions(otherSelections, foods, remainingTargets);
     
-    return [
-      { foodId: adjustedFoodId, portionGrams: newPortion },
-      ...optimizedOthers
-    ];
+    // Maintain original order by merging back in the same positions
+    return updatedSelections.map(selection => {
+      if (selection.foodId === adjustedFoodId) {
+        return { foodId: adjustedFoodId, portionGrams: newPortion };
+      } else {
+        const optimizedVersion = optimizedOthers.find(opt => opt.foodId === selection.foodId);
+        return optimizedVersion || selection;
+      }
+    });
   }
 
   static redistributePortions(selections, foods, targets) {

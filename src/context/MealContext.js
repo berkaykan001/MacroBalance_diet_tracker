@@ -155,12 +155,16 @@ export function MealProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    saveMeals();
-  }, [state.meals]);
+    if (!state.loading) {
+      saveMeals();
+    }
+  }, [state.meals, state.loading]);
 
   useEffect(() => {
-    saveMealPlans();
-  }, [state.mealPlans]);
+    if (!state.loading) {
+      saveMealPlans();
+    }
+  }, [state.mealPlans, state.loading]);
 
   const loadMeals = async () => {
     try {
@@ -196,6 +200,7 @@ export function MealProvider({ children }) {
   const saveMeals = async () => {
     try {
       await AsyncStorage.setItem('meals', JSON.stringify(state.meals));
+      console.log('Meals saved successfully:', state.meals.length, 'meals');
     } catch (error) {
       console.error('Error saving meals:', error);
     }

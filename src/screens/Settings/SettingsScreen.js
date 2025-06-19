@@ -327,13 +327,6 @@ export default function SettingsScreen() {
             
             <View style={styles.preferencesContainer}>
               {renderPreferenceItem(
-                'Dark Mode',
-                'Use dark theme throughout the app',
-                appPreferences.darkMode,
-                (value) => updateAppPreferences({ darkMode: value })
-              )}
-              
-              {renderPreferenceItem(
                 'Auto-Optimize',
                 'Automatically optimize portions when adding foods',
                 appPreferences.autoOptimize,
@@ -341,15 +334,8 @@ export default function SettingsScreen() {
               )}
               
               {renderPreferenceItem(
-                'Compact View',
-                'Use ultra-compact food containers',
-                appPreferences.compactView,
-                (value) => updateAppPreferences({ compactView: value })
-              )}
-              
-              {renderPreferenceItem(
                 'Notifications',
-                'Receive reminders and updates',
+                'Receive reminders and updates (coming soon)',
                 appPreferences.notifications,
                 (value) => updateAppPreferences({ notifications: value })
               )}
@@ -436,19 +422,11 @@ export default function SettingsScreen() {
     }
   };
 
-  // Dynamic styling based on preferences
-  const containerColors = appPreferences.darkMode 
-    ? ['#0A0A0A', '#1A1A1A'] 
-    : ['#F2F2F7', '#FFFFFF'];
-  
-  const textColor = appPreferences.darkMode ? '#FFFFFF' : '#000000';
-  const secondaryTextColor = appPreferences.darkMode ? '#8E8E93' : '#6D6D70';
-
   return (
-    <LinearGradient colors={containerColors} style={styles.container}>
+    <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={[styles.title, { color: textColor }]}>Settings</Text>
+        <Text style={styles.title}>Settings</Text>
       </View>
 
       {/* Section Navigation */}

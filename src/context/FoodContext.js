@@ -98,8 +98,10 @@ export function FoodProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    saveFoods();
-  }, [state.foods]);
+    if (!state.loading) {
+      saveFoods();
+    }
+  }, [state.foods, state.loading]);
 
   const loadFoods = async () => {
     try {

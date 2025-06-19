@@ -41,10 +41,8 @@ function settingsReducer(state, action) {
 const defaultSettings = {
   selectedQuickFoods: ['1', '2', '3'], // Default to first 3 foods
   appPreferences: {
-    darkMode: true,
     notifications: true,
-    autoOptimize: true,
-    compactView: true
+    autoOptimize: true
   },
   isLoading: true
 };
@@ -81,6 +79,7 @@ export function SettingsProvider({ children }) {
       // Save to AsyncStorage
       const updatedSettings = { ...state, selectedQuickFoods: foodIds };
       await AsyncStorage.setItem('appSettings', JSON.stringify(updatedSettings));
+      console.log('Quick foods updated and saved:', foodIds);
     } catch (error) {
       console.error('Error updating quick foods:', error);
     }

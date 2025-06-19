@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
 import { useFood } from '../../context/FoodContext';
 import { useMeal } from '../../context/MealContext';
+import { useSettings } from '../../context/SettingsContext';
 import { CalculationService } from '../../services/calculationService';
 
 const { width } = Dimensions.get('window');
@@ -11,6 +12,7 @@ const { width } = Dimensions.get('window');
 export default function MealPlanningScreen() {
   const { foods, filteredFoods, searchFoods } = useFood();
   const { meals } = useMeal();
+  const { selectedQuickFoods, appPreferences } = useSettings();
   
   const [selectedMeal, setSelectedMeal] = useState(meals[0]);
   const [selectedFoods, setSelectedFoods] = useState([]);
@@ -23,8 +25,18 @@ export default function MealPlanningScreen() {
   };
 
   const getAvailableFoods = () => {
-    // If searching, use filtered results, otherwise show all foods
-    return foodSearchQuery ? filteredFoods : foods;
+    if (foodSearchQuery) {
+      // If searching, show filtered results
+      return filteredFoods;
+    } else {
+      // If not searching, show user's selected quick foods
+      const quickFoods = selectedQuickFoods
+        .map(foodId => foods.find(food => food.id === foodId))
+        .filter(Boolean); // Remove any undefined foods
+      
+      // If no quick foods selected, fallback to first 12 foods
+      return quickFoods.length > 0 ? quickFoods : foods.slice(0, 12);
+    }
   };
 
   const addFood = (food) => {
@@ -42,14 +54,25 @@ export default function MealPlanningScreen() {
   const updatePortion = (foodId, newPortion) => {
     if (!selectedMeal) return;
     
-    const optimized = CalculationService.optimizePortions(
-      selectedFoods, 
-      foods, 
-      selectedMeal.macroTargets, 
-      foodId, 
-      Math.round(newPortion)
-    );
-    setSelectedFoods(optimized);
+    if (appPreferences.autoOptimize) {
+      // Auto-optimize other portions when enabled
+      const optimized = CalculationService.optimizePortions(
+        selectedFoods, 
+        foods, 
+        selectedMeal.macroTargets, 
+        foodId, 
+        Math.round(newPortion)
+      );
+      setSelectedFoods(optimized);
+    } else {
+      // Just update the single food without optimization
+      const updatedFoods = selectedFoods.map(food => 
+        food.foodId === foodId 
+          ? { ...food, portionGrams: Math.round(newPortion) }
+          : food
+      );
+      setSelectedFoods(updatedFoods);
+    }
   };
 
   const currentMacros = selectedFoods.length > 0 
@@ -232,7 +255,15 @@ export default function MealPlanningScreen() {
         {showFoodList && (
           <View style={styles.foodListContainer}>
             <View style={styles.foodListHeader}>
-              <Text style={styles.foodListTitle}>Add Foods</Text>
+              <View>
+                <Text style={styles.foodListTitle}>Add Foods</Text>
+                <Text style={styles.foodListSubtitle}>
+                  {foodSearchQuery 
+                    ? `${getAvailableFoods().length} results found` 
+                    : `Your ${selectedQuickFoods.length} quick foods`
+                  }
+                </Text>
+              </View>
               <TouchableOpacity 
                 style={styles.closeFoodListButton}
                 onPress={() => {
@@ -266,8 +297,15 @@ export default function MealPlanningScreen() {
               columnWrapperStyle={styles.foodListRow}
               ListEmptyComponent={
                 <View style={styles.noFoodsFound}>
-                  <Text style={styles.noFoodsFoundText}>No foods found</Text>
-                  <Text style={styles.noFoodsFoundSubtext}>Try adjusting your search</Text>
+                  <Text style={styles.noFoodsFoundText}>
+                    {foodSearchQuery ? 'No foods found' : 'No quick foods selected'}
+                  </Text>
+                  <Text style={styles.noFoodsFoundSubtext}>
+                    {foodSearchQuery 
+                      ? 'Try adjusting your search' 
+                      : 'Go to Settings to select your favorite foods for quick access'
+                    }
+                  </Text>
                 </View>
               }
             />
@@ -550,6 +588,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  foodListSubtitle: {
+    fontSize: 10,
+    color: '#8E8E93',
+    marginTop: 1,
   },
   closeFoodListButton: {
     width: 24,

@@ -4,6 +4,7 @@ import { Text, View, StyleSheet } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { FoodProvider } from './src/context/FoodContext';
 import { MealProvider } from './src/context/MealContext';
+import { SettingsProvider } from './src/context/SettingsContext';
 
 // Simple Error Boundary component
 class ErrorBoundary extends React.Component {
@@ -59,12 +60,14 @@ export default function App() {
   
   return (
     <ErrorBoundary>
-      <FoodProvider>
-        <MealProvider>
-          <AppNavigator />
-          <StatusBar style="light" />
-        </MealProvider>
-      </FoodProvider>
+      <SettingsProvider>
+        <FoodProvider>
+          <MealProvider>
+            <AppNavigator />
+            <StatusBar style="light" />
+          </MealProvider>
+        </FoodProvider>
+      </SettingsProvider>
     </ErrorBoundary>
   );
 }

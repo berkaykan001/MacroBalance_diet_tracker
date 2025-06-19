@@ -3,25 +3,25 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatLi
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFood } from '../../context/FoodContext';
 import { useMeal } from '../../context/MealContext';
+import { useSettings } from '../../context/SettingsContext';
 
 export default function SettingsScreen() {
   const { foods } = useFood();
   const { meals, updateMeal } = useMeal();
+  const { 
+    selectedQuickFoods, 
+    appPreferences, 
+    updateQuickFoods, 
+    updateAppPreferences, 
+    resetSettings, 
+    clearAllData 
+  } = useSettings();
   
   const [activeSection, setActiveSection] = useState('meal-targets');
-  const [selectedQuickFoods, setSelectedQuickFoods] = useState(['1', '2', '3']); // Default to first 3 foods
   const [editingMeal, setEditingMeal] = useState(null);
   const [mealFormData, setMealFormData] = useState({
     name: '',
     macroTargets: { protein: '', carbs: '', fat: '' }
-  });
-
-  // App preferences
-  const [appPreferences, setAppPreferences] = useState({
-    darkMode: true,
-    notifications: true,
-    autoOptimize: true,
-    compactView: true
   });
 
   const sections = [
@@ -63,10 +63,12 @@ export default function SettingsScreen() {
 
   const toggleQuickFood = (foodId) => {
     if (selectedQuickFoods.includes(foodId)) {
-      setSelectedQuickFoods(selectedQuickFoods.filter(id => id !== foodId));
+      const updatedFoods = selectedQuickFoods.filter(id => id !== foodId);
+      updateQuickFoods(updatedFoods);
     } else {
       if (selectedQuickFoods.length < 12) {
-        setSelectedQuickFoods([...selectedQuickFoods, foodId]);
+        const updatedFoods = [...selectedQuickFoods, foodId];
+        updateQuickFoods(updatedFoods);
       } else {
         Alert.alert('Limit Reached', 'You can select up to 12 quick-add foods.');
       }
@@ -328,28 +330,28 @@ export default function SettingsScreen() {
                 'Dark Mode',
                 'Use dark theme throughout the app',
                 appPreferences.darkMode,
-                (value) => setAppPreferences({ ...appPreferences, darkMode: value })
+                (value) => updateAppPreferences({ darkMode: value })
               )}
               
               {renderPreferenceItem(
                 'Auto-Optimize',
                 'Automatically optimize portions when adding foods',
                 appPreferences.autoOptimize,
-                (value) => setAppPreferences({ ...appPreferences, autoOptimize: value })
+                (value) => updateAppPreferences({ autoOptimize: value })
               )}
               
               {renderPreferenceItem(
                 'Compact View',
                 'Use ultra-compact food containers',
                 appPreferences.compactView,
-                (value) => setAppPreferences({ ...appPreferences, compactView: value })
+                (value) => updateAppPreferences({ compactView: value })
               )}
               
               {renderPreferenceItem(
                 'Notifications',
                 'Receive reminders and updates',
                 appPreferences.notifications,
-                (value) => setAppPreferences({ ...appPreferences, notifications: value })
+                (value) => updateAppPreferences({ notifications: value })
               )}
             </View>
           </View>
@@ -377,15 +379,16 @@ export default function SettingsScreen() {
               )}
               
               {renderDataAction(
-                'Reset Meal Targets',
-                'Restore default meal targets',
+                'Reset Settings',
+                'Restore app settings to defaults',
                 () => Alert.alert(
-                  'Reset Meal Targets',
-                  'Are you sure? This will restore all meal targets to defaults.',
+                  'Reset Settings',
+                  'Are you sure? This will restore all settings including quick foods and preferences to defaults.',
                   [
                     { text: 'Cancel', style: 'cancel' },
-                    { text: 'Reset', style: 'destructive', onPress: () => {
-                      Alert.alert('Success', 'Meal targets reset to defaults!');
+                    { text: 'Reset', style: 'destructive', onPress: async () => {
+                      await resetSettings();
+                      Alert.alert('Success', 'Settings reset to defaults!');
                     }}
                   ]
                 ),
@@ -394,13 +397,14 @@ export default function SettingsScreen() {
               
               {renderDataAction(
                 'Clear All Data',
-                'Delete all custom foods and settings',
+                'Delete all custom foods, meal plans, and settings',
                 () => Alert.alert(
                   'Clear All Data',
                   'This will permanently delete all your custom foods, meal plans, and settings. This action cannot be undone.',
                   [
                     { text: 'Cancel', style: 'cancel' },
-                    { text: 'Delete All', style: 'destructive', onPress: () => {
+                    { text: 'Delete All', style: 'destructive', onPress: async () => {
+                      await clearAllData();
                       Alert.alert('Success', 'All data cleared successfully!');
                     }}
                   ]

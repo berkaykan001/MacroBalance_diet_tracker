@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, TextInput, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
 import { useFood } from '../../context/FoodContext';
@@ -11,7 +11,7 @@ const { width } = Dimensions.get('window');
 
 export default function MealPlanningScreen() {
   const { foods, filteredFoods, searchFoods } = useFood();
-  const { meals } = useMeal();
+  const { meals, createMealPlan } = useMeal();
   const { selectedQuickFoods, appPreferences } = useSettings();
   
   const [selectedMealId, setSelectedMealId] = useState('1'); // Default to Breakfast
@@ -85,6 +85,30 @@ export default function MealPlanningScreen() {
   const progress = selectedMeal 
     ? CalculationService.calculateMacroProgress(currentMacros, selectedMeal.macroTargets)
     : null;
+
+  const saveMealPlan = () => {
+    if (!selectedMeal || selectedFoods.length === 0) {
+      Alert.alert('No Foods Selected', 'Please add some foods before marking the meal as eaten.');
+      return;
+    }
+
+    // Create meal plan with current data
+    const mealPlan = {
+      mealId: selectedMealId,
+      selectedFoods: selectedFoods,
+      calculatedMacros: currentMacros
+    };
+
+    createMealPlan(mealPlan);
+    
+    // Clear the current meal plan after saving
+    setSelectedFoods([]);
+    
+    Alert.alert(
+      'Meal Saved!', 
+      `${selectedMeal.name} has been marked as eaten with ${Math.round(currentMacros.calories)} calories.`
+    );
+  };
 
   const renderFoodItem = ({ item }) => {
     const food = foods.find(f => f.id === item.foodId);
@@ -348,13 +372,35 @@ export default function MealPlanningScreen() {
               <Text style={styles.emptySubtext}>Add foods above to start planning your perfect meal</Text>
             </View>
           ) : (
-            <FlatList
-              data={selectedFoods}
-              renderItem={renderFoodItem}
-              keyExtractor={(item) => item.foodId}
-              scrollEnabled={false}
-              showsVerticalScrollIndicator={false}
-            />
+            <>
+              <FlatList
+                data={selectedFoods}
+                renderItem={renderFoodItem}
+                keyExtractor={(item) => item.foodId}
+                scrollEnabled={false}
+                showsVerticalScrollIndicator={false}
+              />
+              
+              {/* Eaten Button */}
+              <TouchableOpacity 
+                style={styles.eatenButton}
+                onPress={saveMealPlan}
+              >
+                <LinearGradient
+                  colors={['#00D084', '#00A86B']}
+                  style={styles.eatenButtonGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Text style={styles.eatenButtonText}>
+                    ✓ Mark {selectedMeal.name} as Eaten
+                  </Text>
+                  <Text style={styles.eatenButtonSubtext}>
+                    {Math.round(currentMacros.calories)} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </>
           )}
         </View>
         
@@ -836,6 +882,36 @@ const styles = StyleSheet.create({
 
   bottomSpacer: {
     height: 20,
+  },
+
+  // Eaten Button Styles
+  eatenButton: {
+    marginTop: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#00D084',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  eatenButtonGradient: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eatenButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+    letterSpacing: 0.3,
+  },
+  eatenButtonSubtext: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '500',
   },
 
   // Meal Selector

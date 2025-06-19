@@ -22,10 +22,7 @@ export default function HomeScreen() {
   const recentMealPlans = getRecentMealPlans(3);
   const recentFoods = getRecentlyUsed(6);
 
-  const getNextMeal = () => {
-    const incompleteMeals = mealsToday.filter(meal => !meal.completed);
-    return incompleteMeals.length > 0 ? incompleteMeals[0] : mealsToday[0];
-  };
+  // Note: getNextMeal logic postponed for now
 
   const getWeeklyConsistency = () => {
     // Simple calculation for demo - in real app would track historical data
@@ -157,10 +154,10 @@ export default function HomeScreen() {
               end={{ x: 1, y: 1 }}
             >
               <Text style={styles.primaryActionText}>
-                Plan {getNextMeal()?.name || 'Next Meal'}
+                Plan Your Meal
               </Text>
               <Text style={styles.primaryActionSubtext}>
-                {getNextMeal()?.completed ? 'Update meal plan' : 'Create new meal plan'}
+                Create and track your meal plans
               </Text>
             </LinearGradient>
           </TouchableOpacity>

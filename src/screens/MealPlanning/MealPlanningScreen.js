@@ -89,18 +89,26 @@ export default function MealPlanningScreen() {
 
     const macros = CalculationService.calculateMacrosForPortion(food, item.portionGrams);
 
+    // Dynamic colors for food containers
+    const foodContainerColors = appPreferences.darkMode 
+      ? ['#1A1A1A', '#2A2A2A'] 
+      : ['#FFFFFF', '#F8F8F8'];
+    
+    const textColor = appPreferences.darkMode ? '#FFFFFF' : '#000000';
+    const secondaryTextColor = appPreferences.darkMode ? '#8E8E93' : '#6D6D70';
+
     return (
       <LinearGradient
-        colors={['#1A1A1A', '#2A2A2A']}
-        style={styles.selectedFood}
+        colors={foodContainerColors}
+        style={[dynamicStyles.selectedFood, appPreferences.compactView && { padding: 6, marginBottom: 4 }]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
         {/* Top row: Food info, macros, and remove button all in one row */}
         <View style={styles.ultraCompactHeader}>
           <View style={styles.ultraCompactFoodInfo}>
-            <Text style={styles.ultraCompactFoodName}>{food.name}</Text>
-            <Text style={styles.ultraCompactFoodCategory}>{food.category}</Text>
+            <Text style={[styles.ultraCompactFoodName, { color: textColor }]}>{food.name}</Text>
+            <Text style={[styles.ultraCompactFoodCategory, { color: secondaryTextColor }]}>{food.category}</Text>
           </View>
           
           <View style={styles.ultraCompactMacroDisplay}>
@@ -213,10 +221,31 @@ export default function MealPlanningScreen() {
     );
   };
 
+  // Dynamic styling based on preferences
+  const containerColors = appPreferences.darkMode 
+    ? ['#0A0A0A', '#1A1A1A'] 
+    : ['#F2F2F7', '#FFFFFF'];
+  
+  const dynamicStyles = {
+    container: {
+      flex: 1,
+    },
+    selectedFood: {
+      borderRadius: 8,
+      padding: appPreferences.compactView ? 6 : 8,
+      marginBottom: appPreferences.compactView ? 4 : 6,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.15,
+      shadowRadius: 2,
+      elevation: 2,
+    }
+  };
+
   return (
     <LinearGradient
-      colors={['#0A0A0A', '#1A1A1A']}
-      style={styles.container}
+      colors={containerColors}
+      style={dynamicStyles.container}
     >
       {/* Fixed Header Section - Compact */}
       <View style={styles.fixedHeader}>

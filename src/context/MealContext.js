@@ -251,6 +251,11 @@ export function MealProvider({ children }) {
       .slice(0, limit);
   };
 
+  const reloadMeals = () => {
+    loadMeals();
+    loadMealPlans();
+  };
+
   const value = {
     ...state,
     addMeal,
@@ -262,7 +267,8 @@ export function MealProvider({ children }) {
     getMealById,
     getMealPlanById,
     getMealPlansByMeal,
-    getRecentMealPlans
+    getRecentMealPlans,
+    reloadMeals
   };
 
   return (

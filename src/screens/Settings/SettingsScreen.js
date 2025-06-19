@@ -6,8 +6,8 @@ import { useMeal } from '../../context/MealContext';
 import { useSettings } from '../../context/SettingsContext';
 
 export default function SettingsScreen() {
-  const { foods } = useFood();
-  const { meals, updateMeal } = useMeal();
+  const { foods, reloadFoods } = useFood();
+  const { meals, updateMeal, reloadMeals } = useMeal();
   const { 
     selectedQuickFoods, 
     appPreferences, 
@@ -56,7 +56,7 @@ export default function SettingsScreen() {
       }
     };
 
-    updateMeal(editingMeal.id, updatedMeal);
+    updateMeal(updatedMeal);
     setEditingMeal(null);
     Alert.alert('Success', 'Meal targets updated successfully!');
   };
@@ -369,7 +369,20 @@ export default function SettingsScreen() {
               {renderDataAction(
                 'Export Data',
                 'Export your foods and meal plans',
-                () => Alert.alert('Export', 'Data export feature coming soon!')
+                async () => {
+                  try {
+                    const exportData = {
+                      foods: foods.filter(food => food.userAdded),
+                      meals: meals.filter(meal => meal.userCustom),
+                      settings: { selectedQuickFoods, appPreferences },
+                      exportDate: new Date().toISOString()
+                    };
+                    console.log('Export data ready:', exportData);
+                    Alert.alert('Export Ready', `Found ${exportData.foods.length} custom foods and ${exportData.meals.length} custom meals to export.\n\nExport functionality will be implemented in a future update.`);
+                  } catch (error) {
+                    Alert.alert('Export Error', 'Failed to prepare export data.');
+                  }
+                }
               )}
               
               {renderDataAction(
@@ -405,6 +418,9 @@ export default function SettingsScreen() {
                     { text: 'Cancel', style: 'cancel' },
                     { text: 'Delete All', style: 'destructive', onPress: async () => {
                       await clearAllData();
+                      // Reload all contexts to reflect the cleared data
+                      reloadFoods();
+                      reloadMeals();
                       Alert.alert('Success', 'All data cleared successfully!');
                     }}
                   ]
@@ -420,11 +436,19 @@ export default function SettingsScreen() {
     }
   };
 
+  // Dynamic styling based on preferences
+  const containerColors = appPreferences.darkMode 
+    ? ['#0A0A0A', '#1A1A1A'] 
+    : ['#F2F2F7', '#FFFFFF'];
+  
+  const textColor = appPreferences.darkMode ? '#FFFFFF' : '#000000';
+  const secondaryTextColor = appPreferences.darkMode ? '#8E8E93' : '#6D6D70';
+
   return (
-    <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
+    <LinearGradient colors={containerColors} style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
+        <Text style={[styles.title, { color: textColor }]}>Settings</Text>
       </View>
 
       {/* Section Navigation */}

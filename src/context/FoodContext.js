@@ -159,6 +159,10 @@ export function FoodProvider({ children }) {
       .slice(0, limit);
   };
 
+  const reloadFoods = () => {
+    loadFoods();
+  };
+
   const value = {
     ...state,
     addFood,
@@ -168,7 +172,8 @@ export function FoodProvider({ children }) {
     updateLastUsed,
     getFoodById,
     getFoodsByCategory,
-    getRecentlyUsed
+    getRecentlyUsed,
+    reloadFoods
   };
 
   return (

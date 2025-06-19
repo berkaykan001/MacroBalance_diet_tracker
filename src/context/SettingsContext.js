@@ -102,8 +102,10 @@ export function SettingsProvider({ children }) {
 
   const resetSettings = async () => {
     try {
+      console.log('Resetting settings to defaults...');
       dispatch({ type: ACTIONS.RESET_SETTINGS });
       await AsyncStorage.setItem('appSettings', JSON.stringify(defaultSettings));
+      console.log('Settings reset successfully');
     } catch (error) {
       console.error('Error resetting settings:', error);
     }
@@ -111,9 +113,12 @@ export function SettingsProvider({ children }) {
 
   const clearAllData = async () => {
     try {
+      console.log('Clearing all AsyncStorage data...');
       // Clear all AsyncStorage data
       await AsyncStorage.multiRemove(['appSettings', 'foods', 'meals']);
+      console.log('AsyncStorage cleared successfully');
       dispatch({ type: ACTIONS.RESET_SETTINGS });
+      console.log('Settings reset to defaults');
     } catch (error) {
       console.error('Error clearing all data:', error);
     }

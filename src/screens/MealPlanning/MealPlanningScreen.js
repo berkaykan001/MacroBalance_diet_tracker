@@ -14,10 +14,13 @@ export default function MealPlanningScreen() {
   const { meals } = useMeal();
   const { selectedQuickFoods, appPreferences } = useSettings();
   
-  const [selectedMeal, setSelectedMeal] = useState(meals[0]);
+  const [selectedMealId, setSelectedMealId] = useState('1'); // Default to Breakfast
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [showFoodList, setShowFoodList] = useState(false);
   const [foodSearchQuery, setFoodSearchQuery] = useState('');
+
+  // Always get the current meal data (updates when meals context changes)
+  const selectedMeal = meals.find(meal => meal.id === selectedMealId) || meals[0];
 
   const handleFoodSearch = (query) => {
     setFoodSearchQuery(query);
@@ -220,6 +223,30 @@ export default function MealPlanningScreen() {
     >
       {/* Fixed Header Section - Compact */}
       <View style={styles.fixedHeader}>
+        {/* Meal Selector */}
+        <View style={styles.mealSelector}>
+          <Text style={styles.mealSelectorLabel}>Meal:</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.mealOptions}>
+            {meals.map((meal) => (
+              <TouchableOpacity
+                key={meal.id}
+                style={[
+                  styles.mealOption,
+                  selectedMealId === meal.id && styles.mealOptionSelected
+                ]}
+                onPress={() => setSelectedMealId(meal.id)}
+              >
+                <Text style={[
+                  styles.mealOptionText,
+                  selectedMealId === meal.id && styles.mealOptionTextSelected
+                ]}>
+                  {meal.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
         {progress && selectedMeal && selectedFoods.length > 0 && (
           <View style={styles.compactProgressSection}>
             {renderProgressBar('Protein', currentMacros.protein, selectedMeal.macroTargets.protein, progress.protein.status)}
@@ -809,6 +836,43 @@ const styles = StyleSheet.create({
 
   bottomSpacer: {
     height: 20,
+  },
+
+  // Meal Selector
+  mealSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  mealSelectorLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginRight: 8,
+  },
+  mealOptions: {
+    flex: 1,
+  },
+  mealOption: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginRight: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  mealOptionSelected: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  mealOptionText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#FFFFFF',
+  },
+  mealOptionTextSelected: {
+    fontWeight: '600',
   },
 
   // Compact Progress Section

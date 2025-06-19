@@ -405,8 +405,8 @@ export default function SettingsScreen() {
                     { text: 'Delete All', style: 'destructive', onPress: async () => {
                       await clearAllData();
                       // Reload all contexts to reflect the cleared data
-                      reloadFoods();
-                      reloadMeals();
+                      await reloadFoods();
+                      await reloadMeals();
                       Alert.alert('Success', 'All data cleared successfully!');
                     }}
                   ]

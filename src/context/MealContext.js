@@ -256,9 +256,10 @@ export function MealProvider({ children }) {
       .slice(0, limit);
   };
 
-  const reloadMeals = () => {
-    loadMeals();
-    loadMealPlans();
+  const reloadMeals = async () => {
+    console.log('Reloading meals...');
+    await loadMeals();
+    await loadMealPlans();
   };
 
   const value = {

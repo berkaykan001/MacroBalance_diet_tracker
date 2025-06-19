@@ -161,8 +161,9 @@ export function FoodProvider({ children }) {
       .slice(0, limit);
   };
 
-  const reloadFoods = () => {
-    loadFoods();
+  const reloadFoods = async () => {
+    console.log('Reloading foods...');
+    await loadFoods();
   };
 
   const value = {

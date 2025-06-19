@@ -114,8 +114,8 @@ export function SettingsProvider({ children }) {
   const clearAllData = async () => {
     try {
       console.log('Clearing all AsyncStorage data...');
-      // Clear all AsyncStorage data
-      await AsyncStorage.multiRemove(['appSettings', 'foods', 'meals']);
+      // Clear all AsyncStorage data including mealPlans
+      await AsyncStorage.multiRemove(['appSettings', 'foods', 'meals', 'mealPlans']);
       console.log('AsyncStorage cleared successfully');
       dispatch({ type: ACTIONS.RESET_SETTINGS });
       console.log('Settings reset to defaults');

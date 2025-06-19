@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
@@ -27,28 +28,40 @@ export default function AppNavigator() {
           name="Home" 
           component={HomeScreen}
           options={{
-            title: '🏠 Dashboard',
+            title: 'Dashboard',
+            tabBarIcon: ({ color, size }) => (
+              <Text style={{ fontSize: 20, color: color }}>🏠</Text>
+            ),
           }}
         />
         <Tab.Screen 
           name="Plan Meal" 
           component={MealPlanningScreen}
           options={{
-            title: '🍽️ Plan Meal',
+            title: 'Plan Meal',
+            tabBarIcon: ({ color, size }) => (
+              <Text style={{ fontSize: 20, color: color }}>🍽️</Text>
+            ),
           }}
         />
         <Tab.Screen 
           name="Foods" 
           component={FoodManagementScreen}
           options={{
-            title: '🥗 Foods',
+            title: 'Foods',
+            tabBarIcon: ({ color, size }) => (
+              <Text style={{ fontSize: 20, color: color }}>🥗</Text>
+            ),
           }}
         />
         <Tab.Screen 
           name="Settings" 
           component={SettingsScreen}
           options={{
-            title: '⚙️ Settings',
+            title: 'Settings',
+            tabBarIcon: ({ color, size }) => (
+              <Text style={{ fontSize: 20, color: color }}>⚙️</Text>
+            ),
           }}
         />
       </Tab.Navigator>

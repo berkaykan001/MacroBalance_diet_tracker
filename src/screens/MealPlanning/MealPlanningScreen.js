@@ -29,10 +29,16 @@ export default function MealPlanningScreen() {
   };
 
   const updatePortion = (foodId, newPortion) => {
-    const updatedFoods = selectedFoods.map(food => 
-      food.foodId === foodId ? { ...food, portionGrams: Math.round(newPortion) } : food
+    if (!selectedMeal) return;
+    
+    const optimized = CalculationService.optimizePortions(
+      selectedFoods, 
+      foods, 
+      selectedMeal.macroTargets, 
+      foodId, 
+      Math.round(newPortion)
     );
-    setSelectedFoods(updatedFoods);
+    setSelectedFoods(optimized);
   };
 
   const currentMacros = selectedFoods.length > 0 
@@ -123,22 +129,53 @@ export default function MealPlanningScreen() {
   );
 
   const renderProgressBar = (label, current, target, status) => {
-    const percentage = target > 0 ? Math.min(100, (current / target) * 100) : 0;
+    // Calculate the maximum scale (target * 1.5 so target appears at 66% of the bar)
+    const maxValue = target * 1.5;
+    const currentPercentage = Math.min(100, (current / maxValue) * 100);
+    const targetPercentage = (target / maxValue) * 100; // Should be around 66%
+    
+    // Determine colors based on how close we are to target
+    const difference = Math.abs(current - target);
+    const tolerance = target * 0.05; // 5% tolerance
+    
+    let fillColor;
+    if (difference <= tolerance) {
+      fillColor = ['#00D084', '#00A86B']; // Green when close to target
+    } else if (current < target) {
+      fillColor = ['#FF9500', '#FF9F00']; // Orange when under
+    } else {
+      fillColor = ['#FF453A', '#FF6B6B']; // Red when over
+    }
+
     return (
       <View style={styles.progressBarContainer}>
         <View style={styles.progressBarHeader}>
           <Text style={styles.progressBarLabel}>{label}</Text>
-          <Text style={[styles.progressBarValue, {color: status === 'met' ? '#00D084' : '#FF453A'}]}>
+          <Text style={[styles.progressBarValue, {
+            color: difference <= tolerance ? '#00D084' : current < target ? '#FF9500' : '#FF453A'
+          }]}>
             {current}g / {target}g
           </Text>
         </View>
         <View style={styles.progressBarTrack}>
+          {/* Background track */}
+          <View style={styles.progressBarBackground} />
+          
+          {/* Target indicator line */}
+          <View style={[styles.targetIndicator, { left: `${targetPercentage}%` }]} />
+          
+          {/* Current progress fill */}
           <LinearGradient
-            colors={status === 'met' ? ['#00D084', '#00A86B'] : ['#FF453A', '#FF6B6B']}
-            style={[styles.progressBarFill, { width: `${percentage}%` }]}
+            colors={fillColor}
+            style={[styles.progressBarFill, { width: `${currentPercentage}%` }]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           />
+        </View>
+        <View style={styles.progressBarLabels}>
+          <Text style={styles.progressBarLabelText}>0g</Text>
+          <Text style={[styles.progressBarLabelText, styles.targetLabelText]}>{target}g</Text>
+          <Text style={styles.progressBarLabelText}>{Math.round(maxValue)}g</Text>
         </View>
       </View>
     );
@@ -257,39 +294,39 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: 24,
-    paddingTop: 16,
+    padding: 16,
+    paddingTop: 12,
   },
   title: {
-    fontSize: 32,
-    fontWeight: '800',
+    fontSize: 24,
+    fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 4,
-    letterSpacing: -0.5,
+    marginBottom: 2,
+    letterSpacing: -0.3,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#8E8E93',
     fontWeight: '400',
   },
   
   // Target Card
   targetCard: {
-    marginHorizontal: 20,
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
+    marginHorizontal: 16,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
     shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   mealName: {
-    fontSize: 22,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 16,
+    marginBottom: 10,
     textAlign: 'center',
   },
   targetGrid: {
@@ -301,212 +338,247 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   targetValue: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   targetLabel: {
-    fontSize: 13,
+    fontSize: 11,
     color: 'rgba(255,255,255,0.8)',
     fontWeight: '500',
   },
 
   // Progress Section
   progressSection: {
-    marginHorizontal: 20,
-    marginBottom: 20,
+    marginHorizontal: 16,
+    marginBottom: 12,
   },
   progressTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   progressBarContainer: {
-    marginBottom: 16,
+    marginBottom: 10,
   },
   progressBarHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   progressBarLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
   },
   progressBarValue: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
   progressBarTrack: {
-    height: 8,
+    height: 6,
     backgroundColor: '#2A2A2A',
-    borderRadius: 4,
+    borderRadius: 3,
+    position: 'relative',
     overflow: 'hidden',
   },
-  progressBarFill: {
+  progressBarBackground: {
+    position: 'absolute',
+    width: '100%',
     height: '100%',
-    borderRadius: 4,
+    backgroundColor: '#2A2A2A',
+    borderRadius: 3,
+  },
+  progressBarFill: {
+    position: 'absolute',
+    height: '100%',
+    borderRadius: 3,
+    zIndex: 1,
+  },
+  targetIndicator: {
+    position: 'absolute',
+    width: 2,
+    height: '100%',
+    backgroundColor: '#FFFFFF',
+    zIndex: 2,
+    marginLeft: -1,
+  },
+  progressBarLabels: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+    position: 'relative',
+  },
+  progressBarLabelText: {
+    fontSize: 9,
+    color: '#8E8E93',
+  },
+  targetLabelText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    position: 'absolute',
+    left: '66.67%',
+    transform: [{ translateX: -10 }],
   },
   totalCalories: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.1)',
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 8,
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 6,
   },
   caloriesLabel: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
     color: '#FFFFFF',
   },
   caloriesValue: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 18,
+    fontWeight: '700',
     color: '#00D084',
   },
 
   // Add Food Button
   addFoodButton: {
-    marginHorizontal: 20,
-    borderRadius: 16,
-    marginBottom: 20,
+    marginHorizontal: 16,
+    borderRadius: 10,
+    marginBottom: 12,
     shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   addFoodButtonInner: {
-    padding: 18,
+    padding: 12,
     alignItems: 'center',
   },
   addFoodButtonText: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
   },
 
   // Food List
   foodListContainer: {
-    marginHorizontal: 20,
-    marginBottom: 20,
+    marginHorizontal: 16,
+    marginBottom: 12,
   },
   foodListTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   foodListRow: {
     justifyContent: 'space-between',
   },
   availableFood: {
     flex: 1,
-    margin: 4,
-    borderRadius: 12,
+    margin: 3,
+    borderRadius: 8,
     overflow: 'hidden',
   },
   availableFoodGradient: {
-    padding: 16,
+    padding: 10,
     alignItems: 'center',
-    minHeight: 80,
+    minHeight: 60,
     justifyContent: 'center',
   },
   availableFoodName: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   availableFoodCategory: {
     color: '#8E8E93',
-    fontSize: 11,
+    fontSize: 9,
     textAlign: 'center',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
 
   // Selected Foods
   selectedFoodsContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   emptyState: {
     alignItems: 'center',
-    padding: 40,
+    padding: 24,
   },
   emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
+    fontSize: 32,
+    marginBottom: 8,
   },
   emptyText: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   emptySubtext: {
     color: '#8E8E93',
-    fontSize: 14,
+    fontSize: 12,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 16,
   },
   
   // Selected Food Card
   selectedFood: {
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 16,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   foodHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    marginBottom: 10,
   },
   foodInfo: {
     flex: 1,
   },
   foodName: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 4,
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 2,
   },
   foodCategory: {
     color: '#8E8E93',
-    fontSize: 12,
+    fontSize: 10,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   removeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: 'rgba(255,69,58,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   removeButtonText: {
     color: '#FF453A',
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 
@@ -514,63 +586,63 @@ const styles = StyleSheet.create({
   macroDisplay: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 12,
     backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 8,
+    padding: 10,
   },
   macroItem: {
     alignItems: 'center',
     flex: 1,
   },
   macroValue: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '600',
     color: '#00D084',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   macroLabel: {
-    fontSize: 11,
+    fontSize: 9,
     color: '#8E8E93',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
 
   // Slider
   sliderContainer: {
-    marginTop: 8,
+    marginTop: 4,
   },
   portionLabel: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '600',
     color: '#007AFF',
     textAlign: 'center',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   slider: {
     width: '100%',
-    height: 40,
+    height: 30,
   },
   sliderThumb: {
     backgroundColor: '#007AFF',
-    width: 24,
-    height: 24,
+    width: 18,
+    height: 18,
   },
   sliderTrack: {
-    height: 6,
-    borderRadius: 3,
+    height: 4,
+    borderRadius: 2,
   },
   sliderLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 8,
+    marginTop: 4,
   },
   sliderLabelText: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#8E8E93',
   },
 
   bottomSpacer: {
-    height: 40,
+    height: 20,
   },
 });

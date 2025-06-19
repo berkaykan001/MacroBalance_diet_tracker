@@ -27,8 +27,7 @@ export default function SettingsScreen() {
   const sections = [
     { id: 'meal-targets', title: 'Meal Targets', icon: '🎯' },
     { id: 'quick-foods', title: 'Quick-Add Foods', icon: '⚡' },
-    { id: 'preferences', title: 'App Preferences', icon: '⚙️' },
-    { id: 'data', title: 'Data Management', icon: '💾' }
+    { id: 'preferences', title: 'App Preferences', icon: '⚙️' }
   ];
 
   const handleMealEdit = (meal) => {
@@ -340,82 +339,38 @@ export default function SettingsScreen() {
                 (value) => updateAppPreferences({ notifications: value })
               )}
             </View>
-          </View>
-        );
 
-      case 'data':
-        return (
-          <View style={styles.sectionContent}>
-            <Text style={styles.sectionTitle}>Data Management</Text>
-            <Text style={styles.sectionDescription}>
-              Manage your app data and settings
-            </Text>
-            
-            <View style={styles.dataActionsContainer}>
+            <View style={styles.resetSection}>
+              <Text style={styles.resetSectionTitle}>Reset App</Text>
+              <Text style={styles.resetSectionDescription}>
+                Reset all app data including foods, meals, and settings
+              </Text>
+              
               {renderDataAction(
-                'Export Data',
-                'Export your foods and meal plans',
+                'Reset Everything',
+                'Delete all data and restore app to defaults',
                 async () => {
+                  console.log('Reset Everything button pressed');
                   try {
-                    const exportData = {
-                      foods: foods.filter(food => food.userAdded),
-                      meals: meals.filter(meal => meal.userCustom),
-                      settings: { selectedQuickFoods, appPreferences },
-                      exportDate: new Date().toISOString()
-                    };
-                    console.log('Export data ready:', exportData);
-                    Alert.alert('Export Ready', `Found ${exportData.foods.length} custom foods and ${exportData.meals.length} custom meals to export.\n\nExport functionality will be implemented in a future update.`);
+                    console.log('Calling clearAllData...');
+                    await clearAllData();
+                    console.log('clearAllData completed, reloading contexts...');
+                    // Reload all contexts to reflect the cleared data
+                    await reloadFoods();
+                    await reloadMeals();
+                    console.log('All contexts reloaded successfully');
+                    Alert.alert('Success', 'App reset successfully!');
                   } catch (error) {
-                    Alert.alert('Export Error', 'Failed to prepare export data.');
+                    console.error('Error in reset process:', error);
+                    Alert.alert('Error', 'Failed to reset app');
                   }
-                }
-              )}
-              
-              {renderDataAction(
-                'Import Data',
-                'Import foods from a backup file',
-                () => Alert.alert('Import', 'Data import feature coming soon!')
-              )}
-              
-              {renderDataAction(
-                'Reset Settings',
-                'Restore app settings to defaults',
-                () => Alert.alert(
-                  'Reset Settings',
-                  'Are you sure? This will restore all settings including quick foods and preferences to defaults.',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Reset', style: 'destructive', onPress: async () => {
-                      await resetSettings();
-                      Alert.alert('Success', 'Settings reset to defaults!');
-                    }}
-                  ]
-                ),
-                true
-              )}
-              
-              {renderDataAction(
-                'Clear All Data',
-                'Delete all custom foods, meal plans, and settings',
-                () => Alert.alert(
-                  'Clear All Data',
-                  'This will permanently delete all your custom foods, meal plans, and settings. This action cannot be undone.',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Delete All', style: 'destructive', onPress: async () => {
-                      await clearAllData();
-                      // Reload all contexts to reflect the cleared data
-                      await reloadFoods();
-                      await reloadMeals();
-                      Alert.alert('Success', 'All data cleared successfully!');
-                    }}
-                  ]
-                ),
+                },
                 true
               )}
             </View>
           </View>
         );
+
 
       default:
         return null;
@@ -737,7 +692,24 @@ const styles = StyleSheet.create({
     lineHeight: 14,
   },
 
-  // Data Management
+  // Reset Section
+  resetSection: {
+    marginTop: 20,
+  },
+  resetSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  resetSectionDescription: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginBottom: 12,
+    lineHeight: 16,
+  },
+
+  // Data Management (reused for reset button)
   dataActionsContainer: {
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 8,

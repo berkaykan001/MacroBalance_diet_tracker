@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, TextInput } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
 import { useFood } from '../../context/FoodContext';
@@ -9,19 +9,30 @@ import { CalculationService } from '../../services/calculationService';
 const { width } = Dimensions.get('window');
 
 export default function MealPlanningScreen() {
-  const { foods, filteredFoods } = useFood();
+  const { foods, filteredFoods, searchFoods } = useFood();
   const { meals } = useMeal();
   
   const [selectedMeal, setSelectedMeal] = useState(meals[0]);
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [showFoodList, setShowFoodList] = useState(false);
+  const [foodSearchQuery, setFoodSearchQuery] = useState('');
+
+  const handleFoodSearch = (query) => {
+    setFoodSearchQuery(query);
+    searchFoods(query);
+  };
+
+  const getAvailableFoods = () => {
+    // If searching, use filtered results, otherwise show all foods
+    return foodSearchQuery ? filteredFoods : foods;
+  };
 
   const addFood = (food) => {
     const exists = selectedFoods.find(sf => sf.foodId === food.id);
     if (!exists) {
       setSelectedFoods([...selectedFoods, { foodId: food.id, portionGrams: 100 }]);
     }
-    setShowFoodList(false);
+    // Don't close the food list anymore - let user add multiple foods
   };
 
   const removeFood = (foodId) => {
@@ -220,14 +231,45 @@ export default function MealPlanningScreen() {
       <ScrollView style={styles.scrollableContent} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {showFoodList && (
           <View style={styles.foodListContainer}>
-            <Text style={styles.foodListTitle}>Available Foods</Text>
+            <View style={styles.foodListHeader}>
+              <Text style={styles.foodListTitle}>Add Foods</Text>
+              <TouchableOpacity 
+                style={styles.closeFoodListButton}
+                onPress={() => {
+                  setShowFoodList(false);
+                  setFoodSearchQuery('');
+                  searchFoods(''); // Clear search when closing
+                }}
+              >
+                <Text style={styles.closeFoodListText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            
+            {/* Search Bar */}
+            <View style={styles.foodSearchContainer}>
+              <TextInput
+                style={styles.foodSearchInput}
+                value={foodSearchQuery}
+                onChangeText={handleFoodSearch}
+                placeholder="Search foods to add..."
+                placeholderTextColor="#8E8E93"
+              />
+            </View>
+
+            {/* Food List */}
             <FlatList
-              data={filteredFoods.slice(0, 12)}
+              data={getAvailableFoods()}
               renderItem={renderAvailableFood}
               keyExtractor={(item) => item.id}
               scrollEnabled={false}
               numColumns={3}
               columnWrapperStyle={styles.foodListRow}
+              ListEmptyComponent={
+                <View style={styles.noFoodsFound}>
+                  <Text style={styles.noFoodsFoundText}>No foods found</Text>
+                  <Text style={styles.noFoodsFoundSubtext}>Try adjusting your search</Text>
+                </View>
+              }
             />
           </View>
         )}
@@ -498,11 +540,44 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 12,
   },
+  foodListHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   foodListTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
-    marginBottom: 10,
+  },
+  closeFoodListButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255,69,58,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closeFoodListText: {
+    color: '#FF453A',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+
+  // Food Search
+  foodSearchContainer: {
+    marginBottom: 8,
+  },
+  foodSearchInput: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    color: '#FFFFFF',
+    fontSize: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   foodListRow: {
     justifyContent: 'space-between',
@@ -532,6 +607,24 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     textTransform: 'uppercase',
     letterSpacing: 0.2,
+  },
+
+  // No Foods Found
+  noFoodsFound: {
+    alignItems: 'center',
+    padding: 20,
+    marginTop: 10,
+  },
+  noFoodsFoundText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  noFoodsFoundSubtext: {
+    color: '#8E8E93',
+    fontSize: 10,
+    textAlign: 'center',
   },
 
   // Selected Foods

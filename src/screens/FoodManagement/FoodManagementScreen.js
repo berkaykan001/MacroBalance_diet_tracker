@@ -1,32 +1,784 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useFood } from '../../context/FoodContext';
 
 export default function FoodManagementScreen() {
+  const { foods, filteredFoods, searchFoods, addFood, updateFood, deleteFood } = useFood();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingFood, setEditingFood] = useState(null);
+
+  // Form state for adding/editing foods
+  const [formData, setFormData] = useState({
+    name: '',
+    category: 'protein',
+    nutritionPer100g: {
+      calories: '',
+      protein: '',
+      carbs: '',
+      fiber: '',
+      sugar: '',
+      fat: '',
+      vitaminD: '',
+      magnesium: ''
+    }
+  });
+
+  const categories = [
+    { id: 'all', name: 'All Foods', count: foods.length },
+    { id: 'protein', name: 'Protein', count: foods.filter(f => f.category === 'protein').length },
+    { id: 'carbs', name: 'Carbs', count: foods.filter(f => f.category === 'carbs').length },
+    { id: 'fats', name: 'Fats', count: foods.filter(f => f.category === 'fats').length },
+    { id: 'vegetables', name: 'Vegetables', count: foods.filter(f => f.category === 'vegetables').length },
+    { id: 'dairy', name: 'Dairy', count: foods.filter(f => f.category === 'dairy').length },
+  ];
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    searchFoods(query);
+  };
+
+  const getFilteredFoods = () => {
+    let result = searchQuery ? filteredFoods : foods;
+    if (selectedCategory !== 'all') {
+      result = result.filter(food => food.category === selectedCategory);
+    }
+    return result;
+  };
+
+  const handleAddFood = () => {
+    setEditingFood(null);
+    setFormData({
+      name: '',
+      category: 'protein',
+      nutritionPer100g: {
+        calories: '',
+        protein: '',
+        carbs: '',
+        fiber: '',
+        sugar: '',
+        fat: '',
+        vitaminD: '',
+        magnesium: ''
+      }
+    });
+    setShowAddForm(true);
+  };
+
+  const handleEditFood = (food) => {
+    setEditingFood(food);
+    setFormData({
+      name: food.name,
+      category: food.category,
+      nutritionPer100g: { ...food.nutritionPer100g }
+    });
+    setShowAddForm(true);
+  };
+
+  const handleDeleteFood = (food) => {
+    Alert.alert(
+      'Delete Food',
+      `Are you sure you want to delete "${food.name}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => deleteFood(food.id)
+        }
+      ]
+    );
+  };
+
+  const handleSaveFood = () => {
+    // Validate required fields
+    if (!formData.name.trim()) {
+      Alert.alert('Error', 'Food name is required');
+      return;
+    }
+
+    const nutrition = formData.nutritionPer100g;
+    if (!nutrition.calories || !nutrition.protein || !nutrition.carbs || !nutrition.fat) {
+      Alert.alert('Error', 'Calories, protein, carbs, and fat are required');
+      return;
+    }
+
+    // Convert string inputs to numbers
+    const processedFood = {
+      ...formData,
+      nutritionPer100g: {
+        calories: parseFloat(nutrition.calories) || 0,
+        protein: parseFloat(nutrition.protein) || 0,
+        carbs: parseFloat(nutrition.carbs) || 0,
+        fiber: parseFloat(nutrition.fiber) || 0,
+        sugar: parseFloat(nutrition.sugar) || 0,
+        fat: parseFloat(nutrition.fat) || 0,
+        vitaminD: parseFloat(nutrition.vitaminD) || 0,
+        magnesium: parseFloat(nutrition.magnesium) || 0,
+      }
+    };
+
+    if (editingFood) {
+      updateFood(editingFood.id, processedFood);
+    } else {
+      addFood(processedFood);
+    }
+
+    setShowAddForm(false);
+    setEditingFood(null);
+  };
+
+  const renderCategoryButton = ({ item }) => (
+    <TouchableOpacity
+      style={[
+        styles.categoryButton,
+        selectedCategory === item.id && styles.categoryButtonActive
+      ]}
+      onPress={() => setSelectedCategory(item.id)}
+    >
+      <Text style={[
+        styles.categoryButtonText,
+        selectedCategory === item.id && styles.categoryButtonTextActive
+      ]}>
+        {item.name} ({item.count})
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const renderFoodItem = ({ item }) => (
+    <LinearGradient
+      colors={['#1A1A1A', '#2A2A2A']}
+      style={styles.foodItem}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <View style={styles.foodHeader}>
+        <View style={styles.foodInfo}>
+          <Text style={styles.foodName}>{item.name}</Text>
+          <Text style={styles.foodCategory}>{item.category}</Text>
+          {item.userAdded && <Text style={styles.userAddedBadge}>Custom</Text>}
+        </View>
+        <View style={styles.foodActions}>
+          <TouchableOpacity 
+            style={styles.editButton} 
+            onPress={() => handleEditFood(item)}
+          >
+            <Text style={styles.editButtonText}>Edit</Text>
+          </TouchableOpacity>
+          {item.userAdded && (
+            <TouchableOpacity 
+              style={styles.deleteButton} 
+              onPress={() => handleDeleteFood(item)}
+            >
+              <Text style={styles.deleteButtonText}>×</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+      
+      <View style={styles.nutritionRow}>
+        <View style={styles.nutritionItem}>
+          <Text style={styles.nutritionValue}>{item.nutritionPer100g.calories}</Text>
+          <Text style={styles.nutritionLabel}>Cal</Text>
+        </View>
+        <View style={styles.nutritionItem}>
+          <Text style={styles.nutritionValue}>{item.nutritionPer100g.protein}g</Text>
+          <Text style={styles.nutritionLabel}>Protein</Text>
+        </View>
+        <View style={styles.nutritionItem}>
+          <Text style={styles.nutritionValue}>{item.nutritionPer100g.carbs}g</Text>
+          <Text style={styles.nutritionLabel}>Carbs</Text>
+        </View>
+        <View style={styles.nutritionItem}>
+          <Text style={styles.nutritionValue}>{item.nutritionPer100g.fat}g</Text>
+          <Text style={styles.nutritionLabel}>Fat</Text>
+        </View>
+      </View>
+    </LinearGradient>
+  );
+
+  if (showAddForm) {
+    return (
+      <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
+        <View style={styles.formHeader}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => setShowAddForm(false)}
+          >
+            <Text style={styles.backButtonText}>← Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.formTitle}>
+            {editingFood ? 'Edit Food' : 'Add New Food'}
+          </Text>
+          <TouchableOpacity 
+            style={styles.saveButton}
+            onPress={handleSaveFood}
+          >
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView style={styles.formContent} showsVerticalScrollIndicator={false}>
+          {/* Basic Info */}
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Basic Information</Text>
+            
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Food Name *</Text>
+              <TextInput
+                style={styles.textInput}
+                value={formData.name}
+                onChangeText={(text) => setFormData({...formData, name: text})}
+                placeholder="Enter food name"
+                placeholderTextColor="#8E8E93"
+              />
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Category *</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categorySelector}>
+                {['protein', 'carbs', 'fats', 'vegetables', 'dairy', 'snacks'].map(cat => (
+                  <TouchableOpacity
+                    key={cat}
+                    style={[
+                      styles.categorySelectorButton,
+                      formData.category === cat && styles.categorySelectorButtonActive
+                    ]}
+                    onPress={() => setFormData({...formData, category: cat})}
+                  >
+                    <Text style={[
+                      styles.categorySelectorButtonText,
+                      formData.category === cat && styles.categorySelectorButtonTextActive
+                    ]}>
+                      {cat}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+
+          {/* Nutrition Info */}
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Nutrition per 100g</Text>
+            
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Calories *</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.calories}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, calories: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Protein (g) *</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.protein}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, protein: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Carbs (g) *</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.carbs}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, carbs: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Fat (g) *</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.fat}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, fat: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Fiber (g)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.fiber}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, fiber: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Sugar (g)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.sugar}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, sugar: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Vitamin D (μg)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.vitaminD}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, vitaminD: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Magnesium (mg)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.magnesium}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, magnesium: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+          </View>
+          
+          <View style={styles.formSpacer} />
+        </ScrollView>
+      </LinearGradient>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Food Database</Text>
-      <Text style={styles.subtitle}>Manage your foods</Text>
-    </View>
+    <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Food Database</Text>
+        <TouchableOpacity 
+          style={styles.addButton}
+          onPress={handleAddFood}
+        >
+          <LinearGradient
+            colors={['#007AFF', '#0051D5']}
+            style={styles.addButtonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.addButtonText}>+ Add Food</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          value={searchQuery}
+          onChangeText={handleSearch}
+          placeholder="Search foods..."
+          placeholderTextColor="#8E8E93"
+        />
+      </View>
+
+      {/* Category Filter */}
+      <View style={styles.categoryContainer}>
+        <FlatList
+          data={categories}
+          renderItem={renderCategoryButton}
+          keyExtractor={(item) => item.id}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoryList}
+        />
+      </View>
+
+      {/* Food List */}
+      <FlatList
+        data={getFilteredFoods()}
+        renderItem={renderFoodItem}
+        keyExtractor={(item) => item.id}
+        style={styles.foodList}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>🍽️</Text>
+            <Text style={styles.emptyText}>No foods found</Text>
+            <Text style={styles.emptySubtext}>
+              {searchQuery ? 'Try adjusting your search' : 'Add your first food to get started'}
+            </Text>
+          </View>
+        }
+      />
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+  },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 10,
+    letterSpacing: -0.3,
   },
-  subtitle: {
-    fontSize: 16,
+  addButton: {
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  addButtonGradient: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  addButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  // Search
+  searchContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  searchInput: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    color: '#FFFFFF',
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+
+  // Categories
+  categoryContainer: {
+    marginBottom: 8,
+  },
+  categoryList: {
+    paddingHorizontal: 16,
+  },
+  categoryButton: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  categoryButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  categoryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  categoryButtonTextActive: {
+    fontWeight: '600',
+  },
+
+  // Food List
+  foodList: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  foodItem: {
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  foodHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 6,
+  },
+  foodInfo: {
+    flex: 1,
+  },
+  foodName: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 1,
+  },
+  foodCategory: {
     color: '#8E8E93',
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  userAddedBadge: {
+    color: '#007AFF',
+    fontSize: 8,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  foodActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  editButton: {
+    backgroundColor: 'rgba(0,122,255,0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginRight: 4,
+  },
+  editButtonText: {
+    color: '#007AFF',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'rgba(255,69,58,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteButtonText: {
+    color: '#FF453A',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+
+  // Nutrition Display
+  nutritionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 6,
+    padding: 6,
+  },
+  nutritionItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  nutritionValue: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#00D084',
+    marginBottom: 1,
+  },
+  nutritionLabel: {
+    fontSize: 8,
+    color: '#8E8E93',
+    fontWeight: '500',
+  },
+
+  // Empty State
+  emptyState: {
+    alignItems: 'center',
+    padding: 32,
+    marginTop: 40,
+  },
+  emptyIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  emptyText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  emptySubtext: {
+    color: '#8E8E93',
+    fontSize: 12,
     textAlign: 'center',
+    lineHeight: 16,
+  },
+
+  // Form Styles
+  formHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+  },
+  backButton: {
+    padding: 4,
+  },
+  backButtonText: {
+    color: '#007AFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  formTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  saveButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  saveButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  formContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  formSection: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+
+  // Input Styles
+  inputGroup: {
+    marginBottom: 12,
+  },
+  inputLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#8E8E93',
+    marginBottom: 4,
+  },
+  textInput: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    color: '#FFFFFF',
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+
+  // Category Selector
+  categorySelector: {
+    flexDirection: 'row',
+  },
+  categorySelectorButton: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  categorySelectorButtonActive: {
+    backgroundColor: '#007AFF',
+    borderColor: '#007AFF',
+  },
+  categorySelectorButtonText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  categorySelectorButtonTextActive: {
+    fontWeight: '600',
+  },
+
+  // Nutrition Inputs
+  nutritionInputRow: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  nutritionInputGroup: {
+    flex: 1,
+    marginRight: 8,
+  },
+  nutritionInput: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    color: '#FFFFFF',
+    fontSize: 13,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    textAlign: 'center',
+  },
+
+  formSpacer: {
+    height: 40,
   },
 });

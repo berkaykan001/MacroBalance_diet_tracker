@@ -262,6 +262,55 @@ export function MealProvider({ children }) {
     await loadMealPlans();
   };
 
+  // Dashboard helper functions
+  const getDailyTargets = () => {
+    return state.meals.reduce((total, meal) => ({
+      protein: total.protein + meal.macroTargets.protein,
+      carbs: total.carbs + meal.macroTargets.carbs,
+      fat: total.fat + meal.macroTargets.fat
+    }), { protein: 0, carbs: 0, fat: 0 });
+  };
+
+  const getTodaysMealPlans = () => {
+    const today = new Date().toDateString();
+    return state.mealPlans.filter(plan => 
+      new Date(plan.createdAt).toDateString() === today
+    );
+  };
+
+  const getDailyProgress = () => {
+    const todaysPlans = getTodaysMealPlans();
+    const targets = getDailyTargets();
+    
+    const consumed = todaysPlans.reduce((total, plan) => ({
+      protein: total.protein + (plan.calculatedMacros?.protein || 0),
+      carbs: total.carbs + (plan.calculatedMacros?.carbs || 0),
+      fat: total.fat + (plan.calculatedMacros?.fat || 0),
+      calories: total.calories + (plan.calculatedMacros?.calories || 0)
+    }), { protein: 0, carbs: 0, fat: 0, calories: 0 });
+
+    return {
+      targets,
+      consumed,
+      percentages: {
+        protein: targets.protein > 0 ? (consumed.protein / targets.protein) * 100 : 0,
+        carbs: targets.carbs > 0 ? (consumed.carbs / targets.carbs) * 100 : 0,
+        fat: targets.fat > 0 ? (consumed.fat / targets.fat) * 100 : 0
+      }
+    };
+  };
+
+  const getMealsCompletedToday = () => {
+    const todaysPlans = getTodaysMealPlans();
+    const mealIds = new Set(todaysPlans.map(plan => plan.mealId));
+    
+    return state.meals.map(meal => ({
+      ...meal,
+      completed: mealIds.has(meal.id),
+      plan: todaysPlans.find(plan => plan.mealId === meal.id)
+    }));
+  };
+
   const value = {
     ...state,
     addMeal,
@@ -274,7 +323,12 @@ export function MealProvider({ children }) {
     getMealPlanById,
     getMealPlansByMeal,
     getRecentMealPlans,
-    reloadMeals
+    reloadMeals,
+    // Dashboard functions
+    getDailyTargets,
+    getTodaysMealPlans,
+    getDailyProgress,
+    getMealsCompletedToday
   };
 
   return (

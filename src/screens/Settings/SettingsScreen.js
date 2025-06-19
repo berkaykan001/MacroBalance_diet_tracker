@@ -7,7 +7,7 @@ import { useSettings } from '../../context/SettingsContext';
 
 export default function SettingsScreen() {
   const { foods, reloadFoods } = useFood();
-  const { meals, updateMeal, reloadMeals } = useMeal();
+  const { meals, updateMeal, addMeal, deleteMeal, reloadMeals } = useMeal();
   const { 
     selectedQuickFoods, 
     appPreferences, 
@@ -19,6 +19,7 @@ export default function SettingsScreen() {
   
   const [activeSection, setActiveSection] = useState('meal-targets');
   const [editingMeal, setEditingMeal] = useState(null);
+  const [isCreatingMeal, setIsCreatingMeal] = useState(false);
   const [mealFormData, setMealFormData] = useState({
     name: '',
     macroTargets: { protein: '', carbs: '', fat: '' }
@@ -43,10 +44,12 @@ export default function SettingsScreen() {
   };
 
   const saveMealTargets = () => {
-    if (!editingMeal) return;
+    if (!mealFormData.name.trim()) {
+      Alert.alert('Error', 'Please enter a meal name.');
+      return;
+    }
 
-    const updatedMeal = {
-      ...editingMeal,
+    const mealData = {
       name: mealFormData.name,
       macroTargets: {
         protein: parseFloat(mealFormData.macroTargets.protein) || 0,
@@ -55,9 +58,49 @@ export default function SettingsScreen() {
       }
     };
 
-    updateMeal(updatedMeal);
+    if (isCreatingMeal) {
+      // Creating new meal
+      addMeal(mealData);
+      Alert.alert('Success', 'New meal created successfully!');
+    } else if (editingMeal) {
+      // Updating existing meal
+      const updatedMeal = {
+        ...editingMeal,
+        ...mealData
+      };
+      updateMeal(updatedMeal);
+      Alert.alert('Success', 'Meal updated successfully!');
+    }
+
     setEditingMeal(null);
-    Alert.alert('Success', 'Meal targets updated successfully!');
+    setIsCreatingMeal(false);
+    setMealFormData({ name: '', macroTargets: { protein: '', carbs: '', fat: '' } });
+  };
+
+  const startCreatingMeal = () => {
+    setIsCreatingMeal(true);
+    setEditingMeal(null);
+    setMealFormData({ name: '', macroTargets: { protein: '', carbs: '', fat: '' } });
+  };
+
+  const deleteMealWithConfirmation = (meal) => {
+    Alert.alert(
+      'Delete Meal',
+      `Are you sure you want to delete "${meal.name}"? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => {
+          deleteMeal(meal.id);
+          Alert.alert('Success', 'Meal deleted successfully!');
+        }}
+      ]
+    );
+  };
+
+  const cancelMealEdit = () => {
+    setEditingMeal(null);
+    setIsCreatingMeal(false);
+    setMealFormData({ name: '', macroTargets: { protein: '', carbs: '', fat: '' } });
   };
 
   const toggleQuickFood = (foodId) => {
@@ -106,12 +149,22 @@ export default function SettingsScreen() {
             P: {meal.macroTargets.protein}g | C: {meal.macroTargets.carbs}g | F: {meal.macroTargets.fat}g
           </Text>
         </View>
-        <TouchableOpacity 
-          style={styles.editMealButton}
-          onPress={() => handleMealEdit(meal)}
-        >
-          <Text style={styles.editMealButtonText}>Edit</Text>
-        </TouchableOpacity>
+        <View style={styles.mealTargetActions}>
+          <TouchableOpacity 
+            style={styles.editMealButton}
+            onPress={() => handleMealEdit(meal)}
+          >
+            <Text style={styles.editMealButtonText}>Edit</Text>
+          </TouchableOpacity>
+          {meal.userCustom && (
+            <TouchableOpacity 
+              style={styles.deleteMealButton}
+              onPress={() => deleteMealWithConfirmation(meal)}
+            >
+              <Text style={styles.deleteMealButtonText}>Delete</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </LinearGradient>
   );
@@ -211,7 +264,22 @@ export default function SettingsScreen() {
               scrollEnabled={false}
             />
 
-            {editingMeal && (
+            {/* Add New Meal Button */}
+            <TouchableOpacity 
+              style={styles.addMealButton}
+              onPress={startCreatingMeal}
+            >
+              <LinearGradient
+                colors={['#007AFF', '#0051D5']}
+                style={styles.addMealButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Text style={styles.addMealButtonText}>+ Add New Meal</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {(editingMeal || isCreatingMeal) && (
               <View style={styles.editMealModal}>
                 <LinearGradient
                   colors={['#1A1A1A', '#2A2A2A']}
@@ -220,13 +288,30 @@ export default function SettingsScreen() {
                   end={{ x: 1, y: 1 }}
                 >
                   <View style={styles.editMealHeader}>
-                    <Text style={styles.editMealTitle}>Edit {editingMeal.name}</Text>
+                    <Text style={styles.editMealTitle}>
+                      {isCreatingMeal ? 'Create New Meal' : `Edit ${editingMeal?.name}`}
+                    </Text>
                     <TouchableOpacity 
                       style={styles.closeEditButton}
-                      onPress={() => setEditingMeal(null)}
+                      onPress={cancelMealEdit}
                     >
                       <Text style={styles.closeEditButtonText}>✕</Text>
                     </TouchableOpacity>
+                  </View>
+
+                  {/* Meal Name Input */}
+                  <View style={styles.mealNameInputGroup}>
+                    <Text style={styles.macroInputLabel}>Meal Name</Text>
+                    <TextInput
+                      style={styles.mealNameInput}
+                      value={mealFormData.name}
+                      onChangeText={(text) => setMealFormData({
+                        ...mealFormData,
+                        name: text
+                      })}
+                      placeholder="Enter meal name"
+                      placeholderTextColor="#8E8E93"
+                    />
                   </View>
 
                   <View style={styles.macroInputRow}>
@@ -286,7 +371,9 @@ export default function SettingsScreen() {
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                     >
-                      <Text style={styles.saveMealButtonText}>Save Changes</Text>
+                      <Text style={styles.saveMealButtonText}>
+                        {isCreatingMeal ? 'Create Meal' : 'Save Changes'}
+                      </Text>
                     </LinearGradient>
                   </TouchableOpacity>
                 </LinearGradient>
@@ -518,6 +605,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
+  mealTargetActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  deleteMealButton: {
+    backgroundColor: 'rgba(255,69,58,0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginLeft: 8,
+  },
+  deleteMealButtonText: {
+    color: '#FF453A',
+    fontSize: 10,
+    fontWeight: '600',
+  },
 
   // Edit Meal Modal
   editMealModal: {
@@ -598,6 +701,37 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
+  },
+
+  // Add New Meal Button
+  addMealButton: {
+    marginTop: 12,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  addMealButtonGradient: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  addMealButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  // Meal Name Input
+  mealNameInputGroup: {
+    marginBottom: 16,
+  },
+  mealNameInput: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: '#FFFFFF',
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
 
   // Quick Foods

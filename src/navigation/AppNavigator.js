@@ -20,36 +20,36 @@ export default function AppNavigator() {
             backgroundColor: '#1C1C1E',
             borderTopColor: '#38383A',
           },
-          headerStyle: {
-            backgroundColor: '#1C1C1E',
-          },
-          headerTintColor: '#FFFFFF',
+          headerShown: false, // Remove top navigation headers
         }}
       >
         <Tab.Screen 
           name="Home" 
           component={HomeScreen}
           options={{
-            title: 'Dashboard',
+            title: '🏠 Dashboard',
           }}
         />
         <Tab.Screen 
-          name="MealPlanning" 
+          name="Plan Meal" 
           component={MealPlanningScreen}
           options={{
-            title: 'Plan Meal',
+            title: '🍽️ Plan Meal',
           }}
         />
         <Tab.Screen 
-          name="FoodManagement" 
+          name="Foods" 
           component={FoodManagementScreen}
           options={{
-            title: 'Foods',
+            title: '🥗 Foods',
           }}
         />
         <Tab.Screen 
           name="Settings" 
           component={SettingsScreen}
+          options={{
+            title: '⚙️ Settings',
+          }}
         />
       </Tab.Navigator>
     </NavigationContainer>

@@ -367,5 +367,97 @@ export const defaultFoods = [
     userAdded: false,
     createdAt: new Date().toISOString(),
     lastUsed: new Date().toISOString()
+  },
+
+  // Additional Foods
+  {
+    id: '21',
+    name: 'Pasta (Cooked)',
+    category: 'carbs',
+    nutritionPer100g: {
+      calories: 131,
+      protein: 5,
+      carbs: 25,
+      fiber: 1.8,
+      sugar: 0.6,
+      fat: 1.1,
+      vitaminD: 0,
+      magnesium: 18
+    },
+    userAdded: false,
+    createdAt: new Date().toISOString(),
+    lastUsed: new Date().toISOString()
+  },
+  {
+    id: '22',
+    name: 'Lean Beef (93/7)',
+    category: 'protein',
+    nutritionPer100g: {
+      calories: 176,
+      protein: 26,
+      carbs: 0,
+      fiber: 0,
+      sugar: 0,
+      fat: 7,
+      vitaminD: 0,
+      magnesium: 21
+    },
+    userAdded: false,
+    createdAt: new Date().toISOString(),
+    lastUsed: new Date().toISOString()
+  },
+  {
+    id: '23',
+    name: 'Potato (Baked)',
+    category: 'carbs',
+    nutritionPer100g: {
+      calories: 93,
+      protein: 2.5,
+      carbs: 21,
+      fiber: 2.2,
+      sugar: 1.2,
+      fat: 0.1,
+      vitaminD: 0,
+      magnesium: 25
+    },
+    userAdded: false,
+    createdAt: new Date().toISOString(),
+    lastUsed: new Date().toISOString()
+  },
+  {
+    id: '24',
+    name: 'Veggies Mix (Frozen)',
+    category: 'vegetables',
+    nutritionPer100g: {
+      calories: 42,
+      protein: 2.2,
+      carbs: 8,
+      fiber: 3.8,
+      sugar: 3.2,
+      fat: 0.3,
+      vitaminD: 0,
+      magnesium: 22
+    },
+    userAdded: false,
+    createdAt: new Date().toISOString(),
+    lastUsed: new Date().toISOString()
+  },
+  {
+    id: '25',
+    name: 'Salad Mix (Fresh)',
+    category: 'vegetables',
+    nutritionPer100g: {
+      calories: 15,
+      protein: 1.5,
+      carbs: 2.9,
+      fiber: 1.9,
+      sugar: 1.2,
+      fat: 0.2,
+      vitaminD: 0,
+      magnesium: 15
+    },
+    userAdded: false,
+    createdAt: new Date().toISOString(),
+    lastUsed: new Date().toISOString()
   }
 ];

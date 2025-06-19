@@ -62,53 +62,55 @@ export default function MealPlanningScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <View style={styles.foodHeader}>
-          <View style={styles.foodInfo}>
-            <Text style={styles.foodName}>{food.name}</Text>
-            <Text style={styles.foodCategory}>{food.category}</Text>
+        {/* Top row: Food info, macros, and remove button all in one row */}
+        <View style={styles.ultraCompactHeader}>
+          <View style={styles.ultraCompactFoodInfo}>
+            <Text style={styles.ultraCompactFoodName}>{food.name}</Text>
+            <Text style={styles.ultraCompactFoodCategory}>{food.category}</Text>
           </View>
-          <TouchableOpacity onPress={() => removeFood(food.id)} style={styles.removeButton}>
+          
+          <View style={styles.ultraCompactMacroDisplay}>
+            <View style={styles.ultraCompactMacroItem}>
+              <Text style={styles.ultraCompactMacroValue}>{macros.protein}g</Text>
+              <Text style={styles.ultraCompactMacroLabel}>P</Text>
+            </View>
+            <View style={styles.ultraCompactMacroItem}>
+              <Text style={styles.ultraCompactMacroValue}>{macros.carbs}g</Text>
+              <Text style={styles.ultraCompactMacroLabel}>C</Text>
+            </View>
+            <View style={styles.ultraCompactMacroItem}>
+              <Text style={styles.ultraCompactMacroValue}>{macros.fat}g</Text>
+              <Text style={styles.ultraCompactMacroLabel}>F</Text>
+            </View>
+            <View style={styles.ultraCompactMacroItem}>
+              <Text style={styles.ultraCompactMacroValue}>{macros.calories}</Text>
+              <Text style={styles.ultraCompactMacroLabel}>Cal</Text>
+            </View>
+          </View>
+          
+          <View style={styles.ultraCompactPortionSection}>
+            <Text style={styles.ultraCompactPortionLabel}>{item.portionGrams}g</Text>
+          </View>
+          
+          <TouchableOpacity onPress={() => removeFood(food.id)} style={styles.ultraCompactRemoveButton}>
             <Text style={styles.removeButtonText}>×</Text>
           </TouchableOpacity>
         </View>
-        
-        <View style={styles.macroDisplay}>
-          <View style={styles.macroItem}>
-            <Text style={styles.macroValue}>{macros.protein}g</Text>
-            <Text style={styles.macroLabel}>Protein</Text>
-          </View>
-          <View style={styles.macroItem}>
-            <Text style={styles.macroValue}>{macros.carbs}g</Text>
-            <Text style={styles.macroLabel}>Carbs</Text>
-          </View>
-          <View style={styles.macroItem}>
-            <Text style={styles.macroValue}>{macros.fat}g</Text>
-            <Text style={styles.macroLabel}>Fat</Text>
-          </View>
-          <View style={styles.macroItem}>
-            <Text style={styles.macroValue}>{macros.calories}</Text>
-            <Text style={styles.macroLabel}>Cal</Text>
-          </View>
-        </View>
 
-        <View style={styles.sliderContainer}>
-          <Text style={styles.portionLabel}>{item.portionGrams}g</Text>
+        {/* Bottom row: Slider only */}
+        <View style={styles.ultraCompactSliderContainer}>
           <Slider
-            style={styles.slider}
+            style={styles.ultraCompactSlider}
             minimumValue={10}
             maximumValue={500}
             value={item.portionGrams}
             onValueChange={(value) => updatePortion(food.id, value)}
             minimumTrackTintColor="#007AFF"
             maximumTrackTintColor="#3A3A3A"
-            thumbStyle={styles.sliderThumb}
-            trackStyle={styles.sliderTrack}
+            thumbStyle={styles.ultraCompactSliderThumb}
+            trackStyle={styles.ultraCompactSliderTrack}
             step={5}
           />
-          <View style={styles.sliderLabels}>
-            <Text style={styles.sliderLabelText}>10g</Text>
-            <Text style={styles.sliderLabelText}>500g</Text>
-          </View>
         </View>
       </LinearGradient>
     );
@@ -148,35 +150,31 @@ export default function MealPlanningScreen() {
     }
 
     return (
-      <View style={styles.progressBarContainer}>
-        <View style={styles.progressBarHeader}>
-          <Text style={styles.progressBarLabel}>{label}</Text>
-          <Text style={[styles.progressBarValue, {
-            color: difference <= tolerance ? '#00D084' : current < target ? '#FF9500' : '#FF453A'
-          }]}>
-            {current}g / {target}g
-          </Text>
-        </View>
-        <View style={styles.progressBarTrack}>
+      <View style={styles.compactProgressBarContainer}>
+        {/* Single row: Label | Progress Bar | Value */}
+        <Text style={styles.compactProgressBarLabel}>{label}</Text>
+        
+        <View style={styles.compactProgressBarTrack}>
           {/* Background track */}
-          <View style={styles.progressBarBackground} />
+          <View style={styles.compactProgressBarBackground} />
           
           {/* Target indicator line */}
-          <View style={[styles.targetIndicator, { left: `${targetPercentage}%` }]} />
+          <View style={[styles.compactTargetIndicator, { left: `${targetPercentage}%` }]} />
           
           {/* Current progress fill */}
           <LinearGradient
             colors={fillColor}
-            style={[styles.progressBarFill, { width: `${currentPercentage}%` }]}
+            style={[styles.compactProgressBarFill, { width: `${currentPercentage}%` }]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           />
         </View>
-        <View style={styles.progressBarLabels}>
-          <Text style={styles.progressBarLabelText}>0g</Text>
-          <Text style={[styles.progressBarLabelText, styles.targetLabelText]}>{target}g</Text>
-          <Text style={styles.progressBarLabelText}>{Math.round(maxValue)}g</Text>
-        </View>
+        
+        <Text style={[styles.compactProgressBarValue, {
+          color: difference <= tolerance ? '#00D084' : current < target ? '#FF9500' : '#FF453A'
+        }]}>
+          {current}g/{target}g
+        </Text>
       </View>
     );
   };
@@ -424,6 +422,56 @@ const styles = StyleSheet.create({
     color: '#00D084',
   },
 
+  // Compact Progress Bar - Single Row Layout
+  compactProgressBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  compactProgressBarLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    width: 45,
+    marginRight: 8,
+  },
+  compactProgressBarTrack: {
+    flex: 1,
+    height: 4,
+    backgroundColor: '#2A2A2A',
+    borderRadius: 2,
+    position: 'relative',
+    overflow: 'hidden',
+    marginRight: 8,
+  },
+  compactProgressBarBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#2A2A2A',
+    borderRadius: 2,
+  },
+  compactProgressBarFill: {
+    position: 'absolute',
+    height: '100%',
+    borderRadius: 2,
+    zIndex: 1,
+  },
+  compactTargetIndicator: {
+    position: 'absolute',
+    width: 1,
+    height: '100%',
+    backgroundColor: '#FFFFFF',
+    zIndex: 2,
+    marginLeft: -0.5,
+  },
+  compactProgressBarValue: {
+    fontSize: 9,
+    fontWeight: '600',
+    minWidth: 40,
+    textAlign: 'right',
+  },
+
   // Add Food Button
   addFoodButton: {
     marginHorizontal: 16,
@@ -517,16 +565,16 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   
-  // Selected Food Card
+  // Selected Food Card - Ultra Compact
   selectedFood: {
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
   },
   foodHeader: {
     flexDirection: 'row',
@@ -629,7 +677,7 @@ const styles = StyleSheet.create({
 
   // Compact Progress Section
   compactProgressSection: {
-    marginBottom: 8,
+    marginBottom: 6,
   },
 
   // Compact Calories
@@ -637,16 +685,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 4,
-    marginBottom: 4,
+    marginTop: 2,
+    marginBottom: 2,
   },
   compactCaloriesLabel: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '500',
     color: '#8E8E93',
   },
   compactCaloriesValue: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: '#00D084',
   },
@@ -660,5 +708,186 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+
+  // Compact Food Container Styles
+  compactFoodHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  compactFoodInfo: {
+    flex: 1,
+  },
+  compactFoodName: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 1,
+  },
+  compactFoodCategory: {
+    color: '#8E8E93',
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  compactRemoveButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,69,58,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  // Compact Main Row (Macros + Portion)
+  compactMainRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  compactMacroDisplay: {
+    flexDirection: 'row',
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 6,
+    padding: 6,
+    marginRight: 8,
+  },
+  compactMacroItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  compactMacroValue: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#00D084',
+    marginBottom: 1,
+  },
+  compactMacroLabel: {
+    fontSize: 8,
+    color: '#8E8E93',
+    fontWeight: '500',
+  },
+  
+  // Compact Portion Section
+  compactPortionSection: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 40,
+  },
+  compactPortionLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#007AFF',
+    textAlign: 'center',
+  },
+  
+  // Compact Slider
+  compactSliderContainer: {
+    marginTop: 2,
+  },
+  compactSlider: {
+    width: '100%',
+    height: 25,
+  },
+  compactSliderThumb: {
+    backgroundColor: '#007AFF',
+    width: 16,
+    height: 16,
+  },
+  compactSliderTrack: {
+    height: 3,
+    borderRadius: 1.5,
+  },
+
+  // Ultra Compact Food Container Styles - Everything in one row
+  ultraCompactHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  ultraCompactFoodInfo: {
+    flex: 1,
+    marginRight: 8,
+  },
+  ultraCompactFoodName: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 1,
+  },
+  ultraCompactFoodCategory: {
+    color: '#8E8E93',
+    fontSize: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.2,
+  },
+  
+  // Ultra compact macros - side by side with food name
+  ultraCompactMacroDisplay: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 4,
+    padding: 4,
+    marginRight: 6,
+    flex: 2,
+    justifyContent: 'space-between',
+  },
+  ultraCompactMacroItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  ultraCompactMacroValue: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: '#00D084',
+    marginBottom: 1,
+  },
+  ultraCompactMacroLabel: {
+    fontSize: 7,
+    color: '#8E8E93',
+    fontWeight: '500',
+  },
+  
+  // Ultra compact portion and remove button
+  ultraCompactPortionSection: {
+    alignItems: 'center',
+    marginRight: 6,
+    minWidth: 32,
+  },
+  ultraCompactPortionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#007AFF',
+    textAlign: 'center',
+  },
+  ultraCompactRemoveButton: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'rgba(255,69,58,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  // Ultra compact slider
+  ultraCompactSliderContainer: {
+    marginTop: 0,
+  },
+  ultraCompactSlider: {
+    width: '100%',
+    height: 22,
+  },
+  ultraCompactSliderThumb: {
+    backgroundColor: '#007AFF',
+    width: 14,
+    height: 14,
+  },
+  ultraCompactSliderTrack: {
+    height: 2,
+    borderRadius: 1,
   },
 });

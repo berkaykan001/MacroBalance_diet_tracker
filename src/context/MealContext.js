@@ -69,6 +69,23 @@ const defaultMeals = [
   }
 ];
 
+// Daily sub-macro targets (independent of meals)
+const defaultDailySubMacroTargets = {
+  // Healthy fats (daily targets)
+  omega3: 2.0,           // 2g omega-3 daily (heart/brain health)
+  monounsaturatedFat: 25, // 25g monounsaturated fat daily
+  maxSaturatedFat: 20,    // Max 20g saturated fat daily
+  maxTransFat: 0,         // Zero trans fat daily
+  
+  // Sugar targets
+  maxAddedSugars: 25,     // Max 25g added sugars daily (WHO recommendation)
+  minFiber: 25,           // Min 25g fiber daily (general health)
+  
+  // Additional targets you can customize later
+  maxSodium: 2300,        // Max 2300mg sodium daily (optional)
+  minPotassium: 3500      // Min 3500mg potassium daily (optional)
+};
+
 function mealReducer(state, action) {
   switch (action.type) {
     case ACTIONS.LOAD_MEALS:
@@ -286,16 +303,36 @@ export function MealProvider({ children }) {
       protein: total.protein + (plan.calculatedMacros?.protein || 0),
       carbs: total.carbs + (plan.calculatedMacros?.carbs || 0),
       fat: total.fat + (plan.calculatedMacros?.fat || 0),
-      calories: total.calories + (plan.calculatedMacros?.calories || 0)
-    }), { protein: 0, carbs: 0, fat: 0, calories: 0 });
+      calories: total.calories + (plan.calculatedMacros?.calories || 0),
+      // Sub-macros
+      omega3: total.omega3 + (plan.calculatedMacros?.omega3 || 0),
+      monounsaturatedFat: total.monounsaturatedFat + (plan.calculatedMacros?.monounsaturatedFat || 0),
+      saturatedFat: total.saturatedFat + (plan.calculatedMacros?.saturatedFat || 0),
+      transFat: total.transFat + (plan.calculatedMacros?.transFat || 0),
+      addedSugars: total.addedSugars + (plan.calculatedMacros?.addedSugars || 0),
+      naturalSugars: total.naturalSugars + (plan.calculatedMacros?.naturalSugars || 0),
+      fiber: total.fiber + (plan.calculatedMacros?.fiber || 0)
+    }), { 
+      protein: 0, carbs: 0, fat: 0, calories: 0,
+      omega3: 0, monounsaturatedFat: 0, saturatedFat: 0, transFat: 0,
+      addedSugars: 0, naturalSugars: 0, fiber: 0
+    });
 
     return {
       targets,
       consumed,
+      subMacroTargets: defaultDailySubMacroTargets,
       percentages: {
         protein: targets.protein > 0 ? (consumed.protein / targets.protein) * 100 : 0,
         carbs: targets.carbs > 0 ? (consumed.carbs / targets.carbs) * 100 : 0,
         fat: targets.fat > 0 ? (consumed.fat / targets.fat) * 100 : 0
+      },
+      subMacroPercentages: {
+        omega3: defaultDailySubMacroTargets.omega3 > 0 ? (consumed.omega3 / defaultDailySubMacroTargets.omega3) * 100 : 0,
+        monounsaturatedFat: defaultDailySubMacroTargets.monounsaturatedFat > 0 ? (consumed.monounsaturatedFat / defaultDailySubMacroTargets.monounsaturatedFat) * 100 : 0,
+        saturatedFat: defaultDailySubMacroTargets.maxSaturatedFat > 0 ? (consumed.saturatedFat / defaultDailySubMacroTargets.maxSaturatedFat) * 100 : 0,
+        addedSugars: defaultDailySubMacroTargets.maxAddedSugars > 0 ? (consumed.addedSugars / defaultDailySubMacroTargets.maxAddedSugars) * 100 : 0,
+        fiber: defaultDailySubMacroTargets.minFiber > 0 ? (consumed.fiber / defaultDailySubMacroTargets.minFiber) * 100 : 0
       }
     };
   };

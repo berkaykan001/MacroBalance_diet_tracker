@@ -39,7 +39,7 @@ export default function HomeScreen() {
 
   const weeklyStats = getWeeklyConsistency();
 
-  const renderProgressBar = (label, current, target, color) => {
+  const renderProgressBar = (label, current, target, color, unit = 'g') => {
     const percentage = target > 0 ? Math.min(100, (current / target) * 100) : 0;
     const isComplete = percentage >= 95;
     
@@ -48,7 +48,7 @@ export default function HomeScreen() {
         <View style={styles.progressHeader}>
           <Text style={styles.progressLabel}>{label}</Text>
           <Text style={[styles.progressValue, { color: isComplete ? '#00D084' : '#FFFFFF' }]}>
-            {Math.round(current)}/{target}g
+            {Math.round(current * 10) / 10}/{target}{unit}
           </Text>
         </View>
         <View style={styles.progressTrack}>
@@ -60,6 +60,34 @@ export default function HomeScreen() {
           />
         </View>
         <Text style={styles.progressPercentage}>{Math.round(percentage)}%</Text>
+      </View>
+    );
+  };
+
+  const renderSubMacroBar = (label, current, target, color, isMax = false, unit = 'g') => {
+    const percentage = target > 0 ? Math.min(100, (current / target) * 100) : 0;
+    const isComplete = isMax ? percentage <= 100 : percentage >= 95;
+    const isOverLimit = isMax && percentage > 100;
+    
+    return (
+      <View style={styles.subMacroItem}>
+        <View style={styles.subMacroHeader}>
+          <Text style={styles.subMacroLabel}>{label}</Text>
+          <Text style={[
+            styles.subMacroValue, 
+            { color: isOverLimit ? '#FF453A' : isComplete ? '#00D084' : '#FFFFFF' }
+          ]}>
+            {Math.round(current * 10) / 10}{isMax ? `/${target}` : `/${target}`}{unit}
+          </Text>
+        </View>
+        <View style={styles.subMacroTrack}>
+          <LinearGradient
+            colors={isOverLimit ? ['#FF453A', '#FF6B6B'] : color}
+            style={[styles.subMacroFill, { width: `${Math.min(100, percentage)}%` }]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          />
+        </View>
       </View>
     );
   };
@@ -118,6 +146,18 @@ export default function HomeScreen() {
             {renderProgressBar('Protein', dailyProgress.consumed.protein, dailyProgress.targets.protein, ['#FF6B6B', '#FF8E8E'])}
             {renderProgressBar('Carbs', dailyProgress.consumed.carbs, dailyProgress.targets.carbs, ['#4ECDC4', '#6EDCD6'])}
             {renderProgressBar('Fat', dailyProgress.consumed.fat, dailyProgress.targets.fat, ['#45B7D1', '#6BC5D7'])}
+          </View>
+
+          {/* Sub-Macro Progress */}
+          <View style={styles.subMacroSection}>
+            <Text style={styles.subMacroSectionTitle}>Nutritional Breakdown</Text>
+            <View style={styles.subMacroGrid}>
+              {renderSubMacroBar('Omega-3', dailyProgress.consumed.omega3, dailyProgress.subMacroTargets.omega3, ['#00D084', '#00A86B'])}
+              {renderSubMacroBar('Monounsaturated', dailyProgress.consumed.monounsaturatedFat, dailyProgress.subMacroTargets.monounsaturatedFat, ['#00D084', '#00A86B'])}
+              {renderSubMacroBar('Fiber', dailyProgress.consumed.fiber, dailyProgress.subMacroTargets.minFiber, ['#00D084', '#00A86B'])}
+              {renderSubMacroBar('Saturated Fat', dailyProgress.consumed.saturatedFat, dailyProgress.subMacroTargets.maxSaturatedFat, ['#FF9500', '#FFB84D'], true)}
+              {renderSubMacroBar('Added Sugars', dailyProgress.consumed.addedSugars, dailyProgress.subMacroTargets.maxAddedSugars, ['#FF9500', '#FFB84D'], true)}
+            </View>
           </View>
 
           {/* Meal Status */}
@@ -451,5 +491,55 @@ const styles = StyleSheet.create({
 
   bottomSpacer: {
     height: 20,
+  },
+
+  // Sub-Macro Styles
+  subMacroSection: {
+    marginTop: 16,
+    marginBottom: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  subMacroSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+  subMacroGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  subMacroItem: {
+    width: '48%',
+    marginBottom: 10,
+  },
+  subMacroHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  subMacroLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#8E8E93',
+    flex: 1,
+  },
+  subMacroValue: {
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  subMacroTrack: {
+    height: 3,
+    backgroundColor: '#2A2A2A',
+    borderRadius: 1.5,
+    overflow: 'hidden',
+  },
+  subMacroFill: {
+    height: '100%',
+    borderRadius: 1.5,
   },
 });

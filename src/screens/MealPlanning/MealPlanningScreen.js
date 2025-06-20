@@ -7,6 +7,7 @@ import { useMeal } from '../../context/MealContext';
 import { useSettings } from '../../context/SettingsContext';
 import { CalculationService } from '../../services/calculationService';
 import LockButton from '../../components/LockButton';
+import SegmentedProgressBar from '../../components/SegmentedProgressBar';
 
 const { width } = Dimensions.get('window');
 
@@ -228,53 +229,79 @@ export default function MealPlanningScreen() {
     </TouchableOpacity>
   );
 
-  const renderProgressBar = (label, current, target, status) => {
-    // Calculate the maximum scale (target * 1.5 so target appears at 66% of the bar)
-    const maxValue = target * 1.5;
-    const currentPercentage = Math.min(100, (current / maxValue) * 100);
-    const targetPercentage = (target / maxValue) * 100; // Should be around 66%
-    
-    // Determine colors based on how close we are to target
-    const difference = Math.abs(current - target);
-    const tolerance = target * 0.05; // 5% tolerance
-    
-    let fillColor;
-    if (difference <= tolerance) {
-      fillColor = ['#00D084', '#00A86B']; // Green when close to target
-    } else if (current < target) {
-      fillColor = ['#FF9500', '#FF9F00']; // Orange when under
-    } else {
-      fillColor = ['#FF453A', '#FF6B6B']; // Red when over
+  const getSegmentsForMacro = (macroType, currentMacros) => {
+    switch (macroType) {
+      case 'fat':
+        return [
+          // Unhealthy fats first (will appear on left)
+          {
+            value: currentMacros.saturatedFat || 0,
+            colors: ['#FF9500', '#FFB84D'], // Orange for saturated fat
+            name: 'Saturated'
+          },
+          {
+            value: currentMacros.transFat || 0,
+            colors: ['#FF453A', '#FF6B6B'], // Red for trans fat
+            name: 'Trans'
+          },
+          // Healthy fats (will appear on right)
+          {
+            value: currentMacros.monounsaturatedFat || 0,
+            colors: ['#00D084', '#00A86B'], // Green for monounsaturated
+            name: 'Monounsaturated'
+          },
+          {
+            value: currentMacros.omega3 || 0,
+            colors: ['#00D084', '#26E599'], // Bright green for omega-3
+            name: 'Omega-3'
+          },
+          {
+            value: currentMacros.polyunsaturatedFat || 0,
+            colors: ['#4ECDC4', '#6EDCD6'], // Blue-green for polyunsaturated
+            name: 'Polyunsaturated'
+          }
+        ];
+      
+      case 'carbs':
+        return [
+          // Unhealthy carbs first
+          {
+            value: currentMacros.addedSugars || 0,
+            colors: ['#FF9500', '#FFB84D'], // Orange for added sugars
+            name: 'Added Sugars'
+          },
+          // Healthy carbs
+          {
+            value: currentMacros.naturalSugars || 0,
+            colors: ['#4ECDC4', '#6EDCD6'], // Blue-green for natural sugars
+            name: 'Natural Sugars'
+          },
+          {
+            value: currentMacros.fiber || 0,
+            colors: ['#00D084', '#00A86B'], // Green for fiber
+            name: 'Fiber'
+          },
+          // Remaining carbs (starch, etc.)
+          {
+            value: Math.max(0, Math.round((currentMacros.carbs - (currentMacros.addedSugars || 0) - (currentMacros.naturalSugars || 0) - (currentMacros.fiber || 0)) * 10) / 10),
+            colors: ['#45B7D1', '#6BC5D7'], // Blue for other carbs
+            name: 'Other Carbs'
+          }
+        ];
+      
+      case 'protein':
+        // For now, protein is just one segment, but could be expanded later
+        return [
+          {
+            value: currentMacros.protein || 0,
+            colors: ['#00D084', '#00A86B'], // Green gradient for protein
+            name: 'Protein'
+          }
+        ];
+      
+      default:
+        return [];
     }
-
-    return (
-      <View style={styles.compactProgressBarContainer}>
-        {/* Single row: Label | Progress Bar | Value */}
-        <Text style={styles.compactProgressBarLabel}>{label}</Text>
-        
-        <View style={styles.compactProgressBarTrack}>
-          {/* Background track */}
-          <View style={styles.compactProgressBarBackground} />
-          
-          {/* Target indicator line */}
-          <View style={[styles.compactTargetIndicator, { left: `${targetPercentage}%` }]} />
-          
-          {/* Current progress fill */}
-          <LinearGradient
-            colors={fillColor}
-            style={[styles.compactProgressBarFill, { width: `${currentPercentage}%` }]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          />
-        </View>
-        
-        <Text style={[styles.compactProgressBarValue, {
-          color: difference <= tolerance ? '#00D084' : current < target ? '#FF9500' : '#FF453A'
-        }]}>
-          {current}g/{target}g
-        </Text>
-      </View>
-    );
   };
 
   return (
@@ -310,53 +337,29 @@ export default function MealPlanningScreen() {
 
         {progress && selectedMeal && selectedFoods.length > 0 && (
           <View style={styles.compactProgressSection}>
-            {renderProgressBar('Protein', currentMacros.protein, selectedMeal.macroTargets.protein, progress.protein.status)}
-            {renderProgressBar('Carbs', currentMacros.carbs, selectedMeal.macroTargets.carbs, progress.carbs.status)}
-            {renderProgressBar('Fat', currentMacros.fat, selectedMeal.macroTargets.fat, progress.fat.status)}
+            <SegmentedProgressBar
+              label="Protein"
+              current={currentMacros.protein}
+              target={selectedMeal.macroTargets.protein}
+              segments={getSegmentsForMacro('protein', currentMacros)}
+            />
+            <SegmentedProgressBar
+              label="Carbs"
+              current={currentMacros.carbs}
+              target={selectedMeal.macroTargets.carbs}
+              segments={getSegmentsForMacro('carbs', currentMacros)}
+            />
+            <SegmentedProgressBar
+              label="Fat"
+              current={currentMacros.fat}
+              target={selectedMeal.macroTargets.fat}
+              segments={getSegmentsForMacro('fat', currentMacros)}
+            />
             
             <View style={styles.compactCalories}>
               <Text style={styles.compactCaloriesLabel}>Total: </Text>
               <Text style={styles.compactCaloriesValue}>{currentMacros.calories} cal</Text>
             </View>
-            
-            {/* Sub-macro breakdown */}
-            {(currentMacros.saturatedFat > 0 || currentMacros.monounsaturatedFat > 0 || currentMacros.omega3 > 0 || currentMacros.naturalSugars > 0 || currentMacros.addedSugars > 0) && (
-              <View style={styles.subMacroSection}>
-                <Text style={styles.subMacroTitle}>Breakdown</Text>
-                <View style={styles.subMacroGrid}>
-                  {currentMacros.saturatedFat > 0 && (
-                    <View style={styles.subMacroItem}>
-                      <Text style={styles.subMacroLabel}>Saturated Fat</Text>
-                      <Text style={styles.subMacroValue}>{currentMacros.saturatedFat}g</Text>
-                    </View>
-                  )}
-                  {currentMacros.monounsaturatedFat > 0 && (
-                    <View style={styles.subMacroItem}>
-                      <Text style={[styles.subMacroLabel, styles.healthySubMacro]}>Monounsaturated</Text>
-                      <Text style={[styles.subMacroValue, styles.healthySubMacro]}>{currentMacros.monounsaturatedFat}g</Text>
-                    </View>
-                  )}
-                  {currentMacros.omega3 > 0 && (
-                    <View style={styles.subMacroItem}>
-                      <Text style={[styles.subMacroLabel, styles.healthySubMacro]}>Omega-3</Text>
-                      <Text style={[styles.subMacroValue, styles.healthySubMacro]}>{currentMacros.omega3}g</Text>
-                    </View>
-                  )}
-                  {currentMacros.naturalSugars > 0 && (
-                    <View style={styles.subMacroItem}>
-                      <Text style={[styles.subMacroLabel, styles.healthySubMacro]}>Natural Sugars</Text>
-                      <Text style={[styles.subMacroValue, styles.healthySubMacro]}>{currentMacros.naturalSugars}g</Text>
-                    </View>
-                  )}
-                  {currentMacros.addedSugars > 0 && (
-                    <View style={styles.subMacroItem}>
-                      <Text style={styles.subMacroLabel}>Added Sugars</Text>
-                      <Text style={styles.subMacroValue}>{currentMacros.addedSugars}g</Text>
-                    </View>
-                  )}
-                </View>
-              </View>
-            )}
           </View>
         )}
 
@@ -651,55 +654,6 @@ const styles = StyleSheet.create({
     color: '#00D084',
   },
 
-  // Compact Progress Bar - Single Row Layout
-  compactProgressBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  compactProgressBarLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    width: 45,
-    marginRight: 8,
-  },
-  compactProgressBarTrack: {
-    flex: 1,
-    height: 4,
-    backgroundColor: '#2A2A2A',
-    borderRadius: 2,
-    position: 'relative',
-    overflow: 'hidden',
-    marginRight: 8,
-  },
-  compactProgressBarBackground: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#2A2A2A',
-    borderRadius: 2,
-  },
-  compactProgressBarFill: {
-    position: 'absolute',
-    height: '100%',
-    borderRadius: 2,
-    zIndex: 1,
-  },
-  compactTargetIndicator: {
-    position: 'absolute',
-    width: 1,
-    height: '100%',
-    backgroundColor: '#FFFFFF',
-    zIndex: 2,
-    marginLeft: -0.5,
-  },
-  compactProgressBarValue: {
-    fontSize: 9,
-    fontWeight: '600',
-    minWidth: 40,
-    textAlign: 'right',
-  },
 
   // Add Food Button
   addFoodButton: {
@@ -1251,42 +1205,4 @@ const styles = StyleSheet.create({
     backgroundColor: '#666666',
   },
 
-  // Sub-macro styles
-  subMacroSection: {
-    marginTop: 8,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 6,
-    padding: 8,
-  },
-  subMacroTitle: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#8E8E93',
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  subMacroGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-  subMacroItem: {
-    alignItems: 'center',
-    margin: 4,
-    minWidth: 60,
-  },
-  subMacroLabel: {
-    fontSize: 8,
-    color: '#8E8E93',
-    textAlign: 'center',
-    marginBottom: 2,
-  },
-  subMacroValue: {
-    fontSize: 9,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  healthySubMacro: {
-    color: '#00D084',
-  },
 });

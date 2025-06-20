@@ -1,13 +1,23 @@
 export class CalculationService {
   static calculateMacrosForPortion(food, portionGrams) {
     const multiplier = portionGrams / 100;
+    const nutrition = food.nutritionPer100g;
+    
     return {
-      calories: Math.round(food.nutritionPer100g.calories * multiplier * 10) / 10,
-      protein: Math.round(food.nutritionPer100g.protein * multiplier * 10) / 10,
-      carbs: Math.round(food.nutritionPer100g.carbs * multiplier * 10) / 10,
-      fiber: Math.round(food.nutritionPer100g.fiber * multiplier * 10) / 10,
-      sugar: Math.round(food.nutritionPer100g.sugar * multiplier * 10) / 10,
-      fat: Math.round(food.nutritionPer100g.fat * multiplier * 10) / 10
+      calories: Math.round(nutrition.calories * multiplier * 10) / 10,
+      protein: Math.round(nutrition.protein * multiplier * 10) / 10,
+      carbs: Math.round(nutrition.carbs * multiplier * 10) / 10,
+      fiber: Math.round(nutrition.fiber * multiplier * 10) / 10,
+      sugar: Math.round(nutrition.sugar * multiplier * 10) / 10,
+      fat: Math.round(nutrition.fat * multiplier * 10) / 10,
+      // Sub-macros (only if they exist in the food data)
+      naturalSugars: nutrition.naturalSugars ? Math.round(nutrition.naturalSugars * multiplier * 10) / 10 : 0,
+      addedSugars: nutrition.addedSugars ? Math.round(nutrition.addedSugars * multiplier * 10) / 10 : 0,
+      saturatedFat: nutrition.saturatedFat ? Math.round(nutrition.saturatedFat * multiplier * 10) / 10 : 0,
+      monounsaturatedFat: nutrition.monounsaturatedFat ? Math.round(nutrition.monounsaturatedFat * multiplier * 10) / 10 : 0,
+      polyunsaturatedFat: nutrition.polyunsaturatedFat ? Math.round(nutrition.polyunsaturatedFat * multiplier * 10) / 10 : 0,
+      transFat: nutrition.transFat ? Math.round(nutrition.transFat * multiplier * 10) / 10 : 0,
+      omega3: nutrition.omega3 ? Math.round(nutrition.omega3 * multiplier * 10) / 10 : 0
     };
   }
 
@@ -18,7 +28,15 @@ export class CalculationService {
       carbs: 0,
       fiber: 0,
       sugar: 0,
-      fat: 0
+      fat: 0,
+      // Sub-macros
+      naturalSugars: 0,
+      addedSugars: 0,
+      saturatedFat: 0,
+      monounsaturatedFat: 0,
+      polyunsaturatedFat: 0,
+      transFat: 0,
+      omega3: 0
     };
 
     selectedFoods.forEach(selection => {
@@ -31,6 +49,14 @@ export class CalculationService {
         totals.fiber += macros.fiber;
         totals.sugar += macros.sugar;
         totals.fat += macros.fat;
+        // Sub-macros
+        totals.naturalSugars += macros.naturalSugars || 0;
+        totals.addedSugars += macros.addedSugars || 0;
+        totals.saturatedFat += macros.saturatedFat || 0;
+        totals.monounsaturatedFat += macros.monounsaturatedFat || 0;
+        totals.polyunsaturatedFat += macros.polyunsaturatedFat || 0;
+        totals.transFat += macros.transFat || 0;
+        totals.omega3 += macros.omega3 || 0;
       }
     });
 
@@ -40,7 +66,15 @@ export class CalculationService {
       carbs: Math.round(totals.carbs * 10) / 10,
       fiber: Math.round(totals.fiber * 10) / 10,
       sugar: Math.round(totals.sugar * 10) / 10,
-      fat: Math.round(totals.fat * 10) / 10
+      fat: Math.round(totals.fat * 10) / 10,
+      // Sub-macros
+      naturalSugars: Math.round(totals.naturalSugars * 10) / 10,
+      addedSugars: Math.round(totals.addedSugars * 10) / 10,
+      saturatedFat: Math.round(totals.saturatedFat * 10) / 10,
+      monounsaturatedFat: Math.round(totals.monounsaturatedFat * 10) / 10,
+      polyunsaturatedFat: Math.round(totals.polyunsaturatedFat * 10) / 10,
+      transFat: Math.round(totals.transFat * 10) / 10,
+      omega3: Math.round(totals.omega3 * 10) / 10
     };
   }
 
@@ -145,7 +179,37 @@ export class CalculationService {
     const carbsError = Math.abs(targets.carbs - totalMacros.carbs);
     const fatError = Math.abs(targets.fat - totalMacros.fat);
     
-    return proteinError + carbsError + fatError;
+    const baseScore = proteinError + carbsError + fatError;
+    
+    // Add gentle health bonuses to encourage healthier sub-macros
+    let healthBonus = 0;
+    
+    // Bonus for high monounsaturated fats (like olive oil)
+    if (totalMacros.monounsaturatedFat > 0) {
+      healthBonus -= totalMacros.monounsaturatedFat * 0.1;
+    }
+    
+    // Bonus for omega-3 fatty acids
+    if (totalMacros.omega3 > 0) {
+      healthBonus -= totalMacros.omega3 * 0.2;
+    }
+    
+    // Bonus for high fiber
+    if (totalMacros.fiber > 0) {
+      healthBonus -= totalMacros.fiber * 0.1;
+    }
+    
+    // Small penalty for trans fats
+    if (totalMacros.transFat > 0) {
+      healthBonus += totalMacros.transFat * 0.5;
+    }
+    
+    // Small penalty for high added sugars
+    if (totalMacros.addedSugars > 0) {
+      healthBonus += totalMacros.addedSugars * 0.05;
+    }
+    
+    return baseScore + healthBonus;
   }
 
   static calculateMacroProgress(currentMacros, targets) {

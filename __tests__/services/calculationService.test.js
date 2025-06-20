@@ -27,6 +27,13 @@ describe('CalculationService', () => {
         calories: 165,
         fiber: 0,
         sugar: 0,
+        naturalSugars: 0,
+        addedSugars: 0,
+        saturatedFat: 0,
+        monounsaturatedFat: 0,
+        polyunsaturatedFat: 0,
+        transFat: 0,
+        omega3: 0,
       });
     });
 
@@ -40,6 +47,13 @@ describe('CalculationService', () => {
         calories: 330,
         fiber: 0,
         sugar: 0,
+        naturalSugars: 0,
+        addedSugars: 0,
+        saturatedFat: 0,
+        monounsaturatedFat: 0,
+        polyunsaturatedFat: 0,
+        transFat: 0,
+        omega3: 0,
       });
     });
 
@@ -53,6 +67,13 @@ describe('CalculationService', () => {
         calories: 0,
         fiber: 0,
         sugar: 0,
+        naturalSugars: 0,
+        addedSugars: 0,
+        saturatedFat: 0,
+        monounsaturatedFat: 0,
+        polyunsaturatedFat: 0,
+        transFat: 0,
+        omega3: 0,
       });
     });
   });
@@ -80,6 +101,13 @@ describe('CalculationService', () => {
         calories: 0,
         fiber: 0,
         sugar: 0,
+        naturalSugars: 0,
+        addedSugars: 0,
+        saturatedFat: 0,
+        monounsaturatedFat: 0,
+        polyunsaturatedFat: 0,
+        transFat: 0,
+        omega3: 0,
       });
     });
   });

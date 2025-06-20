@@ -318,6 +318,45 @@ export default function MealPlanningScreen() {
               <Text style={styles.compactCaloriesLabel}>Total: </Text>
               <Text style={styles.compactCaloriesValue}>{currentMacros.calories} cal</Text>
             </View>
+            
+            {/* Sub-macro breakdown */}
+            {(currentMacros.saturatedFat > 0 || currentMacros.monounsaturatedFat > 0 || currentMacros.omega3 > 0 || currentMacros.naturalSugars > 0 || currentMacros.addedSugars > 0) && (
+              <View style={styles.subMacroSection}>
+                <Text style={styles.subMacroTitle}>Breakdown</Text>
+                <View style={styles.subMacroGrid}>
+                  {currentMacros.saturatedFat > 0 && (
+                    <View style={styles.subMacroItem}>
+                      <Text style={styles.subMacroLabel}>Saturated Fat</Text>
+                      <Text style={styles.subMacroValue}>{currentMacros.saturatedFat}g</Text>
+                    </View>
+                  )}
+                  {currentMacros.monounsaturatedFat > 0 && (
+                    <View style={styles.subMacroItem}>
+                      <Text style={[styles.subMacroLabel, styles.healthySubMacro]}>Monounsaturated</Text>
+                      <Text style={[styles.subMacroValue, styles.healthySubMacro]}>{currentMacros.monounsaturatedFat}g</Text>
+                    </View>
+                  )}
+                  {currentMacros.omega3 > 0 && (
+                    <View style={styles.subMacroItem}>
+                      <Text style={[styles.subMacroLabel, styles.healthySubMacro]}>Omega-3</Text>
+                      <Text style={[styles.subMacroValue, styles.healthySubMacro]}>{currentMacros.omega3}g</Text>
+                    </View>
+                  )}
+                  {currentMacros.naturalSugars > 0 && (
+                    <View style={styles.subMacroItem}>
+                      <Text style={[styles.subMacroLabel, styles.healthySubMacro]}>Natural Sugars</Text>
+                      <Text style={[styles.subMacroValue, styles.healthySubMacro]}>{currentMacros.naturalSugars}g</Text>
+                    </View>
+                  )}
+                  {currentMacros.addedSugars > 0 && (
+                    <View style={styles.subMacroItem}>
+                      <Text style={styles.subMacroLabel}>Added Sugars</Text>
+                      <Text style={styles.subMacroValue}>{currentMacros.addedSugars}g</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            )}
           </View>
         )}
 
@@ -1210,5 +1249,44 @@ const styles = StyleSheet.create({
   },
   lockedSliderThumb: {
     backgroundColor: '#666666',
+  },
+
+  // Sub-macro styles
+  subMacroSection: {
+    marginTop: 8,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 6,
+    padding: 8,
+  },
+  subMacroTitle: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#8E8E93',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  subMacroGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  subMacroItem: {
+    alignItems: 'center',
+    margin: 4,
+    minWidth: 60,
+  },
+  subMacroLabel: {
+    fontSize: 8,
+    color: '#8E8E93',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  subMacroValue: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  healthySubMacro: {
+    color: '#00D084',
   },
 });

@@ -44,7 +44,7 @@ export class CalculationService {
     };
   }
 
-  static optimizePortions(selectedFoods, foods, macroTargets, adjustedFoodId, newPortion) {
+  static optimizePortions(selectedFoods, foods, macroTargets, adjustedFoodId, newPortion, lockedFoodIds = []) {
     const adjustedFood = foods.find(f => f.id === adjustedFoodId);
     if (!adjustedFood) return selectedFoods;
 
@@ -54,28 +54,38 @@ export class CalculationService {
         : selection
     );
 
-    const adjustedMacros = this.calculateMacrosForPortion(adjustedFood, newPortion);
+    // Calculate macros from all locked foods (including the adjusted one if it's locked)
+    const lockedSelections = updatedSelections.filter(s => 
+      lockedFoodIds.includes(s.foodId) || s.foodId === adjustedFoodId
+    );
+    
+    const lockedMacros = this.calculateTotalMacros(lockedSelections, foods);
     
     const remainingTargets = {
-      protein: Math.max(0, macroTargets.protein - adjustedMacros.protein),
-      carbs: Math.max(0, macroTargets.carbs - adjustedMacros.carbs),
-      fat: Math.max(0, macroTargets.fat - adjustedMacros.fat)
+      protein: Math.max(0, macroTargets.protein - lockedMacros.protein),
+      carbs: Math.max(0, macroTargets.carbs - lockedMacros.carbs),
+      fat: Math.max(0, macroTargets.fat - lockedMacros.fat)
     };
 
-    const otherSelections = updatedSelections.filter(s => s.foodId !== adjustedFoodId);
+    // Only optimize unlocked foods (excluding the adjusted food and all locked foods)
+    const unlockedSelections = updatedSelections.filter(s => 
+      s.foodId !== adjustedFoodId && !lockedFoodIds.includes(s.foodId)
+    );
     
-    if (otherSelections.length === 0) {
+    if (unlockedSelections.length === 0) {
       return updatedSelections;
     }
 
-    const optimizedOthers = this.redistributePortions(otherSelections, foods, remainingTargets);
+    const optimizedUnlocked = this.redistributePortions(unlockedSelections, foods, remainingTargets);
     
-    // Maintain original order by merging back in the same positions
+    // Maintain original order by merging back optimized unlocked foods
     return updatedSelections.map(selection => {
-      if (selection.foodId === adjustedFoodId) {
-        return { foodId: adjustedFoodId, portionGrams: newPortion };
+      if (selection.foodId === adjustedFoodId || lockedFoodIds.includes(selection.foodId)) {
+        // Keep adjusted food and locked foods as-is
+        return selection;
       } else {
-        const optimizedVersion = optimizedOthers.find(opt => opt.foodId === selection.foodId);
+        // Use optimized version for unlocked foods
+        const optimizedVersion = optimizedUnlocked.find(opt => opt.foodId === selection.foodId);
         return optimizedVersion || selection;
       }
     });

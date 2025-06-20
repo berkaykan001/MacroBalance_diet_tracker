@@ -6,6 +6,7 @@ import { useFood } from '../../context/FoodContext';
 import { useMeal } from '../../context/MealContext';
 import { useSettings } from '../../context/SettingsContext';
 import { CalculationService } from '../../services/calculationService';
+import LockButton from '../../components/LockButton';
 
 const { width } = Dimensions.get('window');
 
@@ -18,6 +19,7 @@ export default function MealPlanningScreen() {
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [showFoodList, setShowFoodList] = useState(false);
   const [foodSearchQuery, setFoodSearchQuery] = useState('');
+  const [lockedFoods, setLockedFoods] = useState(new Set()); // Track locked food IDs
 
   // Always get the current meal data (updates when meals context changes)
   const selectedMeal = meals.find(meal => meal.id === selectedMealId) || meals[0];
@@ -52,19 +54,42 @@ export default function MealPlanningScreen() {
 
   const removeFood = (foodId) => {
     setSelectedFoods(selectedFoods.filter(sf => sf.foodId !== foodId));
+    // Also remove from locked foods if it was locked
+    setLockedFoods(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(foodId);
+      return newSet;
+    });
+  };
+
+  const toggleFoodLock = (foodId) => {
+    setLockedFoods(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(foodId)) {
+        newSet.delete(foodId);
+      } else {
+        newSet.add(foodId);
+      }
+      return newSet;
+    });
+  };
+
+  const isLocked = (foodId) => {
+    return lockedFoods.has(foodId);
   };
 
   const updatePortion = (foodId, newPortion) => {
     if (!selectedMeal) return;
     
     if (appPreferences.autoOptimize) {
-      // Auto-optimize other portions when enabled
+      // Auto-optimize other portions when enabled, respecting locked foods
       const optimized = CalculationService.optimizePortions(
         selectedFoods, 
         foods, 
         selectedMeal.macroTargets, 
         foodId, 
-        Math.round(newPortion)
+        Math.round(newPortion),
+        Array.from(lockedFoods)
       );
       setSelectedFoods(optimized);
     } else {
@@ -153,24 +178,36 @@ export default function MealPlanningScreen() {
             <Text style={styles.ultraCompactPortionLabel}>{item.portionGrams}g</Text>
           </View>
           
+          <LockButton 
+            isLocked={isLocked(food.id)}
+            onToggle={() => toggleFoodLock(food.id)}
+          />
+          
           <TouchableOpacity onPress={() => removeFood(food.id)} style={styles.ultraCompactRemoveButton}>
             <Text style={styles.removeButtonText}>×</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Bottom row: Slider only */}
+        {/* Bottom row: Slider with lock state */}
         <View style={styles.ultraCompactSliderContainer}>
           <Slider
-            style={styles.ultraCompactSlider}
+            style={[
+              styles.ultraCompactSlider,
+              isLocked(food.id) && styles.lockedSlider
+            ]}
             minimumValue={10}
             maximumValue={500}
             value={item.portionGrams}
-            onValueChange={(value) => updatePortion(food.id, value)}
-            minimumTrackTintColor="#007AFF"
+            onValueChange={isLocked(food.id) ? undefined : (value) => updatePortion(food.id, value)}
+            minimumTrackTintColor={isLocked(food.id) ? "#666666" : "#007AFF"}
             maximumTrackTintColor="#3A3A3A"
-            thumbStyle={styles.ultraCompactSliderThumb}
+            thumbStyle={[
+              styles.ultraCompactSliderThumb,
+              isLocked(food.id) && styles.lockedSliderThumb
+            ]}
             trackStyle={styles.ultraCompactSliderTrack}
             step={5}
+            disabled={isLocked(food.id)}
           />
         </View>
       </LinearGradient>
@@ -1165,5 +1202,13 @@ const styles = StyleSheet.create({
   ultraCompactSliderTrack: {
     height: 2,
     borderRadius: 1,
+  },
+  
+  // Locked slider styles
+  lockedSlider: {
+    opacity: 0.5,
+  },
+  lockedSliderThumb: {
+    backgroundColor: '#666666',
   },
 });

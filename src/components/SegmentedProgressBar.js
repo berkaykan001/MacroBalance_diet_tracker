@@ -49,44 +49,134 @@ export default function SegmentedProgressBar({
     });
   }
 
+  // Calculate label positions for segments
+  const getAbbreviation = (name, isSmall = false) => {
+    const abbreviations = {
+      'Saturated': isSmall ? 'Sat' : 'Sat',
+      'Monounsaturated': isSmall ? 'Mono' : 'Mono',
+      'Polyunsaturated': isSmall ? 'Poly' : 'Poly',
+      'Omega-3': 'Ω3',
+      'Trans': 'Trans',
+      'Added Sugars': isSmall ? 'Add' : 'Added',
+      'Natural Sugars': isSmall ? 'Nat' : 'Natural',
+      'Other Carbs': isSmall ? 'Carb' : 'Carbs',
+      'Fiber': 'Fiber',
+      'Protein': isSmall ? 'Prot' : 'Protein',
+      'Unknown': '?'
+    };
+    return abbreviations[name] || name.slice(0, isSmall ? 3 : 5);
+  };
+
+  // Calculate cumulative positions for label centering with smart overlap detection
+  let cumulativeWidth = 0;
+  const labelPositions = segmentsWithWidths.map((segment, index) => {
+    const centerPosition = cumulativeWidth + (segment.widthPercent / 2);
+    cumulativeWidth += segment.widthPercent;
+    
+    // Lower threshold - show labels for segments > 8% width
+    const showLabel = segment.widthPercent > 8;
+    
+    return {
+      ...segment,
+      centerPosition,
+      showLabel,
+      abbreviation: getAbbreviation(segment.name, segment.widthPercent < 12),
+      index
+    };
+  });
+
+  // Detect overlaps and adjust label rotation
+  const finalLabelPositions = labelPositions.map((current, index) => {
+    if (!current.showLabel) return current;
+    
+    // Check for overlap with next label
+    const nextLabel = labelPositions[index + 1];
+    const hasOverlap = nextLabel && nextLabel.showLabel && 
+      Math.abs(current.centerPosition - nextLabel.centerPosition) < 12; // 12% minimum spacing
+    
+    // Check for very small segments that need vertical text
+    const isVerySmall = current.widthPercent < 12;
+    
+    return {
+      ...current,
+      rotation: hasOverlap || isVerySmall ? (index % 2 === 0 ? -45 : 45) : 0, // Alternate diagonal directions
+      isVertical: isVerySmall && current.widthPercent < 8
+    };
+  });
+
   return (
     <View style={styles.container}>
-      {/* Single row: Label | Progress Bar | Value */}
-      <Text style={styles.label}>{label}</Text>
-      
-      <View style={styles.trackContainer}>
-        {/* Background track */}
-        <View style={styles.background} />
+      {/* Progress bar row: Label | Progress Bar | Value */}
+      <View style={styles.progressRow}>
+        <Text style={styles.label}>{label}</Text>
         
-        {/* Target indicator line */}
-        <View style={[styles.targetIndicator, { left: `${targetPercentage}%` }]} />
-        
-        {/* Segmented progress fill */}
-        <View style={styles.segmentContainer}>
-          {segmentsWithWidths.map((segment, index) => (
-            <LinearGradient
-              key={index}
-              colors={segment.colors}
-              style={[styles.segment, { width: `${segment.widthPercent}%` }]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            />
-          ))}
+        <View style={styles.trackContainer}>
+          {/* Background track */}
+          <View style={styles.background} />
+          
+          {/* Target indicator line */}
+          <View style={[styles.targetIndicator, { left: `${targetPercentage}%` }]} />
+          
+          {/* Segmented progress fill */}
+          <View style={styles.segmentContainer}>
+            {segmentsWithWidths.map((segment, index) => (
+              <LinearGradient
+                key={index}
+                colors={segment.colors}
+                style={[styles.segment, { width: `${segment.widthPercent}%` }]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              />
+            ))}
+          </View>
         </View>
+        
+        <Text style={[styles.value, { color: valueColor }]}>
+          {current}{unit}/{target}{unit}
+        </Text>
       </View>
-      
-      <Text style={[styles.value, { color: valueColor }]}>
-        {current}{unit}/{target}{unit}
-      </Text>
+
+      {/* Label row underneath progress bar */}
+      {finalLabelPositions.some(pos => pos.showLabel) && (
+        <View style={styles.labelRow}>
+          <View style={styles.labelSpacer} />
+          <View style={styles.labelContainer}>
+            {finalLabelPositions.map((segment, index) => 
+              segment.showLabel && (
+                <Text 
+                  key={index}
+                  style={[
+                    styles.segmentLabel,
+                    segment.isVertical && styles.verticalLabel,
+                    { 
+                      left: `${segment.centerPosition}%`,
+                      transform: [
+                        { translateX: -20 },
+                        { rotate: `${segment.rotation}deg` }
+                      ]
+                    }
+                  ]}
+                >
+                  {segment.abbreviation}
+                </Text>
+              )
+            )}
+          </View>
+          <View style={styles.labelSpacer} />
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    marginBottom: 6,
+  },
+  progressRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   label: {
     fontSize: 11,
@@ -133,5 +223,31 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     minWidth: 40,
     textAlign: 'right',
+  },
+  labelRow: {
+    flexDirection: 'row',
+    height: 16, // Increased height for rotated text
+    alignItems: 'center',
+  },
+  labelSpacer: {
+    width: 45 + 8, // Same as label width + margin
+  },
+  labelContainer: {
+    flex: 1,
+    position: 'relative',
+    height: '100%',
+    marginRight: 8,
+  },
+  segmentLabel: {
+    position: 'absolute',
+    fontSize: 8,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.7)',
+    textAlign: 'center',
+    width: 40,
+  },
+  verticalLabel: {
+    fontSize: 7, // Slightly smaller for vertical text
+    width: 30,
   },
 });

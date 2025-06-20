@@ -983,7 +983,7 @@ const styles = StyleSheet.create({
 
   // Compact Progress Section
   compactProgressSection: {
-    marginBottom: 6,
+    marginBottom: 8,
   },
 
   // Compact Calories

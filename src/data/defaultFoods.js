@@ -19,7 +19,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.05,
       vitaminD: 0,
-      magnesium: 25
+      magnesium: 25,
+      // Micronutrients
+      iron: 0.9,
+      calcium: 15,
+      zinc: 1.0,
+      vitaminB6: 0.5,
+      vitaminB12: 0.3,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -44,7 +51,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.01,
       vitaminD: 0,
-      magnesium: 0
+      magnesium: 0,
+      // Micronutrients
+      iron: 0.1,
+      calcium: 60,
+      zinc: 0.5,
+      vitaminB6: 0.1,
+      vitaminB12: 0.5,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -69,7 +83,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.08,
       vitaminD: 2,
-      magnesium: 12
+      magnesium: 12,
+      // Micronutrients
+      iron: 1.2,
+      calcium: 50,
+      zinc: 1.3,
+      vitaminB6: 0.1,
+      vitaminB12: 1.1,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -94,7 +115,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.01,
       vitaminD: 0,
-      magnesium: 11
+      magnesium: 11,
+      // Micronutrients
+      iron: 0.1,
+      calcium: 110,
+      zinc: 0.5,
+      vitaminB6: 0.04,
+      vitaminB12: 0.2,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -119,7 +147,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 2.3,
       vitaminD: 11,
-      magnesium: 30
+      magnesium: 30,
+      // Micronutrients
+      iron: 0.8,
+      calcium: 12,
+      zinc: 0.6,
+      vitaminB6: 0.8,
+      vitaminB12: 4.9,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -146,7 +181,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.1,
       vitaminD: 0,
-      magnesium: 177
+      magnesium: 177,
+      // Micronutrients
+      iron: 4.7,
+      calcium: 54,
+      zinc: 3.6,
+      vitaminB6: 0.1,
+      vitaminB12: 0,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -171,7 +213,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.01,
       vitaminD: 0,
-      magnesium: 12
+      magnesium: 12,
+      // Micronutrients
+      iron: 0.2,
+      calcium: 10,
+      zinc: 0.4,
+      vitaminB6: 0.1,
+      vitaminB12: 0,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -196,7 +245,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.01,
       vitaminD: 0,
-      magnesium: 25
+      magnesium: 25,
+      // Micronutrients
+      iron: 0.6,
+      calcium: 30,
+      zinc: 0.3,
+      vitaminB6: 0.2,
+      vitaminB12: 0,
+      vitaminC: 2.4
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -221,7 +277,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.03,
       vitaminD: 0,
-      magnesium: 27
+      magnesium: 27,
+      // Micronutrients
+      iron: 0.26,
+      calcium: 5,
+      zinc: 0.15,
+      vitaminB6: 0.37,
+      vitaminB12: 0,
+      vitaminC: 8.7
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -246,7 +309,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.1,
       vitaminD: 0,
-      magnesium: 76
+      magnesium: 76,
+      // Micronutrients
+      iron: 0.75,
+      calcium: 42,
+      zinc: 1.16,
+      vitaminB6: 0.1,
+      vitaminB12: 0,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -273,7 +343,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.8,
       vitaminD: 0,
-      magnesium: 0
+      magnesium: 0,
+      // Micronutrients
+      iron: 0,
+      calcium: 0,
+      zinc: 0,
+      vitaminB6: 0,
+      vitaminB12: 0,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -298,7 +375,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.11,
       vitaminD: 0,
-      magnesium: 29
+      magnesium: 29,
+      // Micronutrients
+      iron: 0.6,
+      calcium: 12,
+      zinc: 0.6,
+      vitaminB6: 0.3,
+      vitaminB12: 0,
+      vitaminC: 10
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -323,7 +407,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.01,
       vitaminD: 0,
-      magnesium: 270
+      magnesium: 270,
+      // Micronutrients
+      iron: 3.7,
+      calcium: 264,
+      zinc: 3.1,
+      vitaminB6: 0.1,
+      vitaminB12: 0,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -348,7 +439,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.04,
       vitaminD: 0,
-      magnesium: 168
+      magnesium: 168,
+      // Micronutrients
+      iron: 1.9,
+      calcium: 37,
+      zinc: 2.5,
+      vitaminB6: 0.4,
+      vitaminB12: 0,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -375,7 +473,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.09,
       vitaminD: 0,
-      magnesium: 21
+      magnesium: 21,
+      // Micronutrients
+      iron: 0.7,
+      calcium: 47,
+      zinc: 0.4,
+      vitaminB6: 0.2,
+      vitaminB12: 0,
+      vitaminC: 89
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -400,7 +505,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.14,
       vitaminD: 0,
-      magnesium: 79
+      magnesium: 79,
+      // Micronutrients
+      iron: 2.7,
+      calcium: 99,
+      zinc: 0.5,
+      vitaminB6: 0.2,
+      vitaminB12: 0,
+      vitaminC: 28
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -425,7 +537,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.03,
       vitaminD: 0,
-      magnesium: 12
+      magnesium: 12,
+      // Micronutrients
+      iron: 0.4,
+      calcium: 10,
+      zinc: 0.2,
+      vitaminB6: 0.3,
+      vitaminB12: 0,
+      vitaminC: 158
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -450,7 +569,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.01,
       vitaminD: 0,
-      magnesium: 13
+      magnesium: 13,
+      // Micronutrients
+      iron: 0.3,
+      calcium: 16,
+      zinc: 0.2,
+      vitaminB6: 0.04,
+      vitaminB12: 0,
+      vitaminC: 2.8
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -477,7 +603,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.01,
       vitaminD: 1.3,
-      magnesium: 11
+      magnesium: 11,
+      // Micronutrients
+      iron: 0.05,
+      calcium: 120,
+      zinc: 0.4,
+      vitaminB6: 0.04,
+      vitaminB12: 0.45,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -502,7 +635,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.01,
       vitaminD: 0,
-      magnesium: 8
+      magnesium: 8,
+      // Micronutrients
+      iron: 0.1,
+      calcium: 100,
+      zinc: 0.4,
+      vitaminB6: 0.04,
+      vitaminB12: 0.4,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -529,7 +669,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.01,
       vitaminD: 0,
-      magnesium: 18
+      magnesium: 18,
+      // Micronutrients
+      iron: 0.8,
+      calcium: 15,
+      zinc: 0.5,
+      vitaminB6: 0.1,
+      vitaminB12: 0,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -554,7 +701,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.02,
       vitaminD: 0,
-      magnesium: 21
+      magnesium: 21,
+      // Micronutrients
+      iron: 2.7,
+      calcium: 8,
+      zinc: 4.5,
+      vitaminB6: 0.35,
+      vitaminB12: 2.5,
+      vitaminC: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -579,7 +733,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.01,
       vitaminD: 0,
-      magnesium: 25
+      magnesium: 25,
+      // Micronutrients
+      iron: 0.7,
+      calcium: 8,
+      zinc: 0.3,
+      vitaminB6: 0.35,
+      vitaminB12: 0,
+      vitaminC: 12
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -604,7 +765,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.05,
       vitaminD: 0,
-      magnesium: 22
+      magnesium: 22,
+      // Micronutrients
+      iron: 1.2,
+      calcium: 35,
+      zinc: 0.4,
+      vitaminB6: 0.1,
+      vitaminB12: 0,
+      vitaminC: 25
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -629,7 +797,14 @@ export const defaultFoods = [
       transFat: 0,
       omega3: 0.07,
       vitaminD: 0,
-      magnesium: 15
+      magnesium: 15,
+      // Micronutrients
+      iron: 0.9,
+      calcium: 100,
+      zinc: 0.3,
+      vitaminB6: 0.06,
+      vitaminB12: 0,
+      vitaminC: 20
     },
     userAdded: false,
     createdAt: new Date().toISOString(),

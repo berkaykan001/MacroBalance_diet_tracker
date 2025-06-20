@@ -21,8 +21,24 @@ export default function FoodManagementScreen() {
       fiber: '',
       sugar: '',
       fat: '',
+      // Sub-macros
+      naturalSugars: '',
+      addedSugars: '',
+      saturatedFat: '',
+      monounsaturatedFat: '',
+      polyunsaturatedFat: '',
+      transFat: '',
+      omega3: '',
+      // Existing micronutrients
       vitaminD: '',
-      magnesium: ''
+      magnesium: '',
+      // New micronutrients
+      iron: '',
+      calcium: '',
+      zinc: '',
+      vitaminB6: '',
+      vitaminB12: '',
+      vitaminC: ''
     }
   });
 
@@ -60,8 +76,24 @@ export default function FoodManagementScreen() {
         fiber: '',
         sugar: '',
         fat: '',
+        // Sub-macros
+        naturalSugars: '',
+        addedSugars: '',
+        saturatedFat: '',
+        monounsaturatedFat: '',
+        polyunsaturatedFat: '',
+        transFat: '',
+        omega3: '',
+        // Existing micronutrients
         vitaminD: '',
-        magnesium: ''
+        magnesium: '',
+        // New micronutrients
+        iron: '',
+        calcium: '',
+        zinc: '',
+        vitaminB6: '',
+        vitaminB12: '',
+        vitaminC: ''
       }
     });
     setShowAddForm(true);
@@ -115,7 +147,23 @@ export default function FoodManagementScreen() {
         fiber: parseFloat(nutrition.fiber) || 0,
         sugar: parseFloat(nutrition.sugar) || 0,
         fat: parseFloat(nutrition.fat) || 0,
+        // Sub-macros
+        naturalSugars: parseFloat(nutrition.naturalSugars) || 0,
+        addedSugars: parseFloat(nutrition.addedSugars) || 0,
+        saturatedFat: parseFloat(nutrition.saturatedFat) || 0,
+        monounsaturatedFat: parseFloat(nutrition.monounsaturatedFat) || 0,
+        polyunsaturatedFat: parseFloat(nutrition.polyunsaturatedFat) || 0,
+        transFat: parseFloat(nutrition.transFat) || 0,
+        omega3: parseFloat(nutrition.omega3) || 0,
+        // Vitamins
+        vitaminB6: parseFloat(nutrition.vitaminB6) || 0,
+        vitaminB12: parseFloat(nutrition.vitaminB12) || 0,
+        vitaminC: parseFloat(nutrition.vitaminC) || 0,
         vitaminD: parseFloat(nutrition.vitaminD) || 0,
+        // Minerals
+        iron: parseFloat(nutrition.iron) || 0,
+        calcium: parseFloat(nutrition.calcium) || 0,
+        zinc: parseFloat(nutrition.zinc) || 0,
         magnesium: parseFloat(nutrition.magnesium) || 0,
       }
     };
@@ -262,7 +310,7 @@ export default function FoodManagementScreen() {
 
           {/* Nutrition Info */}
           <View style={styles.formSection}>
-            <Text style={styles.sectionTitle}>Nutrition per 100g</Text>
+            <Text style={styles.sectionTitle}>Basic Nutrition per 100g</Text>
             
             <View style={styles.nutritionInputRow}>
               <View style={styles.nutritionInputGroup}>
@@ -345,7 +393,7 @@ export default function FoodManagementScreen() {
               </View>
               
               <View style={styles.nutritionInputGroup}>
-                <Text style={styles.inputLabel}>Sugar (g)</Text>
+                <Text style={styles.inputLabel}>Total Sugar (g)</Text>
                 <TextInput
                   style={styles.nutritionInput}
                   value={formData.nutritionPer100g.sugar}
@@ -359,8 +407,187 @@ export default function FoodManagementScreen() {
                 />
               </View>
             </View>
+          </View>
+
+          {/* Sub-Macro Info */}
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Sugar Breakdown</Text>
+            
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Natural Sugars (g)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.naturalSugars}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, naturalSugars: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Added Sugars (g)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.addedSugars}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, addedSugars: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* Fat Breakdown */}
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Fat Breakdown</Text>
+            
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Saturated Fat (g)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.saturatedFat}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, saturatedFat: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Monounsaturated Fat (g)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.monounsaturatedFat}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, monounsaturatedFat: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
 
             <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Polyunsaturated Fat (g)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.polyunsaturatedFat}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, polyunsaturatedFat: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Trans Fat (g)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.transFat}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, transFat: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Omega-3 (g)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.omega3}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, omega3: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.nutritionInputGroup}>
+                {/* Empty for symmetry */}
+              </View>
+            </View>
+          </View>
+
+          {/* Vitamins */}
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Vitamins</Text>
+            
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Vitamin B6 (mg)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.vitaminB6}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, vitaminB6: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Vitamin B12 (μg)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.vitaminB12}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, vitaminB12: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Vitamin C (mg)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.vitaminC}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, vitaminC: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
               <View style={styles.nutritionInputGroup}>
                 <Text style={styles.inputLabel}>Vitamin D (μg)</Text>
                 <TextInput
@@ -369,6 +596,60 @@ export default function FoodManagementScreen() {
                   onChangeText={(text) => setFormData({
                     ...formData,
                     nutritionPer100g: {...formData.nutritionPer100g, vitaminD: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* Minerals */}
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>Minerals</Text>
+            
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Iron (mg)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.iron}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, iron: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Calcium (mg)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.calcium}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, calcium: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Zinc (mg)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.zinc}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, zinc: text}
                   })}
                   placeholder="0"
                   placeholderTextColor="#8E8E93"

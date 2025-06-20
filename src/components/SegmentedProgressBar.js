@@ -50,21 +50,21 @@ export default function SegmentedProgressBar({
   }
 
   // Calculate label positions for segments
-  const getAbbreviation = (name, isSmall = false) => {
+  const getAbbreviation = (name, isSmall = false, isVertical = false) => {
     const abbreviations = {
-      'Saturated': isSmall ? 'Sat' : 'Sat',
-      'Monounsaturated': isSmall ? 'Mono' : 'Mono',
-      'Polyunsaturated': isSmall ? 'Poly' : 'Poly',
-      'Omega-3': 'Ω3',
-      'Trans': 'Trans',
-      'Added Sugars': isSmall ? 'Add' : 'Added',
-      'Natural Sugars': isSmall ? 'Nat' : 'Natural',
-      'Other Carbs': isSmall ? 'Carb' : 'Carbs',
-      'Fiber': 'Fiber',
-      'Protein': isSmall ? 'Prot' : 'Protein',
+      'Saturated': isVertical ? 'S' : (isSmall ? 'Sat' : 'Sat'),
+      'Monounsaturated': isVertical ? 'M' : (isSmall ? 'Mono' : 'Mono'),
+      'Polyunsaturated': isVertical ? 'P' : (isSmall ? 'Poly' : 'Poly'),
+      'Omega-3': isVertical ? 'Ω' : 'Ω3',
+      'Trans': isVertical ? 'T' : 'Trans',
+      'Added Sugars': isVertical ? 'A' : (isSmall ? 'Add' : 'Added'),
+      'Natural Sugars': isVertical ? 'N' : (isSmall ? 'Nat' : 'Natural'),
+      'Other Carbs': isVertical ? 'C' : (isSmall ? 'Carb' : 'Carbs'),
+      'Fiber': isVertical ? 'F' : 'Fiber',
+      'Protein': isVertical ? 'P' : (isSmall ? 'Prot' : 'Protein'),
       'Unknown': '?'
     };
-    return abbreviations[name] || name.slice(0, isSmall ? 3 : 5);
+    return abbreviations[name] || name.slice(0, isVertical ? 1 : (isSmall ? 3 : 5));
   };
 
   // Calculate cumulative positions for label centering with smart overlap detection
@@ -73,8 +73,8 @@ export default function SegmentedProgressBar({
     const centerPosition = cumulativeWidth + (segment.widthPercent / 2);
     cumulativeWidth += segment.widthPercent;
     
-    // Lower threshold - show labels for segments > 8% width
-    const showLabel = segment.widthPercent > 8;
+    // Always show labels, but adapt their style based on size
+    const showLabel = segment.widthPercent > 3; // Even tiny segments get vertical labels
     
     return {
       ...segment,
@@ -85,7 +85,7 @@ export default function SegmentedProgressBar({
     };
   });
 
-  // Detect overlaps and adjust label rotation
+  // Detect overlaps and adjust label rotation with consistent directions
   const finalLabelPositions = labelPositions.map((current, index) => {
     if (!current.showLabel) return current;
     
@@ -94,13 +94,26 @@ export default function SegmentedProgressBar({
     const hasOverlap = nextLabel && nextLabel.showLabel && 
       Math.abs(current.centerPosition - nextLabel.centerPosition) < 12; // 12% minimum spacing
     
-    // Check for very small segments that need vertical text
-    const isVerySmall = current.widthPercent < 12;
+    // Determine label orientation based on segment size
+    let rotation = 0;
+    let isVertical = false;
+    
+    if (current.widthPercent < 6) {
+      // Very tiny segments: vertical text
+      rotation = -90;
+      isVertical = true;
+    } else if (current.widthPercent < 12 || hasOverlap) {
+      // Small segments or overlapping: consistent diagonal (bottom-left to top-right)
+      rotation = -45;
+    }
+    // Medium/large segments: horizontal (rotation = 0)
     
     return {
       ...current,
-      rotation: hasOverlap || isVerySmall ? (index % 2 === 0 ? -45 : 45) : 0, // Alternate diagonal directions
-      isVertical: isVerySmall && current.widthPercent < 8
+      rotation,
+      isVertical,
+      // Update abbreviation based on final orientation
+      abbreviation: getAbbreviation(current.name, current.widthPercent < 12, isVertical)
     };
   });
 
@@ -247,7 +260,8 @@ const styles = StyleSheet.create({
     width: 40,
   },
   verticalLabel: {
-    fontSize: 7, // Slightly smaller for vertical text
-    width: 30,
+    fontSize: 9, // Larger for single character vertical text
+    width: 20,
+    fontWeight: '600',
   },
 });

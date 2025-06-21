@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, ActivityIndicator } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { FoodProvider } from './src/context/FoodContext';
 import { MealProvider } from './src/context/MealContext';
 import { SettingsProvider } from './src/context/SettingsContext';
+
+// Test AsyncStorage availability
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Simple Error Boundary component
 class ErrorBoundary extends React.Component {
@@ -56,7 +59,50 @@ const styles = StyleSheet.create({
 });
 
 export default function App() {
-  console.log('App component is loading...');
+  const [isReady, setIsReady] = useState(false);
+  const [initError, setInitError] = useState(null);
+
+  useEffect(() => {
+    initializeApp();
+  }, []);
+
+  const initializeApp = async () => {
+    try {
+      console.log('App: Starting initialization...');
+      
+      // Test AsyncStorage
+      await AsyncStorage.setItem('test', 'test');
+      await AsyncStorage.removeItem('test');
+      console.log('App: AsyncStorage working');
+      
+      // Small delay to ensure native modules are ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      console.log('App: Initialization complete');
+      setIsReady(true);
+    } catch (error) {
+      console.error('App: Initialization failed:', error);
+      setInitError(error);
+    }
+  };
+
+  if (initError) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Startup Error!</Text>
+        <Text style={styles.errorDetails}>{initError.toString()}</Text>
+      </View>
+    );
+  }
+
+  if (!isReady) {
+    return (
+      <View style={styles.errorContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.errorText}>Loading MacroBalance...</Text>
+      </View>
+    );
+  }
   
   try {
     return (

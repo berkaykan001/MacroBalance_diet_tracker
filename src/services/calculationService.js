@@ -17,7 +17,16 @@ export class CalculationService {
       monounsaturatedFat: nutrition.monounsaturatedFat ? Math.round(nutrition.monounsaturatedFat * multiplier * 10) / 10 : 0,
       polyunsaturatedFat: nutrition.polyunsaturatedFat ? Math.round(nutrition.polyunsaturatedFat * multiplier * 10) / 10 : 0,
       transFat: nutrition.transFat ? Math.round(nutrition.transFat * multiplier * 10) / 10 : 0,
-      omega3: nutrition.omega3 ? Math.round(nutrition.omega3 * multiplier * 10) / 10 : 0
+      omega3: nutrition.omega3 ? Math.round(nutrition.omega3 * multiplier * 10) / 10 : 0,
+      // Micronutrients
+      iron: nutrition.iron ? Math.round(nutrition.iron * multiplier * 10) / 10 : 0,
+      calcium: nutrition.calcium ? Math.round(nutrition.calcium * multiplier * 10) / 10 : 0,
+      zinc: nutrition.zinc ? Math.round(nutrition.zinc * multiplier * 10) / 10 : 0,
+      magnesium: nutrition.magnesium ? Math.round(nutrition.magnesium * multiplier * 10) / 10 : 0,
+      vitaminB6: nutrition.vitaminB6 ? Math.round(nutrition.vitaminB6 * multiplier * 10) / 10 : 0,
+      vitaminB12: nutrition.vitaminB12 ? Math.round(nutrition.vitaminB12 * multiplier * 10) / 10 : 0,
+      vitaminC: nutrition.vitaminC ? Math.round(nutrition.vitaminC * multiplier * 10) / 10 : 0,
+      vitaminD: nutrition.vitaminD ? Math.round(nutrition.vitaminD * multiplier * 10) / 10 : 0
     };
   }
 
@@ -36,7 +45,16 @@ export class CalculationService {
       monounsaturatedFat: 0,
       polyunsaturatedFat: 0,
       transFat: 0,
-      omega3: 0
+      omega3: 0,
+      // Micronutrients
+      iron: 0,
+      calcium: 0,
+      zinc: 0,
+      magnesium: 0,
+      vitaminB6: 0,
+      vitaminB12: 0,
+      vitaminC: 0,
+      vitaminD: 0
     };
 
     selectedFoods.forEach(selection => {
@@ -57,6 +75,15 @@ export class CalculationService {
         totals.polyunsaturatedFat += macros.polyunsaturatedFat || 0;
         totals.transFat += macros.transFat || 0;
         totals.omega3 += macros.omega3 || 0;
+        // Micronutrients
+        totals.iron += macros.iron || 0;
+        totals.calcium += macros.calcium || 0;
+        totals.zinc += macros.zinc || 0;
+        totals.magnesium += macros.magnesium || 0;
+        totals.vitaminB6 += macros.vitaminB6 || 0;
+        totals.vitaminB12 += macros.vitaminB12 || 0;
+        totals.vitaminC += macros.vitaminC || 0;
+        totals.vitaminD += macros.vitaminD || 0;
       }
     });
 
@@ -74,7 +101,16 @@ export class CalculationService {
       monounsaturatedFat: Math.round(totals.monounsaturatedFat * 10) / 10,
       polyunsaturatedFat: Math.round(totals.polyunsaturatedFat * 10) / 10,
       transFat: Math.round(totals.transFat * 10) / 10,
-      omega3: Math.round(totals.omega3 * 10) / 10
+      omega3: Math.round(totals.omega3 * 10) / 10,
+      // Micronutrients
+      iron: Math.round(totals.iron * 10) / 10,
+      calcium: Math.round(totals.calcium * 10) / 10,
+      zinc: Math.round(totals.zinc * 10) / 10,
+      magnesium: Math.round(totals.magnesium * 10) / 10,
+      vitaminB6: Math.round(totals.vitaminB6 * 10) / 10,
+      vitaminB12: Math.round(totals.vitaminB12 * 10) / 10,
+      vitaminC: Math.round(totals.vitaminC * 10) / 10,
+      vitaminD: Math.round(totals.vitaminD * 10) / 10
     };
   }
 

@@ -74,16 +74,33 @@ const defaultDailySubMacroTargets = {
   // Healthy fats (daily targets)
   omega3: 2.0,           // 2g omega-3 daily (heart/brain health)
   monounsaturatedFat: 25, // 25g monounsaturated fat daily
+  polyunsaturatedFat: 15, // 15g polyunsaturated fat daily (5-10% of calories)
   maxSaturatedFat: 20,    // Max 20g saturated fat daily
   maxTransFat: 0,         // Zero trans fat daily
   
   // Sugar targets
   maxAddedSugars: 25,     // Max 25g added sugars daily (WHO recommendation)
+  maxNaturalSugars: 100,  // Max 100g natural sugars daily (from fruits/dairy)
   minFiber: 25,           // Min 25g fiber daily (general health)
   
   // Additional targets you can customize later
   maxSodium: 2300,        // Max 2300mg sodium daily (optional)
   minPotassium: 3500      // Min 3500mg potassium daily (optional)
+};
+
+// Daily micronutrient targets (RDA - Recommended Daily Allowance)
+const defaultDailyMicronutrientTargets = {
+  // Minerals (mg)
+  iron: 18,              // 18mg daily (higher for women of reproductive age)
+  calcium: 1000,         // 1000mg daily for adults
+  zinc: 11,              // 11mg daily for men, 8mg for women (using higher value)
+  magnesium: 400,        // 400mg daily for men, 310mg for women (using higher value)
+  
+  // Vitamins
+  vitaminB6: 1.3,        // 1.3mg daily for adults
+  vitaminB12: 2.4,       // 2.4μg daily for adults
+  vitaminC: 90,          // 90mg daily for men, 75mg for women (using higher value)
+  vitaminD: 20,          // 20μg (800 IU) daily for adults
 };
 
 function mealReducer(state, action) {
@@ -307,21 +324,33 @@ export function MealProvider({ children }) {
       // Sub-macros
       omega3: total.omega3 + (plan.calculatedMacros?.omega3 || 0),
       monounsaturatedFat: total.monounsaturatedFat + (plan.calculatedMacros?.monounsaturatedFat || 0),
+      polyunsaturatedFat: total.polyunsaturatedFat + (plan.calculatedMacros?.polyunsaturatedFat || 0),
       saturatedFat: total.saturatedFat + (plan.calculatedMacros?.saturatedFat || 0),
       transFat: total.transFat + (plan.calculatedMacros?.transFat || 0),
       addedSugars: total.addedSugars + (plan.calculatedMacros?.addedSugars || 0),
       naturalSugars: total.naturalSugars + (plan.calculatedMacros?.naturalSugars || 0),
-      fiber: total.fiber + (plan.calculatedMacros?.fiber || 0)
+      fiber: total.fiber + (plan.calculatedMacros?.fiber || 0),
+      // Micronutrients
+      iron: total.iron + (plan.calculatedMacros?.iron || 0),
+      calcium: total.calcium + (plan.calculatedMacros?.calcium || 0),
+      zinc: total.zinc + (plan.calculatedMacros?.zinc || 0),
+      magnesium: total.magnesium + (plan.calculatedMacros?.magnesium || 0),
+      vitaminB6: total.vitaminB6 + (plan.calculatedMacros?.vitaminB6 || 0),
+      vitaminB12: total.vitaminB12 + (plan.calculatedMacros?.vitaminB12 || 0),
+      vitaminC: total.vitaminC + (plan.calculatedMacros?.vitaminC || 0),
+      vitaminD: total.vitaminD + (plan.calculatedMacros?.vitaminD || 0)
     }), { 
       protein: 0, carbs: 0, fat: 0, calories: 0,
-      omega3: 0, monounsaturatedFat: 0, saturatedFat: 0, transFat: 0,
-      addedSugars: 0, naturalSugars: 0, fiber: 0
+      omega3: 0, monounsaturatedFat: 0, polyunsaturatedFat: 0, saturatedFat: 0, transFat: 0,
+      addedSugars: 0, naturalSugars: 0, fiber: 0,
+      iron: 0, calcium: 0, zinc: 0, magnesium: 0, vitaminB6: 0, vitaminB12: 0, vitaminC: 0, vitaminD: 0
     });
 
     return {
       targets,
       consumed,
       subMacroTargets: defaultDailySubMacroTargets,
+      micronutrientTargets: defaultDailyMicronutrientTargets,
       percentages: {
         protein: targets.protein > 0 ? (consumed.protein / targets.protein) * 100 : 0,
         carbs: targets.carbs > 0 ? (consumed.carbs / targets.carbs) * 100 : 0,
@@ -330,9 +359,22 @@ export function MealProvider({ children }) {
       subMacroPercentages: {
         omega3: defaultDailySubMacroTargets.omega3 > 0 ? (consumed.omega3 / defaultDailySubMacroTargets.omega3) * 100 : 0,
         monounsaturatedFat: defaultDailySubMacroTargets.monounsaturatedFat > 0 ? (consumed.monounsaturatedFat / defaultDailySubMacroTargets.monounsaturatedFat) * 100 : 0,
+        polyunsaturatedFat: defaultDailySubMacroTargets.polyunsaturatedFat > 0 ? (consumed.polyunsaturatedFat / defaultDailySubMacroTargets.polyunsaturatedFat) * 100 : 0,
         saturatedFat: defaultDailySubMacroTargets.maxSaturatedFat > 0 ? (consumed.saturatedFat / defaultDailySubMacroTargets.maxSaturatedFat) * 100 : 0,
+        transFat: defaultDailySubMacroTargets.maxTransFat > 0 ? (consumed.transFat / defaultDailySubMacroTargets.maxTransFat) * 100 : (consumed.transFat > 0 ? 100 : 0),
         addedSugars: defaultDailySubMacroTargets.maxAddedSugars > 0 ? (consumed.addedSugars / defaultDailySubMacroTargets.maxAddedSugars) * 100 : 0,
+        naturalSugars: defaultDailySubMacroTargets.maxNaturalSugars > 0 ? (consumed.naturalSugars / defaultDailySubMacroTargets.maxNaturalSugars) * 100 : 0,
         fiber: defaultDailySubMacroTargets.minFiber > 0 ? (consumed.fiber / defaultDailySubMacroTargets.minFiber) * 100 : 0
+      },
+      micronutrientPercentages: {
+        iron: defaultDailyMicronutrientTargets.iron > 0 ? (consumed.iron / defaultDailyMicronutrientTargets.iron) * 100 : 0,
+        calcium: defaultDailyMicronutrientTargets.calcium > 0 ? (consumed.calcium / defaultDailyMicronutrientTargets.calcium) * 100 : 0,
+        zinc: defaultDailyMicronutrientTargets.zinc > 0 ? (consumed.zinc / defaultDailyMicronutrientTargets.zinc) * 100 : 0,
+        magnesium: defaultDailyMicronutrientTargets.magnesium > 0 ? (consumed.magnesium / defaultDailyMicronutrientTargets.magnesium) * 100 : 0,
+        vitaminB6: defaultDailyMicronutrientTargets.vitaminB6 > 0 ? (consumed.vitaminB6 / defaultDailyMicronutrientTargets.vitaminB6) * 100 : 0,
+        vitaminB12: defaultDailyMicronutrientTargets.vitaminB12 > 0 ? (consumed.vitaminB12 / defaultDailyMicronutrientTargets.vitaminB12) * 100 : 0,
+        vitaminC: defaultDailyMicronutrientTargets.vitaminC > 0 ? (consumed.vitaminC / defaultDailyMicronutrientTargets.vitaminC) * 100 : 0,
+        vitaminD: defaultDailyMicronutrientTargets.vitaminD > 0 ? (consumed.vitaminD / defaultDailyMicronutrientTargets.vitaminD) * 100 : 0
       }
     };
   };

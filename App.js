@@ -58,16 +58,26 @@ const styles = StyleSheet.create({
 export default function App() {
   console.log('App component is loading...');
   
-  return (
-    <ErrorBoundary>
-      <SettingsProvider>
-        <FoodProvider>
-          <MealProvider>
-            <AppNavigator />
-            <StatusBar style="light" />
-          </MealProvider>
-        </FoodProvider>
-      </SettingsProvider>
-    </ErrorBoundary>
-  );
+  try {
+    return (
+      <ErrorBoundary>
+        <SettingsProvider>
+          <FoodProvider>
+            <MealProvider>
+              <AppNavigator />
+              <StatusBar style="light" />
+            </MealProvider>
+          </FoodProvider>
+        </SettingsProvider>
+      </ErrorBoundary>
+    );
+  } catch (error) {
+    console.error('Critical App Error:', error);
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Critical Error!</Text>
+        <Text style={styles.errorDetails}>{error.toString()}</Text>
+      </View>
+    );
+  }
 }

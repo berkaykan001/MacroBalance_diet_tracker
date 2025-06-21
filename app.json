@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "MacroBalance",
-    "slug": "MacroBalance",
+    "name": "MacroBalance", 
+    "slug": "macrobalance",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,6 +16,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.berkaykan.macrobalance",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -24,6 +25,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "16b079fa-56b5-40a3-b898-be931dd917ac"
+      }
+    },
+    "owner": "berkay_kan"
   }
 }

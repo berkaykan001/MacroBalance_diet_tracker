@@ -19,10 +19,10 @@ const defaultMeals = [
     id: '1',
     name: 'Breakfast',
     macroTargets: {
-      protein: 30,
-      carbs: 45,
-      minFiber: 5,
-      maxSugar: 15,
+      protein: 40,
+      carbs: 40,
+      minFiber: 7,
+      maxSugar: 12,
       fat: 15
     },
     userCustom: false,
@@ -35,34 +35,34 @@ const defaultMeals = [
       protein: 40,
       carbs: 50,
       minFiber: 8,
-      maxSugar: 10,
-      fat: 20
+      maxSugar: 12,
+      fat: 15
     },
     userCustom: false,
     createdAt: new Date().toISOString()
   },
   {
     id: '3',
-    name: 'Dinner',
+    name: 'Dinner (Pre-Workout)',
     macroTargets: {
-      protein: 35,
-      carbs: 40,
-      minFiber: 10,
-      maxSugar: 8,
-      fat: 25
+      protein: 40,
+      carbs: 70,
+      minFiber: 8,
+      maxSugar: 15,
+      fat: 10
     },
     userCustom: false,
     createdAt: new Date().toISOString()
   },
   {
     id: '4',
-    name: 'Post-Workout',
+    name: 'Late Night Meal',
     macroTargets: {
-      protein: 25,
-      carbs: 30,
-      minFiber: 3,
-      maxSugar: 20,
-      fat: 5
+      protein: 38,
+      carbs: 20,
+      minFiber: 5,
+      maxSugar: 11,
+      fat: 10
     },
     userCustom: false,
     createdAt: new Date().toISOString()
@@ -72,35 +72,35 @@ const defaultMeals = [
 // Daily sub-macro targets (independent of meals)
 const defaultDailySubMacroTargets = {
   // Healthy fats (daily targets)
-  omega3: 2.0,           // 2g omega-3 daily (heart/brain health)
-  monounsaturatedFat: 25, // 25g monounsaturated fat daily
-  polyunsaturatedFat: 15, // 15g polyunsaturated fat daily (5-10% of calories)
-  maxSaturatedFat: 20,    // Max 20g saturated fat daily
+  omega3: 0.4,            // 400mg (0.4g) EPA+DHA daily (middle of 250-500mg range)
+  monounsaturatedFat: 20, // ~40% of total fat (50g * 0.4 = 20g)
+  polyunsaturatedFat: 15, // ~30% of total fat (50g * 0.3 = 15g) 
+  maxSaturatedFat: 15,    // ~30% of total fat (50g * 0.3 = 15g max)
   maxTransFat: 0,         // Zero trans fat daily
   
   // Sugar targets
-  maxAddedSugars: 25,     // Max 25g added sugars daily (WHO recommendation)
-  maxNaturalSugars: 100,  // Max 100g natural sugars daily (from fruits/dairy)
-  minFiber: 25,           // Min 25g fiber daily (general health)
+  maxAddedSugars: 50,     // Max 50g added sugars daily (as recommended)
+  maxNaturalSugars: 60,   // Reasonable limit for natural sugars from whole foods
+  minFiber: 29,           // 29g fiber daily (middle of 28-30g range)
   
   // Additional targets you can customize later
   maxSodium: 2300,        // Max 2300mg sodium daily (optional)
   minPotassium: 3500      // Min 3500mg potassium daily (optional)
 };
 
-// Daily micronutrient targets (RDA - Recommended Daily Allowance)
+// Daily micronutrient targets (Personalized for 30-year-old male, 72kg)
 const defaultDailyMicronutrientTargets = {
   // Minerals (mg)
-  iron: 18,              // 18mg daily (higher for women of reproductive age)
-  calcium: 1000,         // 1000mg daily for adults
-  zinc: 11,              // 11mg daily for men, 8mg for women (using higher value)
-  magnesium: 400,        // 400mg daily for men, 310mg for women (using higher value)
+  iron: 8,               // 8mg daily for adult men
+  calcium: 1300,         // 1300mg daily (as recommended)
+  zinc: 11,              // 11mg daily for men
+  magnesium: 420,        // 420mg daily for men
   
   // Vitamins
-  vitaminB6: 1.3,        // 1.3mg daily for adults
+  vitaminB6: 1.7,        // 1.7mg daily (as recommended)
   vitaminB12: 2.4,       // 2.4μg daily for adults
-  vitaminC: 90,          // 90mg daily for men, 75mg for women (using higher value)
-  vitaminD: 20,          // 20μg (800 IU) daily for adults
+  vitaminC: 90,          // 90mg daily for men
+  vitaminD: 20,          // 20μg daily (as recommended)
 };
 
 function mealReducer(state, action) {

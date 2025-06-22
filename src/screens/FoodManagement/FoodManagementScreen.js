@@ -48,7 +48,11 @@ export default function FoodManagementScreen() {
     { id: 'carbs', name: 'Carbs', count: foods.filter(f => f.category === 'carbs').length },
     { id: 'fats', name: 'Fats', count: foods.filter(f => f.category === 'fats').length },
     { id: 'vegetables', name: 'Vegetables', count: foods.filter(f => f.category === 'vegetables').length },
+    { id: 'fruits', name: 'Fruits', count: foods.filter(f => f.category === 'fruits').length },
+    { id: 'grains', name: 'Grains', count: foods.filter(f => f.category === 'grains').length },
     { id: 'dairy', name: 'Dairy', count: foods.filter(f => f.category === 'dairy').length },
+    { id: 'nuts', name: 'Nuts', count: foods.filter(f => f.category === 'nuts').length },
+    { id: 'other', name: 'Other', count: foods.filter(f => f.category === 'other').length },
   ];
 
   const handleSearch = (query) => {
@@ -287,7 +291,7 @@ export default function FoodManagementScreen() {
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>Category *</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categorySelector}>
-                {['protein', 'carbs', 'fats', 'vegetables', 'dairy', 'snacks'].map(cat => (
+                {['protein', 'carbs', 'fats', 'vegetables', 'fruits', 'grains', 'dairy', 'nuts', 'other'].map(cat => (
                   <TouchableOpacity
                     key={cat}
                     style={[

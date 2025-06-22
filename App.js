@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Text, View, StyleSheet, ActivityIndicator } from 'react-native';
+import { Text, View, StyleSheet, ActivityIndicator, SafeAreaView } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import { FoodProvider } from './src/context/FoodContext';
 import { MealProvider } from './src/context/MealContext';
@@ -38,6 +38,10 @@ class ErrorBoundary extends React.Component {
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0A0A0A', // Match app background
+  },
   errorContainer: {
     flex: 1,
     backgroundColor: '#000',
@@ -88,42 +92,53 @@ export default function App() {
 
   if (initError) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Startup Error!</Text>
-        <Text style={styles.errorDetails}>{initError.toString()}</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Startup Error!</Text>
+          <Text style={styles.errorDetails}>{initError.toString()}</Text>
+        </View>
+        <StatusBar style="light" />
+      </SafeAreaView>
     );
   }
 
   if (!isReady) {
     return (
-      <View style={styles.errorContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text style={styles.errorText}>Loading MacroBalance...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.errorContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.errorText}>Loading MacroBalance...</Text>
+        </View>
+        <StatusBar style="light" />
+      </SafeAreaView>
     );
   }
   
   try {
     return (
-      <ErrorBoundary>
-        <SettingsProvider>
-          <FoodProvider>
-            <MealProvider>
-              <AppNavigator />
-              <StatusBar style="light" />
-            </MealProvider>
-          </FoodProvider>
-        </SettingsProvider>
-      </ErrorBoundary>
+      <SafeAreaView style={styles.safeArea}>
+        <ErrorBoundary>
+          <SettingsProvider>
+            <FoodProvider>
+              <MealProvider>
+                <AppNavigator />
+              </MealProvider>
+            </FoodProvider>
+          </SettingsProvider>
+        </ErrorBoundary>
+        <StatusBar style="light" />
+      </SafeAreaView>
     );
   } catch (error) {
     console.error('Critical App Error:', error);
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Critical Error!</Text>
-        <Text style={styles.errorDetails}>{error.toString()}</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Critical Error!</Text>
+          <Text style={styles.errorDetails}>{error.toString()}</Text>
+        </View>
+        <StatusBar style="light" />
+      </SafeAreaView>
     );
   }
 }

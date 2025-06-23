@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatLi
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFood } from '../../context/FoodContext';
 
-export default function FoodManagementScreen() {
+export default function FoodManagementScreen({ navigation }) {
   const { foods, filteredFoods, searchFoods, addFood, updateFood, deleteFood } = useFood();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -44,6 +44,7 @@ export default function FoodManagementScreen() {
 
   const categories = [
     { id: 'all', name: 'All Foods', count: foods.length },
+    { id: 'dishes', name: 'Dishes', count: foods.filter(f => f.category === 'dishes').length },
     { id: 'protein', name: 'Protein', count: foods.filter(f => f.category === 'protein').length },
     { id: 'carbs', name: 'Carbs', count: foods.filter(f => f.category === 'carbs').length },
     { id: 'fats', name: 'Fats', count: foods.filter(f => f.category === 'fats').length },
@@ -208,7 +209,10 @@ export default function FoodManagementScreen() {
     >
       <View style={styles.foodHeader}>
         <View style={styles.foodInfo}>
-          <Text style={styles.foodName}>{item.name}</Text>
+          <View style={styles.foodNameRow}>
+            <Text style={styles.foodName}>{item.name}</Text>
+            {item.isDish && <Text style={styles.dishIndicator}>🍲</Text>}
+          </View>
           <Text style={styles.foodCategory}>{item.category}</Text>
           {item.userAdded && <Text style={styles.userAddedBadge}>Custom</Text>}
         </View>
@@ -690,19 +694,34 @@ export default function FoodManagementScreen() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.header}>
         <Text style={styles.title}>Food Database</Text>
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={handleAddFood}
-        >
-          <LinearGradient
-            colors={['#007AFF', '#0051D5']}
-            style={styles.addButtonGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+        <View style={styles.headerButtonGroup}>
+          <TouchableOpacity 
+            style={styles.headerButton}
+            onPress={handleAddFood}
           >
-            <Text style={styles.addButtonText}>+ Add Food</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <LinearGradient
+              colors={['#007AFF', '#0051D5']}
+              style={styles.headerButtonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.headerButtonText}>+ Food</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.headerButton}
+            onPress={() => navigation.navigate('DishCreator')}
+          >
+            <LinearGradient
+              colors={['#34C759', '#28A745']}
+              style={styles.headerButtonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.headerButtonText}>🍲 Dish</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
         </View>
       </TouchableWithoutFeedback>
 
@@ -771,17 +790,21 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     letterSpacing: -0.3,
   },
-  addButton: {
+  headerButtonGroup: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  headerButton: {
     borderRadius: 8,
     overflow: 'hidden',
   },
-  addButtonGradient: {
-    paddingHorizontal: 12,
+  headerButtonGradient: {
+    paddingHorizontal: 10,
     paddingVertical: 6,
   },
-  addButtonText: {
+  headerButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
 
@@ -854,11 +877,20 @@ const styles = StyleSheet.create({
   foodInfo: {
     flex: 1,
   },
+  foodNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 1,
+  },
   foodName: {
     color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '600',
-    marginBottom: 1,
+    flex: 1,
+  },
+  dishIndicator: {
+    fontSize: 12,
+    marginLeft: 4,
   },
   foodCategory: {
     color: '#8E8E93',

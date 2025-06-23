@@ -327,4 +327,60 @@ export class CalculationService {
 
     return errors;
   }
+
+  // Dish calculation functions
+  static calculateDishNutrition(ingredients, foods) {
+    const totals = {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fiber: 0,
+      sugar: 0,
+      fat: 0,
+      // Sub-macros
+      naturalSugars: 0,
+      addedSugars: 0,
+      saturatedFat: 0,
+      monounsaturatedFat: 0,
+      polyunsaturatedFat: 0,
+      transFat: 0,
+      omega3: 0,
+      // Micronutrients
+      iron: 0,
+      calcium: 0,
+      zinc: 0,
+      magnesium: 0,
+      vitaminB6: 0,
+      vitaminB12: 0,
+      vitaminC: 0,
+      vitaminD: 0
+    };
+
+    ingredients.forEach(ingredient => {
+      const food = foods.find(f => f.id === ingredient.foodId);
+      if (food) {
+        const macros = this.calculateMacrosForPortion(food, ingredient.grams);
+        
+        // Add to totals
+        Object.keys(totals).forEach(key => {
+          totals[key] += macros[key] || 0;
+        });
+      }
+    });
+
+    return totals;
+  }
+
+  static convertToNutritionPer100g(totalNutrition, totalGrams) {
+    if (totalGrams === 0) return totalNutrition;
+    
+    const multiplier = 100 / totalGrams;
+    const nutritionPer100g = {};
+    
+    Object.keys(totalNutrition).forEach(key => {
+      nutritionPer100g[key] = Math.round(totalNutrition[key] * multiplier * 10) / 10;
+    });
+    
+    return nutritionPer100g;
+  }
 }

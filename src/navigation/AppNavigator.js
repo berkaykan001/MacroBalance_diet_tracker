@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import HomeScreen from '../screens/Home/HomeScreen';
 import MealPlanningScreen from '../screens/MealPlanning/MealPlanningScreen';
-import FoodManagementScreen from '../screens/FoodManagement/FoodManagementScreen';
+import FoodsStackNavigator from './FoodsStackNavigator';
 import SettingsScreen from '../screens/Settings/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
@@ -46,7 +46,7 @@ export default function AppNavigator() {
         />
         <Tab.Screen 
           name="Foods" 
-          component={FoodManagementScreen}
+          component={FoodsStackNavigator}
           options={{
             title: 'Foods',
             tabBarIcon: ({ color, size }) => (

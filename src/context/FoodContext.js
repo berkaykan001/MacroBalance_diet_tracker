@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { defaultFoods } from '../data/defaultFoods';
+import { CalculationService } from '../services/calculationService';
 
 const FoodContext = createContext();
 
@@ -10,7 +11,8 @@ const ACTIONS = {
   UPDATE_FOOD: 'UPDATE_FOOD',
   DELETE_FOOD: 'DELETE_FOOD',
   SEARCH_FOODS: 'SEARCH_FOODS',
-  UPDATE_LAST_USED: 'UPDATE_LAST_USED'
+  UPDATE_LAST_USED: 'UPDATE_LAST_USED',
+  CREATE_DISH: 'CREATE_DISH'
 };
 
 function foodReducer(state, action) {
@@ -76,6 +78,34 @@ function foodReducer(state, action) {
         ...state,
         foods: lastUsedUpdated,
         filteredFoods: lastUsedUpdated
+      };
+    
+    case ACTIONS.CREATE_DISH:
+      const { dishName, ingredients } = action.payload;
+      
+      // Calculate total grams and nutrition for the dish
+      const totalGrams = ingredients.reduce((sum, ing) => sum + ing.grams, 0);
+      const dishNutrition = CalculationService.calculateDishNutrition(ingredients, state.foods);
+      const nutritionPer100g = CalculationService.convertToNutritionPer100g(dishNutrition, totalGrams);
+      
+      const newDish = {
+        id: Date.now().toString(),
+        name: dishName,
+        category: 'dishes',
+        isDish: true,
+        ingredients: ingredients,
+        totalGrams: totalGrams,
+        nutritionPer100g: nutritionPer100g,
+        userAdded: true,
+        createdAt: new Date().toISOString(),
+        lastUsed: new Date().toISOString()
+      };
+      
+      const updatedFoodsWithDish = [...state.foods, newDish];
+      return {
+        ...state,
+        foods: updatedFoodsWithDish,
+        filteredFoods: updatedFoodsWithDish
       };
     
     default:
@@ -147,6 +177,10 @@ export function FoodProvider({ children }) {
     dispatch({ type: ACTIONS.UPDATE_LAST_USED, payload: foodId });
   };
 
+  const createDish = (dishName, ingredients) => {
+    dispatch({ type: ACTIONS.CREATE_DISH, payload: { dishName, ingredients } });
+  };
+
   const getFoodById = (id) => {
     return state.foods.find(food => food.id === id);
   };
@@ -173,6 +207,7 @@ export function FoodProvider({ children }) {
     deleteFood,
     searchFoods,
     updateLastUsed,
+    createDish,
     getFoodById,
     getFoodsByCategory,
     getRecentlyUsed,

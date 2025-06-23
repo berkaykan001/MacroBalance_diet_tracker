@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFood } from '../../context/FoodContext';
 
@@ -687,7 +687,8 @@ export default function FoodManagementScreen() {
   return (
     <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.header}>
         <Text style={styles.title}>Food Database</Text>
         <TouchableOpacity 
           style={styles.addButton}
@@ -702,7 +703,8 @@ export default function FoodManagementScreen() {
             <Text style={styles.addButtonText}>+ Add Food</Text>
           </LinearGradient>
         </TouchableOpacity>
-      </View>
+        </View>
+      </TouchableWithoutFeedback>
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>
@@ -734,6 +736,7 @@ export default function FoodManagementScreen() {
         keyExtractor={(item) => item.id}
         style={styles.foodList}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>🍽️</Text>

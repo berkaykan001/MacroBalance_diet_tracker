@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, TextInput, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
 import { useFood } from '../../context/FoodContext';
@@ -310,7 +310,8 @@ export default function MealPlanningScreen() {
       style={styles.container}
     >
       {/* Fixed Header Section - Compact */}
-      <View style={styles.fixedHeader}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.fixedHeader}>
         {/* Meal Selector */}
         <View style={styles.mealSelector}>
           <Text style={styles.mealSelectorLabel}>Meal:</Text>
@@ -378,10 +379,16 @@ export default function MealPlanningScreen() {
             </Text>
           </TouchableOpacity>
         </LinearGradient>
-      </View>
+        </View>
+      </TouchableWithoutFeedback>
 
       {/* Scrollable Content Section */}
-      <ScrollView style={styles.scrollableContent} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        style={styles.scrollableContent} 
+        showsVerticalScrollIndicator={false} 
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
         {showFoodList && (
           <View style={styles.foodListContainer}>
             <View style={styles.foodListHeader}>
@@ -442,8 +449,9 @@ export default function MealPlanningScreen() {
           </View>
         )}
 
-        <View style={styles.selectedFoodsContainer}>
-          <Text style={styles.sectionTitle}>Selected Foods</Text>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.selectedFoodsContainer}>
+            <Text style={styles.sectionTitle}>Selected Foods</Text>
           {selectedFoods.length === 0 ? (
             <View style={styles.emptyState}>
               <Text style={styles.emptyIcon}>🍽️</Text>
@@ -481,7 +489,8 @@ export default function MealPlanningScreen() {
               </TouchableOpacity>
             </>
           )}
-        </View>
+          </View>
+        </TouchableWithoutFeedback>
         
         <View style={styles.bottomSpacer} />
       </ScrollView>

@@ -115,18 +115,27 @@ export default function FoodManagementScreen({ navigation }) {
   };
 
   const handleDeleteFood = (food) => {
-    Alert.alert(
-      'Delete Food',
-      `Are you sure you want to delete "${food.name}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
-          style: 'destructive',
-          onPress: () => deleteFood(food.id)
-        }
-      ]
-    );
+    // For web environment, use window.confirm instead of Alert.alert
+    if (typeof window !== 'undefined') {
+      const confirmed = window.confirm(`Are you sure you want to delete "${food.name}"?`);
+      if (confirmed) {
+        deleteFood(food.id);
+      }
+    } else {
+      // For mobile environment, use Alert.alert
+      Alert.alert(
+        'Delete Food',
+        `Are you sure you want to delete "${food.name}"?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Delete', 
+            style: 'destructive',
+            onPress: () => deleteFood(food.id)
+          }
+        ]
+      );
+    }
   };
 
   const handleSaveFood = () => {
@@ -227,6 +236,7 @@ export default function FoodManagementScreen({ navigation }) {
             <TouchableOpacity 
               style={styles.deleteButton} 
               onPress={() => handleDeleteFood(item)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={styles.deleteButtonText}>×</Text>
             </TouchableOpacity>
@@ -921,9 +931,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   deleteButton: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: 'rgba(255,69,58,0.2)',
     alignItems: 'center',
     justifyContent: 'center',

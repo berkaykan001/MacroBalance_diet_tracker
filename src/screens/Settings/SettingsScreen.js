@@ -436,20 +436,34 @@ export default function SettingsScreen() {
               {renderDataAction(
                 'Reset Everything',
                 'Delete all data and restore app to defaults',
-                async () => {
-                  console.log('Reset Everything button pressed');
-                  try {
-                    console.log('Calling clearAllData...');
-                    await clearAllData();
-                    console.log('clearAllData completed, reloading contexts...');
-                    // Reload all contexts to reflect the cleared data
-                    await reloadFoods();
-                    await reloadMeals();
-                    console.log('All contexts reloaded successfully');
-                    Alert.alert('Success', 'App reset successfully!');
-                  } catch (error) {
-                    console.error('Error in reset process:', error);
-                    Alert.alert('Error', 'Failed to reset app');
+                () => {
+                  // Add confirmation dialog before reset
+                  if (typeof window !== 'undefined') {
+                    // For web environment
+                    const confirmed = window.confirm(
+                      'Are you sure you want to reset everything?\n\nThis will delete ALL your data including:\n• Custom foods and dishes\n• Meal targets\n• App settings\n• Quick-add foods\n\nThis action cannot be undone!'
+                    );
+                    if (confirmed) {
+                      clearAllData();
+                      Alert.alert('Success', 'All data has been reset successfully!');
+                    }
+                  } else {
+                    // For mobile environment
+                    Alert.alert(
+                      'Reset Everything',
+                      'Are you sure you want to reset everything?\n\nThis will delete ALL your data including:\n• Custom foods and dishes\n• Meal targets\n• App settings\n• Quick-add foods\n\nThis action cannot be undone!',
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        { 
+                          text: 'Reset Everything', 
+                          style: 'destructive',
+                          onPress: () => {
+                            clearAllData();
+                            Alert.alert('Success', 'All data has been reset successfully!');
+                          }
+                        }
+                      ]
+                    );
                   }
                 },
                 true

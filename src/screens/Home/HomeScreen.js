@@ -166,6 +166,28 @@ export default function HomeScreen() {
       ? `${foodSummary}${remainingCount > 0 ? ` +${remainingCount} more` : ''}`
       : foodSummary;
 
+    // Calculate macro differences from targets
+    const calculateDifference = (actual, target) => {
+      const diff = actual - target;
+      return diff >= 0 ? `(+${diff})` : `(${diff})`;
+    };
+
+    const actualMacros = mealPlan.calculatedMacros || {};
+    const targets = meal?.macroTargets || {};
+    
+    // Calculate calories target (4*protein + 4*carbs + 9*fat)
+    const caloriesTarget = Math.round((targets.protein || 0) * 4 + (targets.carbs || 0) * 4 + (targets.fat || 0) * 9);
+    
+    const actualCalories = Math.round(actualMacros.calories || 0);
+    const actualProtein = Math.round(actualMacros.protein || 0);
+    const actualCarbs = Math.round(actualMacros.carbs || 0);
+    const actualFat = Math.round(actualMacros.fat || 0);
+
+    const calorieDiff = calculateDifference(actualCalories, caloriesTarget);
+    const proteinDiff = calculateDifference(actualProtein, Math.round(targets.protein || 0));
+    const carbsDiff = calculateDifference(actualCarbs, Math.round(targets.carbs || 0));
+    const fatDiff = calculateDifference(actualFat, Math.round(targets.fat || 0));
+
     return (
       <TouchableOpacity 
         style={styles.eatenMealItem}
@@ -189,16 +211,16 @@ export default function HomeScreen() {
           </Text>
           <View style={styles.eatenMealMacros}>
             <Text style={styles.eatenMealMacroText}>
-              {Math.round(mealPlan.calculatedMacros?.calories || 0)} cal
+              {actualCalories} cal {calorieDiff}
             </Text>
             <Text style={styles.eatenMealMacroText}>
-              {Math.round(mealPlan.calculatedMacros?.protein || 0)}p
+              {actualProtein}p {proteinDiff}
             </Text>
             <Text style={styles.eatenMealMacroText}>
-              {Math.round(mealPlan.calculatedMacros?.carbs || 0)}c
+              {actualCarbs}c {carbsDiff}
             </Text>
             <Text style={styles.eatenMealMacroText}>
-              {Math.round(mealPlan.calculatedMacros?.fat || 0)}f
+              {actualFat}f {fatDiff}
             </Text>
           </View>
         </LinearGradient>

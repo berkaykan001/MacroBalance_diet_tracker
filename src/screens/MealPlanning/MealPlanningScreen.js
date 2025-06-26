@@ -8,6 +8,7 @@ import { useMeal } from '../../context/MealContext';
 import { useSettings } from '../../context/SettingsContext';
 import { CalculationService } from '../../services/calculationService';
 import LockButton from '../../components/LockButton';
+import LockControls from '../../components/LockControls';
 import SegmentedProgressBar from '../../components/SegmentedProgressBar';
 
 const { width } = Dimensions.get('window');
@@ -25,6 +26,8 @@ export default function MealPlanningScreen({ route }) {
   const [showFoodList, setShowFoodList] = useState(false);
   const [foodSearchQuery, setFoodSearchQuery] = useState('');
   const [lockedFoods, setLockedFoods] = useState(new Set()); // Track locked food IDs
+  const [maxLimitFoods, setMaxLimitFoods] = useState(new Map()); // Track max limits: foodId -> maxValue
+  const [minLimitFoods, setMinLimitFoods] = useState(new Map()); // Track min limits: foodId -> minValue
 
   // Initialize with existing meal plan data if editing
   useEffect(() => {
@@ -47,6 +50,8 @@ export default function MealPlanningScreen({ route }) {
         setShowFoodList(false);
         setFoodSearchQuery('');
         setLockedFoods(new Set());
+        setMaxLimitFoods(new Map());
+        setMinLimitFoods(new Map());
       }
     }, [editingMealPlan])
   );
@@ -84,11 +89,21 @@ export default function MealPlanningScreen({ route }) {
 
   const removeFood = (foodId) => {
     setSelectedFoods(selectedFoods.filter(sf => sf.foodId !== foodId));
-    // Also remove from locked foods if it was locked
+    // Also remove from all lock types if it was locked
     setLockedFoods(prev => {
       const newSet = new Set(prev);
       newSet.delete(foodId);
       return newSet;
+    });
+    setMaxLimitFoods(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(foodId);
+      return newMap;
+    });
+    setMinLimitFoods(prev => {
+      const newMap = new Map(prev);
+      newMap.delete(foodId);
+      return newMap;
     });
   };
 
@@ -108,25 +123,102 @@ export default function MealPlanningScreen({ route }) {
     return lockedFoods.has(foodId);
   };
 
+  const toggleMaxLimit = (foodId) => {
+    const currentFood = selectedFoods.find(sf => sf.foodId === foodId);
+    if (!currentFood) return;
+
+    setMaxLimitFoods(prev => {
+      const newMap = new Map(prev);
+      if (newMap.has(foodId)) {
+        newMap.delete(foodId);
+      } else {
+        newMap.set(foodId, currentFood.portionGrams);
+      }
+      return newMap;
+    });
+  };
+
+  const toggleMinLimit = (foodId) => {
+    const currentFood = selectedFoods.find(sf => sf.foodId === foodId);
+    if (!currentFood) return;
+
+    setMinLimitFoods(prev => {
+      const newMap = new Map(prev);
+      if (newMap.has(foodId)) {
+        newMap.delete(foodId);
+      } else {
+        newMap.set(foodId, currentFood.portionGrams);
+      }
+      return newMap;
+    });
+  };
+
+  const hasMaxLimit = (foodId) => {
+    return maxLimitFoods.has(foodId);
+  };
+
+  const hasMinLimit = (foodId) => {
+    return minLimitFoods.has(foodId);
+  };
+
+  const getMaxLimit = (foodId) => {
+    return maxLimitFoods.get(foodId) || 500;
+  };
+
+  const getMinLimit = (foodId) => {
+    return minLimitFoods.get(foodId) || 10;
+  };
+
   const updatePortion = (foodId, newPortion) => {
     if (!selectedMeal) return;
     
+    // Don't update if fully locked
+    if (isLocked(foodId)) {
+      console.log('Food is fully locked, ignoring update:', foodId);
+      return;
+    }
+    
+    // Apply min/max limits if they exist
+    let clampedPortion = Math.round(newPortion);
+    if (hasMaxLimit(foodId)) {
+      clampedPortion = Math.min(clampedPortion, getMaxLimit(foodId));
+    }
+    if (hasMinLimit(foodId)) {
+      clampedPortion = Math.max(clampedPortion, getMinLimit(foodId));
+    }
+    
     if (appPreferences.autoOptimize) {
-      // Auto-optimize other portions when enabled, respecting locked foods
+      // Auto-optimize other portions when enabled, respecting only FULLY locked foods
+      // Foods with limits can still be optimized within their bounds
       const optimized = CalculationService.optimizePortions(
         selectedFoods, 
         foods, 
         selectedMeal.macroTargets, 
         foodId, 
-        Math.round(newPortion),
+        clampedPortion,
         Array.from(lockedFoods)
       );
-      setSelectedFoods(optimized);
+      
+      // Apply limits to optimized values
+      const constrainedOptimized = optimized.map(food => {
+        let constrainedGrams = food.portionGrams;
+        
+        if (hasMaxLimit(food.foodId)) {
+          constrainedGrams = Math.min(constrainedGrams, getMaxLimit(food.foodId));
+        }
+        if (hasMinLimit(food.foodId)) {
+          constrainedGrams = Math.max(constrainedGrams, getMinLimit(food.foodId));
+        }
+        
+        return { ...food, portionGrams: constrainedGrams };
+      });
+      
+      setSelectedFoods(constrainedOptimized);
     } else {
       // Just update the single food without optimization
       const updatedFoods = selectedFoods.map(food => 
         food.foodId === foodId 
-          ? { ...food, portionGrams: Math.round(newPortion) }
+          ? { ...food, portionGrams: clampedPortion }
           : food
       );
       setSelectedFoods(updatedFoods);
@@ -225,9 +317,15 @@ export default function MealPlanningScreen({ route }) {
             <Text style={styles.ultraCompactPortionLabel}>{item.portionGrams}g</Text>
           </View>
           
-          <LockButton 
+          <LockControls 
             isLocked={isLocked(food.id)}
-            onToggle={() => toggleFoodLock(food.id)}
+            hasMaxLimit={hasMaxLimit(food.id)}
+            hasMinLimit={hasMinLimit(food.id)}
+            onToggleLock={() => toggleFoodLock(food.id)}
+            onToggleMaxLimit={() => toggleMaxLimit(food.id)}
+            onToggleMinLimit={() => toggleMinLimit(food.id)}
+            maxLimitValue={getMaxLimit(food.id)}
+            minLimitValue={getMinLimit(food.id)}
           />
           
           <TouchableOpacity onPress={() => removeFood(food.id)} style={styles.ultraCompactRemoveButton}>
@@ -244,13 +342,18 @@ export default function MealPlanningScreen({ route }) {
             ]}
             minimumValue={10}
             maximumValue={500}
-            value={item.portionGrams}
-            onValueChange={isLocked(food.id) ? undefined : (value) => updatePortion(food.id, value)}
-            minimumTrackTintColor={isLocked(food.id) ? "#666666" : "#007AFF"}
+            value={Math.max(10, Math.min(500, item.portionGrams))}
+            onValueChange={(value) => updatePortion(food.id, value)}
+            minimumTrackTintColor={
+              isLocked(food.id) ? "#666666" : 
+              hasMaxLimit(food.id) || hasMinLimit(food.id) ? "#FF9500" : 
+              "#007AFF"
+            }
             maximumTrackTintColor="#3A3A3A"
             thumbStyle={[
               styles.ultraCompactSliderThumb,
-              isLocked(food.id) && styles.lockedSliderThumb
+              isLocked(food.id) && styles.lockedSliderThumb,
+              (hasMaxLimit(food.id) || hasMinLimit(food.id)) && styles.limitedSliderThumb
             ]}
             trackStyle={styles.ultraCompactSliderTrack}
             step={5}
@@ -1258,6 +1361,9 @@ const styles = StyleSheet.create({
   },
   lockedSliderThumb: {
     backgroundColor: '#666666',
+  },
+  limitedSliderThumb: {
+    backgroundColor: '#FF9500',
   },
 
 });

@@ -34,6 +34,14 @@ describe('CalculationService', () => {
         polyunsaturatedFat: 0,
         transFat: 0,
         omega3: 0,
+        vitaminD: 0,
+        magnesium: 0,
+        iron: 0,
+        calcium: 0,
+        zinc: 0,
+        vitaminB6: 0,
+        vitaminB12: 0,
+        vitaminC: 0,
       });
     });
 
@@ -54,6 +62,14 @@ describe('CalculationService', () => {
         polyunsaturatedFat: 0,
         transFat: 0,
         omega3: 0,
+        vitaminD: 0,
+        magnesium: 0,
+        iron: 0,
+        calcium: 0,
+        zinc: 0,
+        vitaminB6: 0,
+        vitaminB12: 0,
+        vitaminC: 0,
       });
     });
 
@@ -74,6 +90,14 @@ describe('CalculationService', () => {
         polyunsaturatedFat: 0,
         transFat: 0,
         omega3: 0,
+        vitaminD: 0,
+        magnesium: 0,
+        iron: 0,
+        calcium: 0,
+        zinc: 0,
+        vitaminB6: 0,
+        vitaminB12: 0,
+        vitaminC: 0,
       });
     });
   });
@@ -108,6 +132,14 @@ describe('CalculationService', () => {
         polyunsaturatedFat: 0,
         transFat: 0,
         omega3: 0,
+        vitaminD: 0,
+        magnesium: 0,
+        iron: 0,
+        calcium: 0,
+        zinc: 0,
+        vitaminB6: 0,
+        vitaminB12: 0,
+        vitaminC: 0,
       });
     });
   });

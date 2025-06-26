@@ -28,6 +28,8 @@ export default function MealPlanningScreen({ route }) {
   const [lockedFoods, setLockedFoods] = useState(new Set()); // Track locked food IDs
   const [maxLimitFoods, setMaxLimitFoods] = useState(new Map()); // Track max limits: foodId -> maxValue
   const [minLimitFoods, setMinLimitFoods] = useState(new Map()); // Track min limits: foodId -> minValue
+  const [editingPortion, setEditingPortion] = useState(null); // Track which food portion is being manually edited
+  const [tempPortionValue, setTempPortionValue] = useState(''); // Temporary value during manual input
 
   // Initialize with existing meal plan data if editing
   useEffect(() => {
@@ -52,6 +54,8 @@ export default function MealPlanningScreen({ route }) {
         setLockedFoods(new Set());
         setMaxLimitFoods(new Map());
         setMinLimitFoods(new Map());
+        setEditingPortion(null);
+        setTempPortionValue('');
       }
     }, [editingMealPlan])
   );
@@ -166,7 +170,7 @@ export default function MealPlanningScreen({ route }) {
   };
 
   const getMinLimit = (foodId) => {
-    return minLimitFoods.get(foodId) || 10;
+    return minLimitFoods.get(foodId) || 0;
   };
 
   const updatePortion = (foodId, newPortion) => {
@@ -178,8 +182,8 @@ export default function MealPlanningScreen({ route }) {
       return;
     }
     
-    // Apply min/max limits if they exist
-    let clampedPortion = Math.round(newPortion);
+    // Apply min/max limits if they exist, ensuring minimum is 0g
+    let clampedPortion = Math.max(0, Math.round(newPortion));
     if (hasMaxLimit(foodId)) {
       clampedPortion = Math.min(clampedPortion, getMaxLimit(foodId));
     }
@@ -314,7 +318,40 @@ export default function MealPlanningScreen({ route }) {
           </View>
           
           <View style={styles.ultraCompactPortionSection}>
-            <Text style={styles.ultraCompactPortionLabel}>{item.portionGrams}g</Text>
+            {editingPortion === food.id ? (
+              <TextInput
+                style={styles.ultraCompactPortionInput}
+                value={tempPortionValue}
+                onChangeText={setTempPortionValue}
+                onBlur={() => {
+                  const numValue = parseFloat(tempPortionValue);
+                  if (!isNaN(numValue) && numValue >= 0 && numValue <= 500) {
+                    updatePortion(food.id, numValue);
+                  }
+                  setEditingPortion(null);
+                  setTempPortionValue('');
+                }}
+                onSubmitEditing={() => {
+                  const numValue = parseFloat(tempPortionValue);
+                  if (!isNaN(numValue) && numValue >= 0 && numValue <= 500) {
+                    updatePortion(food.id, numValue);
+                  }
+                  setEditingPortion(null);
+                  setTempPortionValue('');
+                }}
+                keyboardType="numeric"
+                selectTextOnFocus
+                autoFocus
+                maxLength={6}
+              />
+            ) : (
+              <TouchableOpacity onPress={() => {
+                setEditingPortion(food.id);
+                setTempPortionValue(item.portionGrams.toString());
+              }}>
+                <Text style={styles.ultraCompactPortionLabel}>{item.portionGrams}g</Text>
+              </TouchableOpacity>
+            )}
           </View>
           
           <LockControls 
@@ -340,9 +377,9 @@ export default function MealPlanningScreen({ route }) {
               styles.ultraCompactSlider,
               isLocked(food.id) && styles.lockedSlider
             ]}
-            minimumValue={10}
+            minimumValue={0}
             maximumValue={500}
-            value={Math.max(10, Math.min(500, item.portionGrams))}
+            value={Math.max(0, Math.min(500, item.portionGrams))}
             onValueChange={(value) => updatePortion(food.id, value)}
             minimumTrackTintColor={
               isLocked(food.id) ? "#666666" : 
@@ -1327,6 +1364,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#007AFF',
     textAlign: 'center',
+  },
+  ultraCompactPortionInput: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#007AFF',
+    textAlign: 'center',
+    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+    borderRadius: 4,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    minWidth: 40,
   },
   ultraCompactRemoveButton: {
     width: 18,

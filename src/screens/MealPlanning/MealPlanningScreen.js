@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, TextInput, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
@@ -11,16 +12,44 @@ import SegmentedProgressBar from '../../components/SegmentedProgressBar';
 
 const { width } = Dimensions.get('window');
 
-export default function MealPlanningScreen() {
+export default function MealPlanningScreen({ route }) {
   const { foods, filteredFoods, searchFoods } = useFood();
-  const { meals, createMealPlan } = useMeal();
+  const { meals, createMealPlan, updateMealPlan } = useMeal();
   const { selectedQuickFoods, appPreferences } = useSettings();
   
-  const [selectedMealId, setSelectedMealId] = useState('1'); // Default to Breakfast
+  // Check if we're editing an existing meal plan
+  const editingMealPlan = route?.params?.editingMealPlan;
+  
+  const [selectedMealId, setSelectedMealId] = useState(editingMealPlan?.mealId || '1');
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [showFoodList, setShowFoodList] = useState(false);
   const [foodSearchQuery, setFoodSearchQuery] = useState('');
   const [lockedFoods, setLockedFoods] = useState(new Set()); // Track locked food IDs
+
+  // Initialize with existing meal plan data if editing
+  useEffect(() => {
+    if (editingMealPlan) {
+      setSelectedMealId(editingMealPlan.mealId);
+      setSelectedFoods(editingMealPlan.selectedFoods.map(food => ({
+        ...food,
+        id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
+      })));
+    }
+  }, [editingMealPlan]);
+
+  // Reset state when navigating to this screen without editingMealPlan parameter
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!editingMealPlan) {
+        // Reset to default state for new meal planning
+        setSelectedMealId('1');
+        setSelectedFoods([]);
+        setShowFoodList(false);
+        setFoodSearchQuery('');
+        setLockedFoods(new Set());
+      }
+    }, [editingMealPlan])
+  );
 
   // Always get the current meal data (updates when meals context changes)
   const selectedMeal = meals.find(meal => meal.id === selectedMealId) || meals[0];
@@ -125,15 +154,32 @@ export default function MealPlanningScreen() {
       calculatedMacros: currentMacros
     };
 
-    createMealPlan(mealPlan);
+    console.log('saveMealPlan - editingMealPlan:', !!editingMealPlan);
+    console.log('saveMealPlan - creating new meal plan for:', selectedMeal.name);
+
+    if (editingMealPlan) {
+      // Update existing meal plan (when editing from dashboard)
+      console.log('Updating existing meal plan:', editingMealPlan.id);
+      updateMealPlan({
+        ...editingMealPlan,
+        ...mealPlan
+      });
+      Alert.alert(
+        'Meal Updated!', 
+        `${selectedMeal.name} has been updated with ${Math.round(currentMacros.calories)} calories.`
+      );
+    } else {
+      // Always create new meal plan (allows multiple meals of same type per day)
+      console.log('Creating new meal plan');
+      createMealPlan(mealPlan);
+      Alert.alert(
+        'Meal Saved!', 
+        `${selectedMeal.name} has been marked as eaten with ${Math.round(currentMacros.calories)} calories.`
+      );
+    }
     
     // Clear the current meal plan after saving
     setSelectedFoods([]);
-    
-    Alert.alert(
-      'Meal Saved!', 
-      `${selectedMeal.name} has been marked as eaten with ${Math.round(currentMacros.calories)} calories.`
-    );
   };
 
   const renderFoodItem = ({ item }) => {
@@ -480,7 +526,7 @@ export default function MealPlanningScreen() {
                   end={{ x: 1, y: 1 }}
                 >
                   <Text style={styles.eatenButtonText}>
-                    ✓ Mark {selectedMeal.name} as Eaten
+                    {editingMealPlan ? '✓ Update Meal' : '✓ Mark as Eaten'}
                   </Text>
                   <Text style={styles.eatenButtonSubtext}>
                     {Math.round(currentMacros.calories)} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f

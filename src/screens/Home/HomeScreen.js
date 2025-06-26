@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMeal } from '../../context/MealContext';
 import { useFood } from '../../context/FoodContext';
@@ -13,14 +13,18 @@ export default function HomeScreen() {
     getDailyProgress, 
     getMealsCompletedToday, 
     getRecentMealPlans,
-    getTodaysMealPlans 
+    getTodaysMealPlans,
+    getMealById,
+    deleteMealPlan,
+    updateMealPlan
   } = useMeal();
-  const { getRecentlyUsed } = useFood();
+  const { getRecentlyUsed, foods } = useFood();
 
   const dailyProgress = getDailyProgress();
   const mealsToday = getMealsCompletedToday();
   const recentMealPlans = getRecentMealPlans(3);
   const recentFoods = getRecentlyUsed(6);
+  const todaysMealPlans = getTodaysMealPlans();
 
   // Note: getNextMeal logic postponed for now
 
@@ -38,6 +42,33 @@ export default function HomeScreen() {
   };
 
   const weeklyStats = getWeeklyConsistency();
+
+  const getFoodById = (id) => {
+    return foods.find(food => food.id === id);
+  };
+
+  const handleEditMeal = (mealPlan) => {
+    // Navigate to meal planning with the existing meal plan data
+    navigation.navigate('Plan Meal', { 
+      editingMealPlan: mealPlan 
+    });
+  };
+
+  const handleDeleteMeal = (mealPlan) => {
+    const meal = getMealById(mealPlan.mealId);
+    Alert.alert(
+      'Delete Meal',
+      `Are you sure you want to delete this ${meal?.name || 'meal'}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: () => deleteMealPlan(mealPlan.id)
+        }
+      ]
+    );
+  };
 
   const renderProgressBar = (label, current, target, color, unit = 'g') => {
     const percentage = target > 0 ? Math.min(100, (current / target) * 100) : 0;
@@ -118,6 +149,62 @@ export default function HomeScreen() {
       </LinearGradient>
     </TouchableOpacity>
   );
+
+  const renderEatenMeal = ({ item: mealPlan }) => {
+    const meal = getMealById(mealPlan.mealId);
+    const foodSummary = mealPlan.selectedFoods
+      .slice(0, 3) // Show only first 3 foods
+      .map(selectedFood => {
+        const food = getFoodById(selectedFood.foodId);
+        return food ? `${food.name} (${selectedFood.portionGrams}g)` : null;
+      })
+      .filter(Boolean)
+      .join(', ');
+    
+    const remainingCount = Math.max(0, mealPlan.selectedFoods.length - 3);
+    const displayText = remainingCount > 0 
+      ? `${foodSummary}${remainingCount > 0 ? ` +${remainingCount} more` : ''}`
+      : foodSummary;
+
+    return (
+      <TouchableOpacity 
+        style={styles.eatenMealItem}
+        onPress={() => handleEditMeal(mealPlan)}
+        onLongPress={() => handleDeleteMeal(mealPlan)}
+      >
+        <LinearGradient
+          colors={['#1A1A1A', '#2A2A2A']}
+          style={styles.eatenMealGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.eatenMealHeader}>
+            <Text style={styles.eatenMealName}>{meal?.name || 'Unknown Meal'}</Text>
+            <Text style={styles.eatenMealTime}>
+              {new Date(mealPlan.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </Text>
+          </View>
+          <Text style={styles.eatenMealFoods} numberOfLines={2}>
+            {displayText || 'No foods selected'}
+          </Text>
+          <View style={styles.eatenMealMacros}>
+            <Text style={styles.eatenMealMacroText}>
+              {Math.round(mealPlan.calculatedMacros?.calories || 0)} cal
+            </Text>
+            <Text style={styles.eatenMealMacroText}>
+              {Math.round(mealPlan.calculatedMacros?.protein || 0)}p
+            </Text>
+            <Text style={styles.eatenMealMacroText}>
+              {Math.round(mealPlan.calculatedMacros?.carbs || 0)}c
+            </Text>
+            <Text style={styles.eatenMealMacroText}>
+              {Math.round(mealPlan.calculatedMacros?.fat || 0)}f
+            </Text>
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
@@ -234,6 +321,31 @@ export default function HomeScreen() {
             </View>
           )}
         </LinearGradient>
+
+        {/* Eaten Meals Card */}
+        {todaysMealPlans.length > 0 && (
+          <LinearGradient
+            colors={['#1A1A1A', '#2A2A2A']}
+            style={styles.card}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>Today's Meals</Text>
+              <Text style={styles.cardSubtitle}>
+                Tap to edit • Long press to delete
+              </Text>
+            </View>
+            
+            <FlatList
+              data={todaysMealPlans}
+              renderItem={renderEatenMeal}
+              keyExtractor={(item) => item.id}
+              scrollEnabled={false}
+              showsVerticalScrollIndicator={false}
+            />
+          </LinearGradient>
+        )}
 
         {/* Weekly Insights Card */}
         <LinearGradient
@@ -579,5 +691,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+  },
+
+  // Eaten Meals Styles
+  eatenMealItem: {
+    marginBottom: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  eatenMealGradient: {
+    padding: 12,
+  },
+  eatenMealHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  eatenMealName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  eatenMealTime: {
+    fontSize: 11,
+    color: '#8E8E93',
+  },
+  eatenMealFoods: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginBottom: 8,
+    lineHeight: 16,
+  },
+  eatenMealMacros: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  eatenMealMacroText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#00D084',
   },
 });

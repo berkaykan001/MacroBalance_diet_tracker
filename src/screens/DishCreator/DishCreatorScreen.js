@@ -101,7 +101,11 @@ export default function DishCreatorScreen({ navigation }) {
           </View>
           <TouchableOpacity 
             style={styles.removeButton}
-            onPress={() => removeIngredient(item.foodId)}
+            onPress={() => {
+              Keyboard.dismiss();
+              setTimeout(() => removeIngredient(item.foodId), 100);
+            }}
+            activeOpacity={0.7}
           >
             <Text style={styles.removeButtonText}>×</Text>
           </TouchableOpacity>
@@ -136,7 +140,11 @@ export default function DishCreatorScreen({ navigation }) {
   const renderAvailableFood = ({ item }) => (
     <TouchableOpacity 
       style={styles.foodSelectorItem}
-      onPress={() => addIngredient(item)}
+      onPress={() => {
+        Keyboard.dismiss();
+        setTimeout(() => addIngredient(item), 100);
+      }}
+      activeOpacity={0.7}
     >
       <Text style={styles.foodSelectorName}>{item.name}</Text>
       <Text style={styles.foodSelectorCategory}>{item.category}</Text>
@@ -150,14 +158,22 @@ export default function DishCreatorScreen({ navigation }) {
           <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => {
+              Keyboard.dismiss();
+              setTimeout(() => navigation.goBack(), 100);
+            }}
+            activeOpacity={0.7}
           >
             <Text style={styles.backButtonText}>← Back</Text>
           </TouchableOpacity>
           <Text style={styles.title}>Create Dish</Text>
           <TouchableOpacity 
             style={styles.saveButton}
-            onPress={handleSaveDish}
+            onPress={() => {
+              Keyboard.dismiss();
+              setTimeout(() => handleSaveDish(), 100);
+            }}
+            activeOpacity={0.7}
           >
             <Text style={styles.saveButtonText}>Save</Text>
           </TouchableOpacity>
@@ -187,7 +203,11 @@ export default function DishCreatorScreen({ navigation }) {
               <Text style={styles.sectionTitle}>Ingredients ({ingredients.length})</Text>
               <TouchableOpacity 
                 style={styles.addIngredientButton}
-                onPress={() => setShowFoodSelector(!showFoodSelector)}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setTimeout(() => setShowFoodSelector(!showFoodSelector), 100);
+                }}
+                activeOpacity={0.7}
               >
                 <Text style={styles.addIngredientText}>
                   {showFoodSelector ? '✕ Hide' : '+ Add'}

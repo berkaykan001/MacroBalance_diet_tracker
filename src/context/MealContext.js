@@ -306,10 +306,20 @@ export function MealProvider({ children }) {
   };
 
   const getTodaysMealPlans = () => {
-    const today = new Date().toDateString();
+    const today = getMyTodayDate();
     return state.mealPlans.filter(plan => 
-      new Date(plan.createdAt).toDateString() === today
+      getMyTodayDate(new Date(plan.createdAt)) === today
     );
+  };
+
+  // Helper function to get "today" based on 4 AM reset instead of midnight
+  const getMyTodayDate = (date = new Date()) => {
+    const currentDate = new Date(date);
+    // If it's before 4 AM, consider it as the previous day
+    if (currentDate.getHours() < 4) {
+      currentDate.setDate(currentDate.getDate() - 1);
+    }
+    return currentDate.toDateString();
   };
 
   const getDailyProgress = () => {

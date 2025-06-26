@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Text, View, StyleSheet, ActivityIndicator, SafeAreaView } from 'react-native';
+import { Text, View, StyleSheet, ActivityIndicator } from 'react-native';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/AppNavigator';
 import { FoodProvider } from './src/context/FoodContext';
 import { MealProvider } from './src/context/MealContext';
@@ -38,7 +39,7 @@ class ErrorBoundary extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: '#0A0A0A', // Match app background
   },
@@ -62,9 +63,10 @@ const styles = StyleSheet.create({
   },
 });
 
-export default function App() {
+function AppContent() {
   const [isReady, setIsReady] = useState(false);
   const [initError, setInitError] = useState(null);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     initializeApp();
@@ -92,31 +94,31 @@ export default function App() {
 
   if (initError) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Startup Error!</Text>
           <Text style={styles.errorDetails}>{initError.toString()}</Text>
         </View>
         <StatusBar style="light" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!isReady) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.errorContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
           <Text style={styles.errorText}>Loading MacroBalance...</Text>
         </View>
         <StatusBar style="light" />
-      </SafeAreaView>
+      </View>
     );
   }
   
   try {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <ErrorBoundary>
           <SettingsProvider>
             <FoodProvider>
@@ -127,18 +129,26 @@ export default function App() {
           </SettingsProvider>
         </ErrorBoundary>
         <StatusBar style="light" />
-      </SafeAreaView>
+      </View>
     );
   } catch (error) {
     console.error('Critical App Error:', error);
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Critical Error!</Text>
           <Text style={styles.errorDetails}>{error.toString()}</Text>
         </View>
         <StatusBar style="light" />
-      </SafeAreaView>
+      </View>
     );
   }
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AppContent />
+    </SafeAreaProvider>
+  );
 }

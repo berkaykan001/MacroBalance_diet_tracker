@@ -42,23 +42,18 @@ export default function MealPlanningScreen({ route }) {
     }
   }, [editingMealPlan]);
 
-  // Reset state when navigating to this screen without editingMealPlan parameter
-  useFocusEffect(
-    React.useCallback(() => {
-      if (!editingMealPlan) {
-        // Reset to default state for new meal planning
-        setSelectedMealId('1');
-        setSelectedFoods([]);
-        setShowFoodList(false);
-        setFoodSearchQuery('');
-        setLockedFoods(new Set());
-        setMaxLimitFoods(new Map());
-        setMinLimitFoods(new Map());
-        setEditingPortion(null);
-        setTempPortionValue('');
-      }
-    }, [editingMealPlan])
-  );
+  // Manual reset function for when user wants to start fresh
+  const resetMealPlan = () => {
+    setSelectedMealId('1');
+    setSelectedFoods([]);
+    setShowFoodList(false);
+    setFoodSearchQuery('');
+    setLockedFoods(new Set());
+    setMaxLimitFoods(new Map());
+    setMinLimitFoods(new Map());
+    setEditingPortion(null);
+    setTempPortionValue('');
+  };
 
   // Always get the current meal data (updates when meals context changes)
   const selectedMeal = meals.find(meal => meal.id === selectedMealId) || meals[0];
@@ -550,21 +545,32 @@ export default function MealPlanningScreen({ route }) {
           </View>
         )}
 
-        <LinearGradient
-          colors={['#007AFF', '#0051D5']}
-          style={styles.addFoodButtonCompact}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <TouchableOpacity 
-            style={styles.addFoodButtonInner}
-            onPress={() => setShowFoodList(!showFoodList)}
+        <View style={styles.actionButtonsRow}>
+          <LinearGradient
+            colors={['#007AFF', '#0051D5']}
+            style={styles.addFoodButtonCompact}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
           >
-            <Text style={styles.addFoodButtonText}>
-              {showFoodList ? '✕ Hide Foods' : '+ Add Foods'}
-            </Text>
-          </TouchableOpacity>
-        </LinearGradient>
+            <TouchableOpacity 
+              style={styles.addFoodButtonInner}
+              onPress={() => setShowFoodList(!showFoodList)}
+            >
+              <Text style={styles.addFoodButtonText}>
+                {showFoodList ? '✕ Hide Foods' : '+ Add Foods'}
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
+          
+          {selectedFoods.length > 0 && (
+            <TouchableOpacity 
+              style={styles.resetButton}
+              onPress={resetMealPlan}
+            >
+              <Text style={styles.resetButtonText}>↺ Reset</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         </View>
       </TouchableWithoutFeedback>
 
@@ -1200,15 +1206,38 @@ const styles = StyleSheet.create({
     color: '#00D084',
   },
 
+  // Action Buttons Row
+  actionButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+
   // Compact Add Food Button
   addFoodButtonCompact: {
     borderRadius: 8,
-    marginBottom: 8,
+    flex: 1,
     shadowColor: '#007AFF',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+
+  // Reset Button
+  resetButton: {
+    backgroundColor: 'rgba(255, 69, 58, 0.2)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 69, 58, 0.3)',
+    marginLeft: 8,
+  },
+  resetButtonText: {
+    color: '#FF453A',
+    fontSize: 12,
+    fontWeight: '600',
   },
 
   // Compact Food Container Styles

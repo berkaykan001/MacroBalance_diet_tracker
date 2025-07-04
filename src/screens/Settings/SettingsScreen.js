@@ -24,6 +24,7 @@ export default function SettingsScreen() {
     name: '',
     macroTargets: { protein: '', carbs: '', fat: '' }
   });
+  const [searchQuery, setSearchQuery] = useState('');
 
   const sections = [
     { id: 'meal-targets', title: 'Meal Targets', icon: '🎯' },
@@ -116,6 +117,11 @@ export default function SettingsScreen() {
       }
     }
   };
+
+  const filteredFoods = foods.filter(food => 
+    food.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    food.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const renderSectionButton = ({ item }) => (
     <TouchableOpacity
@@ -390,8 +396,28 @@ export default function SettingsScreen() {
               Select your favorite foods for quick access in meal planning ({selectedQuickFoods.length}/12)
             </Text>
             
+            <View style={styles.searchContainer}>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search foods by name or category..."
+                placeholderTextColor="#8E8E93"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity
+                  style={styles.searchClearButton}
+                  onPress={() => setSearchQuery('')}
+                >
+                  <Text style={styles.searchClearText}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            
             <FlatList
-              data={foods}
+              data={filteredFoods}
               renderItem={renderQuickFoodItem}
               keyExtractor={(item) => item.id}
               key="quickFoods-3-columns"
@@ -746,6 +772,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
+  },
+
+  // Search Bar
+  searchContainer: {
+    position: 'relative',
+    marginBottom: 16,
+  },
+  searchInput: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: '#FFFFFF',
+    fontSize: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    paddingRight: 40,
+  },
+  searchClearButton: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchClearText: {
+    color: '#8E8E93',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 
   // Quick Foods

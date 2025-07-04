@@ -177,7 +177,8 @@ export default function SettingsScreen() {
         </View>
       </View>
     </LinearGradient>
-  );
+    );
+  };
 
   const renderQuickFoodItem = ({ item: food }) => {
     const isSelected = selectedQuickFoods.includes(food.id);

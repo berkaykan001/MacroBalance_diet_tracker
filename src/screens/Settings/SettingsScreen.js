@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useFood } from '../../context/FoodContext';
 import { useMeal } from '../../context/MealContext';
 import { useSettings } from '../../context/SettingsContext';
+import { CalculationService } from '../../services/calculationService';
 
 export default function SettingsScreen() {
   const { foods, reloadFoods } = useFood();
@@ -141,20 +142,23 @@ export default function SettingsScreen() {
     </TouchableOpacity>
   );
 
-  const renderMealTargetItem = ({ item: meal }) => (
-    <LinearGradient
-      colors={['#1A1A1A', '#2A2A2A']}
-      style={styles.mealTargetCard}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-    >
-      <View style={styles.mealTargetHeader}>
-        <View style={styles.mealTargetInfo}>
-          <Text style={styles.mealTargetName}>{meal.name}</Text>
-          <Text style={styles.mealTargetSubtext}>
-            P: {meal.macroTargets.protein}g | C: {meal.macroTargets.carbs}g | F: {meal.macroTargets.fat}g
-          </Text>
-        </View>
+  const renderMealTargetItem = ({ item: meal }) => {
+    const targetCalories = CalculationService.calculateTargetCalories(meal.macroTargets);
+    
+    return (
+      <LinearGradient
+        colors={['#1A1A1A', '#2A2A2A']}
+        style={styles.mealTargetCard}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <View style={styles.mealTargetHeader}>
+          <View style={styles.mealTargetInfo}>
+            <Text style={styles.mealTargetName}>{meal.name}</Text>
+            <Text style={styles.mealTargetSubtext}>
+              P: {meal.macroTargets.protein}g | C: {meal.macroTargets.carbs}g | F: {meal.macroTargets.fat}g | {targetCalories} cal
+            </Text>
+          </View>
         <View style={styles.mealTargetActions}>
           <TouchableOpacity 
             style={styles.editMealButton}
@@ -364,6 +368,20 @@ export default function SettingsScreen() {
                         placeholder="0"
                         placeholderTextColor="#8E8E93"
                       />
+                    </View>
+                  </View>
+
+                  {/* Target Calories Display - Calculated and non-editable */}
+                  <View style={styles.targetCaloriesDisplay}>
+                    <Text style={styles.targetCaloriesLabel}>Target Calories (calculated)</Text>
+                    <View style={styles.targetCaloriesValue}>
+                      <Text style={styles.targetCaloriesText}>
+                        {CalculationService.calculateTargetCalories({
+                          protein: parseFloat(mealFormData.macroTargets.protein) || 0,
+                          carbs: parseFloat(mealFormData.macroTargets.carbs) || 0,
+                          fat: parseFloat(mealFormData.macroTargets.fat) || 0
+                        })} cal
+                      </Text>
                     </View>
                   </View>
 
@@ -741,6 +759,32 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '600',
+  },
+
+  // Target Calories Display
+  targetCaloriesDisplay: {
+    marginBottom: 16,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 6,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  targetCaloriesLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#8E8E93',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  targetCaloriesValue: {
+    alignItems: 'center',
+  },
+  targetCaloriesText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00D084',
+    textAlign: 'center',
   },
 
   // Add New Meal Button

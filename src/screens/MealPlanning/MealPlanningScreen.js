@@ -228,6 +228,10 @@ export default function MealPlanningScreen({ route }) {
     ? CalculationService.calculateTotalMacros(selectedFoods, foods)
     : { protein: 0, carbs: 0, fat: 0, calories: 0, fiber: 0, sugar: 0 };
 
+  const targetCalories = selectedMeal 
+    ? CalculationService.calculateTargetCalories(selectedMeal.macroTargets)
+    : 0;
+
   const progress = selectedMeal 
     ? CalculationService.calculateMacroProgress(currentMacros, selectedMeal.macroTargets)
     : null;
@@ -540,7 +544,9 @@ export default function MealPlanningScreen({ route }) {
             
             <View style={styles.compactCalories}>
               <Text style={styles.compactCaloriesLabel}>Total: </Text>
-              <Text style={styles.compactCaloriesValue}>{currentMacros.calories} cal</Text>
+              <Text style={styles.compactCaloriesValue}>
+                {currentMacros.calories}/{targetCalories} cal
+              </Text>
             </View>
           </View>
         )}
@@ -675,7 +681,7 @@ export default function MealPlanningScreen({ route }) {
                     {editingMealPlan ? '✓ Update Meal' : '✓ Mark as Eaten'}
                   </Text>
                   <Text style={styles.eatenButtonSubtext}>
-                    {Math.round(currentMacros.calories)} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+                    {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>

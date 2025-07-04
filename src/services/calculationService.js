@@ -1,4 +1,13 @@
 export class CalculationService {
+  // Calculate target calories from macro targets
+  // Protein: 4 calories/gram, Carbs: 4 calories/gram, Fat: 9 calories/gram
+  static calculateTargetCalories(macroTargets) {
+    const proteinCalories = (macroTargets.protein || 0) * 4;
+    const carbCalories = (macroTargets.carbs || 0) * 4;
+    const fatCalories = (macroTargets.fat || 0) * 9;
+    return Math.round(proteinCalories + carbCalories + fatCalories);
+  }
+
   static calculateMacrosForPortion(food, portionGrams) {
     const multiplier = portionGrams / 100;
     const nutrition = food.nutritionPer100g;

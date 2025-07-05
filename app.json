@@ -24,7 +24,15 @@
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "webpack",
+      "build": {
+        "babel": {
+          "include": [
+            "node_modules/@expo/vector-icons"
+          ]
+        }
+      }
     },
     "extra": {
       "eas": {

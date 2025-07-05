@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMeal } from '../../context/MealContext';
 import { useFood } from '../../context/FoodContext';
 import { useNavigation } from '@react-navigation/native';
+import EditMealModal from '../../components/EditMealModal';
 
 const { width } = Dimensions.get('window');
 
@@ -19,6 +20,10 @@ export default function HomeScreen() {
     updateMealPlan
   } = useMeal();
   const { getRecentlyUsed, foods } = useFood();
+
+  // Modal state
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedMealPlan, setSelectedMealPlan] = useState(null);
 
   const dailyProgress = getDailyProgress();
   const mealsToday = getMealsCompletedToday();
@@ -48,10 +53,18 @@ export default function HomeScreen() {
   };
 
   const handleEditMeal = (mealPlan) => {
-    // Navigate to meal planning with the existing meal plan data
-    navigation.navigate('Plan Meal', { 
-      editingMealPlan: mealPlan 
-    });
+    setSelectedMealPlan(mealPlan);
+    setEditModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setEditModalVisible(false);
+    setSelectedMealPlan(null);
+  };
+
+  const handleMealUpdate = (updatedMealPlan) => {
+    // The modal already calls updateMealPlan, so we just need to close
+    handleCloseModal();
   };
 
   const handleDeleteMeal = (mealPlan) => {
@@ -405,6 +418,14 @@ export default function HomeScreen() {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Edit Meal Modal */}
+      <EditMealModal
+        visible={editModalVisible}
+        onClose={handleCloseModal}
+        mealPlan={selectedMealPlan}
+        onUpdate={handleMealUpdate}
+      />
     </LinearGradient>
   );
 }

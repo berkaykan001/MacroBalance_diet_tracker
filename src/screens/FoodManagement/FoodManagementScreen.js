@@ -106,10 +106,16 @@ export default function FoodManagementScreen({ navigation }) {
 
   const handleEditFood = (food) => {
     setEditingFood(food);
+    // Convert all nutrition values to strings for form inputs
+    const nutritionAsStrings = {};
+    Object.keys(food.nutritionPer100g).forEach(key => {
+      nutritionAsStrings[key] = food.nutritionPer100g[key].toString();
+    });
+    
     setFormData({
       name: food.name,
       category: food.category,
-      nutritionPer100g: { ...food.nutritionPer100g }
+      nutritionPer100g: nutritionAsStrings
     });
     setShowAddForm(true);
   };

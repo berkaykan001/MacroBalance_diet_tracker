@@ -13,7 +13,7 @@ import SegmentedProgressBar from '../../components/SegmentedProgressBar';
 
 const { width } = Dimensions.get('window');
 
-export default function MealPlanningScreen({ route }) {
+export default function MealPlanningScreen({ route, navigation }) {
   const { foods, filteredFoods, searchFoods } = useFood();
   const { meals, createMealPlan, updateMealPlan } = useMeal();
   const { selectedQuickFoods, appPreferences } = useSettings();
@@ -53,6 +53,13 @@ export default function MealPlanningScreen({ route }) {
     setMinLimitFoods(new Map());
     setEditingPortion(null);
     setTempPortionValue('');
+  };
+
+  // Cancel editing and go back
+  const cancelEditing = () => {
+    if (navigation && navigation.goBack) {
+      navigation.goBack();
+    }
   };
 
   // Always get the current meal data (updates when meals context changes)
@@ -666,25 +673,51 @@ export default function MealPlanningScreen({ route }) {
                 showsVerticalScrollIndicator={false}
               />
               
-              {/* Eaten Button */}
-              <TouchableOpacity 
-                style={styles.eatenButton}
-                onPress={saveMealPlan}
-              >
-                <LinearGradient
-                  colors={['#00D084', '#00A86B']}
-                  style={styles.eatenButtonGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
+              {/* Action Buttons */}
+              {editingMealPlan ? (
+                <View style={styles.editActionButtons}>
+                  <TouchableOpacity 
+                    style={styles.cancelButton}
+                    onPress={cancelEditing}
+                  >
+                    <Text style={styles.cancelButtonText}>✕ Cancel</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.updateButton}
+                    onPress={saveMealPlan}
+                  >
+                    <LinearGradient
+                      colors={['#00D084', '#00A86B']}
+                      style={styles.updateButtonGradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    >
+                      <Text style={styles.updateButtonText}>✓ Update Meal</Text>
+                      <Text style={styles.updateButtonSubtext}>
+                        {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+                      </Text>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity 
+                  style={styles.eatenButton}
+                  onPress={saveMealPlan}
                 >
-                  <Text style={styles.eatenButtonText}>
-                    {editingMealPlan ? '✓ Update Meal' : '✓ Mark as Eaten'}
-                  </Text>
-                  <Text style={styles.eatenButtonSubtext}>
-                    {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
-                  </Text>
-                </LinearGradient>
-              </TouchableOpacity>
+                  <LinearGradient
+                    colors={['#00D084', '#00A86B']}
+                    style={styles.eatenButtonGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Text style={styles.eatenButtonText}>✓ Mark as Eaten</Text>
+                    <Text style={styles.eatenButtonSubtext}>
+                      {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              )}
             </>
           )}
           </View>
@@ -1146,6 +1179,60 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   eatenButtonSubtext: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '500',
+  },
+
+  // Edit Action Buttons
+  editActionButtons: {
+    flexDirection: 'row',
+    marginTop: 16,
+  },
+
+  // Cancel Button
+  cancelButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 69, 58, 0.2)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 69, 58, 0.3)',
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FF453A',
+  },
+
+  // Update Button
+  updateButton: {
+    flex: 2,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#00D084',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  updateButtonGradient: {
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  updateButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+    letterSpacing: 0.3,
+  },
+  updateButtonSubtext: {
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.9)',
     fontWeight: '500',

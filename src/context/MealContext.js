@@ -66,6 +66,19 @@ const defaultMeals = [
     },
     userCustom: false,
     createdAt: new Date().toISOString()
+  },
+  {
+    id: '5',
+    name: 'Snack',
+    macroTargets: {
+      protein: 0,
+      carbs: 0,
+      minFiber: 0,
+      maxSugar: 0,
+      fat: 0
+    },
+    userCustom: false,
+    createdAt: new Date().toISOString()
   }
 ];
 

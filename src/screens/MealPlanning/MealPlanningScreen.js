@@ -528,7 +528,7 @@ export default function MealPlanningScreen({ route, navigation }) {
           </ScrollView>
         </View>
 
-        {progress && selectedMeal && selectedFoods.length > 0 && (
+        {progress && selectedMeal && selectedFoods.length > 0 && selectedMeal.name !== 'Snack' && (
           <View style={styles.compactProgressSection}>
             <SegmentedProgressBar
               label="Protein"
@@ -555,6 +555,15 @@ export default function MealPlanningScreen({ route, navigation }) {
                 {currentMacros.calories}/{targetCalories} cal
               </Text>
             </View>
+          </View>
+        )}
+
+        {selectedMeal && selectedFoods.length > 0 && selectedMeal.name === 'Snack' && (
+          <View style={styles.snackCaloriesSection}>
+            <Text style={styles.snackCaloriesLabel}>Snack: </Text>
+            <Text style={styles.snackCaloriesValue}>
+              {currentMacros.calories} cal • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+            </Text>
           </View>
         )}
 
@@ -1534,6 +1543,28 @@ const styles = StyleSheet.create({
   },
   limitedSliderThumb: {
     backgroundColor: '#FF9500',
+  },
+
+  // Snack Calories
+  snackCaloriesSection: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+  snackCaloriesLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  snackCaloriesValue: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#00D084',
   },
 
 });

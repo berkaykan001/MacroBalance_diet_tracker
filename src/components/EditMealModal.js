@@ -394,7 +394,7 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
         </View>
 
         {/* Progress Section */}
-        {selectedFoods.length > 0 && (
+        {selectedFoods.length > 0 && selectedMeal.name !== 'Snack' && (
           <View style={styles.progressSection}>
             <SegmentedProgressBar
               label="Protein"
@@ -421,6 +421,16 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
                 {currentMacros.calories}/{targetCalories} cal
               </Text>
             </View>
+          </View>
+        )}
+
+        {/* Snack Calories Section */}
+        {selectedFoods.length > 0 && selectedMeal.name === 'Snack' && (
+          <View style={styles.snackCalories}>
+            <Text style={styles.snackCaloriesLabel}>Snack: </Text>
+            <Text style={styles.snackCaloriesValue}>
+              {currentMacros.calories} cal • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+            </Text>
           </View>
         )}
 
@@ -579,6 +589,29 @@ const styles = StyleSheet.create({
   },
   caloriesValue: {
     fontSize: 16,
+    fontWeight: '600',
+    color: '#00D084',
+  },
+
+  // Snack Calories
+  snackCalories: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginBottom: 12,
+  },
+  snackCaloriesLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  snackCaloriesValue: {
+    fontSize: 14,
     fontWeight: '600',
     color: '#00D084',
   },

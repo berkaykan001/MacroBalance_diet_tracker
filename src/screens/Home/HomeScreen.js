@@ -26,7 +26,7 @@ export default function HomeScreen() {
   const [selectedMealPlan, setSelectedMealPlan] = useState(null);
 
   const dailyProgress = getDailyProgress();
-  const mealsToday = getMealsCompletedToday();
+  const mealsToday = getMealsCompletedToday().filter(meal => meal.name !== 'Snack');
   const recentMealPlans = getRecentMealPlans(3);
   const recentFoods = getRecentlyUsed(6);
   const todaysMealPlans = getTodaysMealPlans();

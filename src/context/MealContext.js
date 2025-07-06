@@ -494,6 +494,50 @@ export function MealProvider({ children }) {
           date: dateKey,
           ...state.dailySummaries[dateKey]
         });
+      } else {
+        // Add dummy data for debugging/testing (last 14 days)
+        if (i < 14) {
+          const targets = getDailyTargets();
+          const variation = () => 0.7 + (Math.random() * 0.6); // 70% to 130% of target
+          
+          summaries.unshift({
+            date: dateKey,
+            macros: {
+              protein: Math.round(targets.protein * variation()),
+              carbs: Math.round(targets.carbs * variation()),
+              fat: Math.round(targets.fat * variation()),
+              calories: Math.round((targets.protein * 4 + targets.carbs * 4 + targets.fat * 9) * variation())
+            },
+            subMacros: {
+              fiber: Math.round(25 * variation()),
+              omega3: Math.round(2 * variation()),
+              saturatedFat: Math.round(20 * variation()),
+              monounsaturatedFat: Math.round(15 * variation()),
+              polyunsaturatedFat: Math.round(10 * variation()),
+              transFat: Math.round(2 * Math.random()),
+              addedSugars: Math.round(25 * Math.random()),
+              naturalSugars: Math.round(30 * variation())
+            },
+            micronutrients: {
+              iron: Math.round(18 * variation()),
+              calcium: Math.round(1000 * variation()),
+              zinc: Math.round(11 * variation()),
+              magnesium: Math.round(400 * variation()),
+              vitaminB6: Math.round(1.3 * variation()),
+              vitaminB12: Math.round(2.4 * variation()),
+              vitaminC: Math.round(90 * variation()),
+              vitaminD: Math.round(20 * variation())
+            },
+            targetsAchieved: {
+              protein: Math.min(1, variation()),
+              carbs: Math.min(1, variation()),
+              fat: Math.min(1, variation())
+            },
+            consistencyScore: 0.6 + (Math.random() * 0.4), // 60% to 100%
+            topFoods: ['chicken-breast', 'brown-rice', 'avocado'].slice(0, Math.floor(Math.random() * 3) + 1),
+            createdAt: date.toISOString()
+          });
+        }
       }
     }
     

@@ -16,14 +16,21 @@ export default function CircularProgress({
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   
-  // Calculate progress percentage
-  const percentage = target > 0 ? Math.min(100, (current / target) * 100) : 0;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+  // Calculate progress percentage (don't cap at 100%)
+  const actualPercentage = target > 0 ? (current / target) * 100 : 0;
+  const displayPercentage = Math.min(150, actualPercentage); // Cap display at 150% for visual purposes
+  const strokeDashoffset = circumference - (displayPercentage / 150) * circumference;
   
   // Determine colors based on achievement
-  const isComplete = percentage >= 95;
-  const isOver = percentage > 105;
-  const ringColor = isOver ? '#FF453A' : isComplete ? '#00D084' : color[0];
+  const isComplete = actualPercentage >= 95 && actualPercentage <= 105;
+  const isUnder = actualPercentage < 95;
+  const isSlightlyOver = actualPercentage > 105 && actualPercentage <= 120;
+  const isSignificantlyOver = actualPercentage > 120;
+  
+  const ringColor = isSignificantlyOver ? '#FF453A' : 
+                   isSlightlyOver ? '#FF9500' : 
+                   isComplete ? '#00D084' : 
+                   color[0];
   
   return (
     <View style={[styles.container, { width: size, height: size }]}>
@@ -51,7 +58,7 @@ export default function CircularProgress({
           cy={center}
           r={radius}
           fill="none"
-          stroke={isOver || isComplete ? ringColor : "url(#gradient)"}
+          stroke={isSlightlyOver || isSignificantlyOver || isComplete ? ringColor : "url(#gradient)"}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
@@ -63,7 +70,7 @@ export default function CircularProgress({
       {/* Center content */}
       <View style={styles.centerContent}>
         <Text style={[styles.percentage, { color: ringColor }]}>
-          {Math.round(percentage)}%
+          {Math.round(actualPercentage)}%
         </Text>
         <Text style={styles.values}>
           {Math.round(current)}/{target}{unit}
@@ -156,28 +163,6 @@ export function CircularProgressSection() {
           />
         </View>
       </View>
-      
-      {/* Summary stats */}
-      <View style={styles.summaryStats}>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>
-            {macros.filter(m => (m.current / m.target) >= 0.95).length}/3
-          </Text>
-          <Text style={styles.statLabel}>Targets Met</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>
-            {Math.round(macros.reduce((sum, m) => sum + (m.current / m.target), 0) / 3 * 100)}%
-          </Text>
-          <Text style={styles.statLabel}>Avg Progress</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>
-            {Math.round(calories.consumed)}
-          </Text>
-          <Text style={styles.statLabel}>Total Calories</Text>
-        </View>
-      </View>
     </LinearGradient>
   );
 }
@@ -247,27 +232,5 @@ const styles = StyleSheet.create({
   caloriesContainer: {
     marginTop: 16,
     alignSelf: 'center',
-  },
-  summaryStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-    paddingTop: 16,
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#00D084',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: '#8E8E93',
-    textAlign: 'center',
   },
 });

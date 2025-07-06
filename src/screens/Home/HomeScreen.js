@@ -101,30 +101,6 @@ export default function HomeScreen() {
     );
   };
 
-  const renderProgressBar = (label, current, target, color, unit = 'g') => {
-    const percentage = target > 0 ? Math.min(100, (current / target) * 100) : 0;
-    const isComplete = percentage >= 95;
-    
-    return (
-      <View style={styles.progressItem}>
-        <View style={styles.progressHeader}>
-          <Text style={styles.progressLabel}>{label}</Text>
-          <Text style={[styles.progressValue, { color: isComplete ? '#00D084' : '#FFFFFF' }]}>
-            {Math.round(current * 10) / 10}/{target}{unit}
-          </Text>
-        </View>
-        <View style={styles.progressTrack}>
-          <LinearGradient
-            colors={color}
-            style={[styles.progressFill, { width: `${percentage}%` }]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          />
-        </View>
-        <Text style={styles.progressPercentage}>{Math.round(percentage)}%</Text>
-      </View>
-    );
-  };
 
   const renderSubMacroBar = (label, current, target, color, isMax = false, unit = 'g') => {
     const percentage = target > 0 ? Math.min(100, (current / target) * 100) : 0;
@@ -255,6 +231,9 @@ export default function HomeScreen() {
           <Text style={styles.subtitle}>Track your daily macro progress</Text>
         </View>
 
+        {/* Circular Progress Section */}
+        <CircularProgressSection />
+
         {/* Daily Progress Card */}
         <LinearGradient
           colors={['#1A1A1A', '#2A2A2A']}
@@ -267,12 +246,6 @@ export default function HomeScreen() {
             <Text style={styles.cardSubtitle}>
               {dailyProgress.consumed.calories} / {Math.round((dailyProgress.targets.protein * 4) + (dailyProgress.targets.carbs * 4) + (dailyProgress.targets.fat * 9))} cal
             </Text>
-          </View>
-          
-          <View style={styles.progressContainer}>
-            {renderProgressBar('Protein', dailyProgress.consumed.protein, dailyProgress.targets.protein, ['#FF6B6B', '#FF8E8E'])}
-            {renderProgressBar('Carbs', dailyProgress.consumed.carbs, dailyProgress.targets.carbs, ['#4ECDC4', '#6EDCD6'])}
-            {renderProgressBar('Fat', dailyProgress.consumed.fat, dailyProgress.targets.fat, ['#45B7D1', '#6BC5D7'])}
           </View>
 
           {/* Sub-Macro Progress */}
@@ -318,9 +291,6 @@ export default function HomeScreen() {
             />
           </View>
         </LinearGradient>
-
-        {/* Circular Progress Section */}
-        <CircularProgressSection />
 
         {/* Macro Trends Section */}
         <MacroTrendsSection />
@@ -457,44 +427,6 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
   },
 
-  // Progress Styles
-  progressContainer: {
-    marginBottom: 20,
-  },
-  progressItem: {
-    marginBottom: 12,
-  },
-  progressHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  progressLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  progressValue: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  progressTrack: {
-    height: 6,
-    backgroundColor: '#2A2A2A',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginBottom: 4,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
-  },
-  progressPercentage: {
-    fontSize: 10,
-    color: '#8E8E93',
-    textAlign: 'right',
-  },
 
   // Meal Status Styles
   mealStatusContainer: {

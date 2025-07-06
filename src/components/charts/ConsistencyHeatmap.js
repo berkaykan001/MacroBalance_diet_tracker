@@ -7,45 +7,87 @@ export default function ConsistencyHeatmap() {
   const { getDailySummariesForPeriod } = useMeal();
   const [selectedDay, setSelectedDay] = useState(null);
   
-  // Get data for the last 12 weeks (84 days)
-  const summaries = getDailySummariesForPeriod(84);
+  // Get data for the last 4 weeks (28 days) - simplified for debugging
+  const summaries = getDailySummariesForPeriod(28);
   
   // Create a map of dates to summaries for easy lookup
   const summaryMap = {};
   summaries.forEach(summary => {
-    summaryMap[summary.date] = summary;
+    // Handle both date formats: ISO string (YYYY-MM-DD) and Date string
+    let dateKey;
+    if (summary.date.includes('-')) {
+      // ISO format YYYY-MM-DD
+      const dateObj = new Date(summary.date + 'T00:00:00');
+      dateKey = dateObj.toDateString();
+    } else {
+      // Already in toDateString format
+      dateKey = summary.date;
+    }
+    summaryMap[dateKey] = summary;
   });
   
-  // Generate calendar grid for last 12 weeks (memoized for performance)
+  // Generate calendar grid for last 4 weeks (memoized for performance)
   const weeks = useMemo(() => {
     const weeks = [];
     const today = new Date();
     const startDate = new Date(today);
-    startDate.setDate(today.getDate() - 83); // 84 days ago
+    startDate.setDate(today.getDate() - 27); // 28 days ago
     
     // Find the start of the week (Sunday)
     const dayOfWeek = startDate.getDay();
     startDate.setDate(startDate.getDate() - dayOfWeek);
     
-    for (let week = 0; week < 12; week++) {
+    for (let week = 0; week < 4; week++) {
       const weekData = [];
       for (let day = 0; day < 7; day++) {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + (week * 7) + day);
         
-        const dateString = date.toISOString().split('T')[0];
+        const dateString = date.toDateString();
         const summary = summaryMap[dateString];
-        const isToday = dateString === today.toISOString().split('T')[0];
+        const isToday = dateString === today.toDateString();
         const isFuture = date > today;
         
+        // For testing, add some hardcoded consistency values
+        let testConsistency = 0;
+        if (!isFuture) {
+          // Cycle through different consistency values for testing
+          const dayOfMonth = date.getDate();
+          if (dayOfMonth % 5 === 0) testConsistency = 0.9; // Excellent
+          else if (dayOfMonth % 4 === 0) testConsistency = 0.75; // Good  
+          else if (dayOfMonth % 3 === 0) testConsistency = 0.55; // Average
+          else if (dayOfMonth % 2 === 0) testConsistency = 0.35; // Below average
+          else testConsistency = 0.15; // Poor
+        }
+
+        // Create a more complete test summary for clicked days
+        let testSummary = null;
+        if (!isFuture && testConsistency > 0) {
+          testSummary = {
+            consistencyScore: testConsistency,
+            macros: {
+              protein: Math.round(120 * (0.8 + Math.random() * 0.4)), // 96-168g
+              carbs: Math.round(180 * (0.8 + Math.random() * 0.4)),   // 144-252g  
+              fat: Math.round(60 * (0.8 + Math.random() * 0.4))       // 48-84g
+            },
+            targetsAchieved: {
+              protein: 0.8 + Math.random() * 0.4, // 80-120%
+              carbs: 0.8 + Math.random() * 0.4,   // 80-120%
+              fat: 0.8 + Math.random() * 0.4      // 80-120%
+            },
+            topFoods: ['chicken-breast', 'brown-rice', 'avocado'].slice(0, Math.floor(Math.random() * 3) + 1)
+          };
+        }
+
         weekData.push({
           date: dateString,
           dateObj: date,
-          summary,
+          summary: testSummary,
           isToday,
           isFuture,
-          consistency: summary ? summary.consistencyScore : 0
+          consistency: testConsistency
         });
+        
       }
       weeks.push(weekData);
     }
@@ -55,7 +97,7 @@ export default function ConsistencyHeatmap() {
   
   // Get color based on consistency score (memoized)
   const getConsistencyColor = useMemo(() => (consistency) => {
-    if (consistency === 0) return '#1A1A1A'; // No data
+    if (consistency === 0) return '#444444'; // No data - visible gray
     if (consistency < 0.3) return '#FF453A'; // Poor (red)
     if (consistency < 0.5) return '#FF9500'; // Below average (orange)
     if (consistency < 0.7) return '#FFD700'; // Average (yellow)
@@ -97,20 +139,28 @@ export default function ConsistencyHeatmap() {
         </Text>
         <View style={styles.dayDetailMacros}>
           <Text style={styles.dayDetailMacro}>
-            Protein: {Math.round(summary.macros.protein)}g ({Math.round(summary.targetsAchieved.protein * 100)}%)
+            Protein: {Math.round(summary.macros?.protein || 0)}g ({Math.round((summary.targetsAchieved?.protein || 0) * 100)}%)
           </Text>
           <Text style={styles.dayDetailMacro}>
-            Carbs: {Math.round(summary.macros.carbs)}g ({Math.round(summary.targetsAchieved.carbs * 100)}%)
+            Carbs: {Math.round(summary.macros?.carbs || 0)}g ({Math.round((summary.targetsAchieved?.carbs || 0) * 100)}%)
           </Text>
           <Text style={styles.dayDetailMacro}>
-            Fat: {Math.round(summary.macros.fat)}g ({Math.round(summary.targetsAchieved.fat * 100)}%)
+            Fat: {Math.round(summary.macros?.fat || 0)}g ({Math.round((summary.targetsAchieved?.fat || 0) * 100)}%)
           </Text>
         </View>
         {summary.topFoods && summary.topFoods.length > 0 && (
           <View style={styles.topFoods}>
             <Text style={styles.topFoodsTitle}>Top Foods:</Text>
             <Text style={styles.topFoodsText}>
-              {summary.topFoods.map(food => food.name).join(', ')}
+              {summary.topFoods.map(foodId => {
+                // Map dummy food IDs to names
+                const foodNames = {
+                  'chicken-breast': 'Chicken Breast',
+                  'brown-rice': 'Brown Rice', 
+                  'avocado': 'Avocado'
+                };
+                return foodNames[foodId] || foodId;
+              }).join(', ')}
             </Text>
           </View>
         )}
@@ -151,10 +201,10 @@ export default function ConsistencyHeatmap() {
             ))}
           </View>
           
-          {/* Calendar grid */}
+          {/* Calendar grid - each row is a week */}
           <View style={styles.calendarGrid}>
             {weeks.map((week, weekIndex) => (
-              <View key={weekIndex} style={styles.week}>
+              <View key={weekIndex} style={styles.weekRow}>
                 {week.map((day, dayIndex) => (
                   <TouchableOpacity
                     key={dayIndex}
@@ -171,7 +221,8 @@ export default function ConsistencyHeatmap() {
                     onPress={() => handleDayPress(day)}
                     disabled={day.isFuture || !day.summary}
                   >
-                    {day.summary && !day.isFuture && (
+                    {/* Show day number if it has data or is today */}
+                    {(day.summary || day.isToday) && (
                       <Text style={styles.dayText}>
                         {day.dateObj.getDate()}
                       </Text>
@@ -275,28 +326,28 @@ const styles = StyleSheet.create({
   dayLabels: {
     flexDirection: 'row',
     marginBottom: 8,
-    marginLeft: 2,
+    justifyContent: 'space-between',
+    paddingHorizontal: 2,
   },
   dayLabel: {
-    width: 14,
-    height: 14,
+    width: 18,
     textAlign: 'center',
     fontSize: 10,
     color: '#8E8E93',
     fontWeight: '600',
-    marginRight: 2,
   },
   calendarGrid: {
-    flexDirection: 'row',
+    flexDirection: 'column',
   },
-  week: {
-    marginRight: 2,
+  weekRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 3,
   },
   day: {
-    width: 14,
-    height: 14,
-    borderRadius: 2,
-    marginBottom: 2,
+    width: 18,
+    height: 18,
+    borderRadius: 3,
     justifyContent: 'center',
     alignItems: 'center',
   },

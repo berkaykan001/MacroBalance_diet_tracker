@@ -5,7 +5,7 @@ import Svg, { Path, Circle, Text as SvgText } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 
-export default function MacroTrendChart({ data, macro, color, title, unit = 'g', target }) {
+export default function MacroTrendChart({ data, targets }) {
   if (!data || data.length === 0) {
     return (
       <View style={styles.emptyChart}>
@@ -14,41 +14,88 @@ export default function MacroTrendChart({ data, macro, color, title, unit = 'g',
     );
   }
 
-  const chartWidth = width - 64; // Account for margins
-  const chartHeight = 120;
-  const padding = 20;
+  const chartWidth = width - 32; // Account for margins
+  const chartHeight = 180;
+  const padding = 30;
   const plotWidth = chartWidth - (padding * 2);
   const plotHeight = chartHeight - (padding * 2);
 
-  // Calculate data range
-  const values = data.map(d => d.macros[macro] || 0);
-  const minValue = Math.min(...values, target * 0.8); // Include target in range
-  const maxValue = Math.max(...values, target * 1.2);
-  const range = maxValue - minValue || 1; // Prevent division by zero
+  // Calculate calories target
+  const caloriesTarget = (targets.protein * 4) + (targets.carbs * 4) + (targets.fat * 9);
+  
+  // Normalize all values to percentage of target (0-200% range for display)
+  const normalizeValue = (value, target) => {
+    if (!value || !target || target === 0) return 0;
+    return (value / target) * 100;
+  };
+  
+  // Generate path data for each macro
+  const macros = [
+    { 
+      name: 'Protein', 
+      color: '#FF6B6B', 
+      getData: (point) => {
+        const value = point.macros?.protein || 0;
+        return normalizeValue(value, targets.protein);
+      }
+    },
+    { 
+      name: 'Carbs', 
+      color: '#4ECDC4', 
+      getData: (point) => {
+        const value = point.macros?.carbs || 0;
+        return normalizeValue(value, targets.carbs);
+      }
+    },
+    { 
+      name: 'Fat', 
+      color: '#45B7D1', 
+      getData: (point) => {
+        const value = point.macros?.fat || 0;
+        return normalizeValue(value, targets.fat);
+      }
+    },
+    { 
+      name: 'Calories', 
+      color: '#9B59B6', 
+      getData: (point) => {
+        const value = point.macros?.calories || 0;
+        return normalizeValue(value, caloriesTarget);
+      }
+    }
+  ];
 
-  // Generate path data for line chart
-  const pathData = data.map((point, index) => {
-    const x = padding + (index / (data.length - 1)) * plotWidth;
-    const y = padding + plotHeight - ((point.macros[macro] - minValue) / range) * plotHeight;
-    return { x, y, value: point.macros[macro] };
+  // Set consistent range (0-200% of target)
+  const minValue = 0;
+  const maxValue = 200;
+  const range = maxValue - minValue;
+
+  // Generate path data for each macro
+  const macroLines = macros.map(macro => {
+    const pathData = data.map((point, index) => {
+      const x = padding + (index / Math.max(1, data.length - 1)) * plotWidth;
+      const normalizedValue = Math.max(0, Math.min(200, macro.getData(point))); // Clamp between 0-200%
+      const y = padding + plotHeight - ((normalizedValue - minValue) / range) * plotHeight;
+      
+      // Ensure coordinates are valid numbers
+      return { 
+        x: isNaN(x) ? padding : x, 
+        y: isNaN(y) ? padding + plotHeight : y, 
+        value: normalizedValue 
+      };
+    });
+
+    const pathString = pathData.reduce((path, point, index) => {
+      if (isNaN(point.x) || isNaN(point.y)) return path;
+      const command = index === 0 ? 'M' : 'L';
+      return `${path} ${command} ${point.x} ${point.y}`;
+    }, '');
+
+    return { ...macro, pathData, pathString };
   });
 
-  // Create SVG path string
-  const pathString = pathData.reduce((path, point, index) => {
-    const command = index === 0 ? 'M' : 'L';
-    return `${path} ${command} ${point.x} ${point.y}`;
-  }, '');
-
-  // Calculate target line position
-  const targetY = padding + plotHeight - ((target - minValue) / range) * plotHeight;
-
-  // Get current and average values
-  const currentValue = values[values.length - 1] || 0;
-  const averageValue = values.reduce((sum, val) => sum + val, 0) / values.length;
-
-  // Calculate trend (simple slope)
-  const trend = values.length > 1 ? values[values.length - 1] - values[0] : 0;
-  const trendPercentage = values[0] !== 0 ? ((trend / values[0]) * 100) : 0;
+  // Target line at 100%
+  const targetY = padding + plotHeight - ((100 - minValue) / range) * plotHeight;
 
   return (
     <LinearGradient
@@ -58,81 +105,112 @@ export default function MacroTrendChart({ data, macro, color, title, unit = 'g',
       end={{ x: 1, y: 1 }}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
-        <View style={styles.stats}>
-          <Text style={styles.currentValue}>
-            {Math.round(currentValue)}{unit}
-          </Text>
-          <Text style={[styles.trend, { color: trend >= 0 ? '#00D084' : '#FF453A' }]}>
-            {trend >= 0 ? '▲' : '▼'} {Math.abs(trendPercentage).toFixed(1)}%
-          </Text>
-        </View>
+        <Text style={styles.title}>7-Day Macro Trends</Text>
+        <Text style={styles.subtitle}>All macros normalized to target percentage</Text>
       </View>
 
       <View style={styles.chartContainer}>
         <Svg width={chartWidth} height={chartHeight} style={styles.svg}>
-          {/* Target line */}
+          {/* Target line at 100% */}
           <Path
             d={`M ${padding} ${targetY} L ${chartWidth - padding} ${targetY}`}
-            stroke="rgba(255,255,255,0.3)"
-            strokeWidth="1"
+            stroke="#FFD700"
+            strokeWidth="2"
             strokeDasharray="5,5"
           />
           
-          {/* Main trend line */}
-          <Path
-            d={pathString}
-            stroke={color[0]}
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-
-          {/* Data points */}
-          {pathData.map((point, index) => (
-            <Circle
-              key={index}
-              cx={point.x}
-              cy={point.y}
-              r="3"
-              fill={color[0]}
-              stroke="#FFFFFF"
-              strokeWidth="1"
-            />
-          ))}
-
           {/* Target label */}
           <SvgText
             x={chartWidth - padding - 5}
             y={targetY - 5}
             fontSize="10"
-            fill="rgba(255,255,255,0.6)"
+            fill="#FFD700"
             textAnchor="end"
           >
-            Target: {target}{unit}
+            Target (100%)
           </SvgText>
+
+          {/* Macro trend lines */}
+          {macroLines.map((macro, macroIndex) => (
+            <React.Fragment key={macroIndex}>
+              {macro.pathString && (
+                <Path
+                  d={macro.pathString}
+                  stroke={macro.color}
+                  strokeWidth="2"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              )}
+              
+              {/* Data points */}
+              {macro.pathData.map((point, pointIndex) => {
+                if (isNaN(point.x) || isNaN(point.y)) return null;
+                return (
+                  <Circle
+                    key={`${macroIndex}-${pointIndex}`}
+                    cx={point.x}
+                    cy={point.y}
+                    r="3"
+                    fill={macro.color}
+                    stroke="#FFFFFF"
+                    strokeWidth="1"
+                  />
+                );
+              })}
+            </React.Fragment>
+          ))}
+
+          {/* X-axis day labels */}
+          {data.map((point, index) => {
+            const x = padding + (index / Math.max(1, data.length - 1)) * plotWidth;
+            if (isNaN(x)) return null;
+            
+            const date = new Date(point.date);
+            const dayLabel = isNaN(date.getTime()) ? index + 1 : date.getDate().toString();
+            
+            return (
+              <SvgText
+                key={`day-${index}`}
+                x={x}
+                y={chartHeight - 5}
+                fontSize="10"
+                fill="rgba(255,255,255,0.6)"
+                textAnchor="middle"
+              >
+                {dayLabel}
+              </SvgText>
+            );
+          })}
+
+          {/* Y-axis percentage labels */}
+          {[0, 50, 100, 150, 200].map(percentage => {
+            const y = padding + plotHeight - ((percentage - minValue) / range) * plotHeight;
+            return (
+              <SvgText
+                key={`percent-${percentage}`}
+                x={padding - 5}
+                y={y + 3}
+                fontSize="9"
+                fill="rgba(255,255,255,0.4)"
+                textAnchor="end"
+              >
+                {percentage}%
+              </SvgText>
+            );
+          })}
         </Svg>
       </View>
 
-      <View style={styles.footer}>
-        <View style={styles.footerStat}>
-          <Text style={styles.footerLabel}>Average</Text>
-          <Text style={styles.footerValue}>{Math.round(averageValue)}{unit}</Text>
-        </View>
-        <View style={styles.footerStat}>
-          <Text style={styles.footerLabel}>Target</Text>
-          <Text style={styles.footerValue}>{target}{unit}</Text>
-        </View>
-        <View style={styles.footerStat}>
-          <Text style={styles.footerLabel}>Gap</Text>
-          <Text style={[
-            styles.footerValue, 
-            { color: currentValue >= target ? '#00D084' : '#FF9500' }
-          ]}>
-            {currentValue >= target ? '+' : ''}{Math.round(currentValue - target)}{unit}
-          </Text>
-        </View>
+      {/* Legend */}
+      <View style={styles.legend}>
+        {macros.map((macro, index) => (
+          <View key={index} style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: macro.color }]} />
+            <Text style={styles.legendText}>{macro.name}</Text>
+          </View>
+        ))}
       </View>
     </LinearGradient>
   );
@@ -142,7 +220,7 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: 12,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -150,28 +228,17 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 16,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  stats: {
-    alignItems: 'flex-end',
-  },
-  currentValue: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  trend: {
-    fontSize: 12,
     fontWeight: '600',
-    marginTop: 2,
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 13,
+    color: '#8E8E93',
   },
   chartContainer: {
     marginBottom: 16,
@@ -179,34 +246,33 @@ const styles = StyleSheet.create({
   svg: {
     backgroundColor: 'transparent',
   },
-  footer: {
+  legend: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-    paddingTop: 12,
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 16,
   },
-  footerStat: {
+  legendItem: {
+    flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    gap: 6,
   },
-  footerLabel: {
-    fontSize: 11,
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendText: {
+    fontSize: 12,
     color: '#8E8E93',
-    marginBottom: 2,
-  },
-  footerValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
   emptyChart: {
-    height: 120,
+    height: 180,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 12,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   emptyText: {
     color: '#8E8E93',

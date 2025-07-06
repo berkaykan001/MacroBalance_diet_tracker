@@ -501,7 +501,7 @@ export function MealProvider({ children }) {
           const variation = () => 0.7 + (Math.random() * 0.6); // 70% to 130% of target
           
           summaries.unshift({
-            date: dateKey,
+            date: date.toISOString().split('T')[0], // Use YYYY-MM-DD format
             macros: {
               protein: Math.round(targets.protein * variation()),
               carbs: Math.round(targets.carbs * variation()),

@@ -50,44 +50,10 @@ export default function MacroTrendsSection() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>7-Day Macro Trends</Text>
-        <Text style={styles.sectionSubtitle}>Your weekly nutrition patterns</Text>
-      </View>
-
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
-        style={styles.scrollView}
-      >
-        <MacroTrendChart
-          data={weeklyData}
-          macro="protein"
-          color={['#FF6B6B', '#FF8E8E']}
-          title="Protein"
-          unit="g"
-          target={targets.protein}
-        />
-        
-        <MacroTrendChart
-          data={weeklyData}
-          macro="carbs"
-          color={['#4ECDC4', '#6EDCD6']}
-          title="Carbohydrates"
-          unit="g"
-          target={targets.carbs}
-        />
-        
-        <MacroTrendChart
-          data={weeklyData}
-          macro="fat"
-          color={['#45B7D1', '#6BC5D7']}
-          title="Fat"
-          unit="g"
-          target={targets.fat}
-        />
-      </ScrollView>
+      <MacroTrendChart
+        data={weeklyData}
+        targets={targets}
+      />
 
       <View style={styles.insights}>
         <MacroInsights weeklyData={weeklyData} targets={targets} />
@@ -162,25 +128,6 @@ const styles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
     marginBottom: 16,
-  },
-  sectionHeader: {
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  sectionSubtitle: {
-    fontSize: 13,
-    color: '#8E8E93',
-  },
-  scrollView: {
-    marginBottom: 16,
-  },
-  scrollContainer: {
-    paddingRight: 16,
   },
   card: {
     marginHorizontal: 16,

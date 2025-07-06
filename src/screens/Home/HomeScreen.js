@@ -5,6 +5,10 @@ import { useMeal } from '../../context/MealContext';
 import { useFood } from '../../context/FoodContext';
 import { useNavigation } from '@react-navigation/native';
 import EditMealModal from '../../components/EditMealModal';
+import MacroTrendsSection from '../../components/charts/MacroTrendsSection';
+import WeeklyComparisonChart from '../../components/charts/WeeklyComparisonChart';
+import { CircularProgressSection } from '../../components/charts/CircularProgress';
+import ConsistencyHeatmap from '../../components/charts/ConsistencyHeatmap';
 
 const { width } = Dimensions.get('window');
 
@@ -19,7 +23,7 @@ export default function HomeScreen() {
     deleteMealPlan,
     updateMealPlan
   } = useMeal();
-  const { getRecentlyUsed, foods } = useFood();
+  const { foods } = useFood();
 
   // Modal state
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -28,10 +32,13 @@ export default function HomeScreen() {
   const dailyProgress = getDailyProgress();
   const mealsToday = getMealsCompletedToday().filter(meal => meal.name !== 'Snack');
   const recentMealPlans = getRecentMealPlans(3);
-  const recentFoods = getRecentlyUsed(6);
   const todaysMealPlans = getTodaysMealPlans();
 
   // Note: getNextMeal logic postponed for now
+
+  const getFoodById = (id) => {
+    return foods.find(food => food.id === id);
+  };
 
   const getWeeklyConsistency = () => {
     // Simple calculation for demo - in real app would track historical data
@@ -39,18 +46,29 @@ export default function HomeScreen() {
     const totalMeals = mealsToday.length;
     const todayProgress = totalMeals > 0 ? (completedToday / totalMeals) * 100 : 0;
     
+    // Get most used food from recent meal plans
+    const foodUsage = {};
+    recentMealPlans.forEach(plan => {
+      plan.selectedFoods.forEach(selectedFood => {
+        const food = getFoodById(selectedFood.foodId);
+        if (food) {
+          foodUsage[food.name] = (foodUsage[food.name] || 0) + selectedFood.portionGrams;
+        }
+      });
+    });
+    
+    const mostUsedFood = Object.keys(foodUsage).length > 0 
+      ? Object.keys(foodUsage).reduce((a, b) => foodUsage[a] > foodUsage[b] ? a : b)
+      : 'No data';
+    
     return {
       streak: Math.floor(Math.random() * 7) + 1, // Demo data
       weeklyAverage: Math.round((todayProgress + 85) / 2), // Demo calculation
-      mostUsedFood: recentFoods[0]?.name || 'No data'
+      mostUsedFood
     };
   };
 
   const weeklyStats = getWeeklyConsistency();
-
-  const getFoodById = (id) => {
-    return foods.find(food => food.id === id);
-  };
 
   const handleEditMeal = (mealPlan) => {
     setSelectedMealPlan(mealPlan);
@@ -149,19 +167,6 @@ export default function HomeScreen() {
     </View>
   );
 
-  const renderRecentFood = ({ item: food }) => (
-    <TouchableOpacity style={styles.recentFoodItem}>
-      <LinearGradient
-        colors={['#1A1A1A', '#2A2A2A']}
-        style={styles.recentFoodGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <Text style={styles.recentFoodName}>{food.name}</Text>
-        <Text style={styles.recentFoodCategory}>{food.category}</Text>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
 
   const renderEatenMeal = ({ item: mealPlan }) => {
     const meal = getMealById(mealPlan.mealId);
@@ -314,48 +319,17 @@ export default function HomeScreen() {
           </View>
         </LinearGradient>
 
-        {/* Quick Actions Card */}
-        <LinearGradient
-          colors={['#1A1A1A', '#2A2A2A']}
-          style={styles.card}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Text style={styles.cardTitle}>Quick Actions</Text>
-          
-          <TouchableOpacity
-            style={styles.primaryAction}
-            onPress={() => navigation.navigate('Plan Meal')}
-          >
-            <LinearGradient
-              colors={['#007AFF', '#0051D5']}
-              style={styles.primaryActionGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Text style={styles.primaryActionText}>
-                Plan Your Meal
-              </Text>
-              <Text style={styles.primaryActionSubtext}>
-                Create and track your meal plans
-              </Text>
-            </LinearGradient>
-          </TouchableOpacity>
+        {/* Circular Progress Section */}
+        <CircularProgressSection />
 
-          {recentFoods.length > 0 && (
-            <View style={styles.recentFoodsSection}>
-              <Text style={styles.sectionSubtitle}>Recently Used Foods</Text>
-              <FlatList
-                data={recentFoods}
-                renderItem={renderRecentFood}
-                keyExtractor={(item) => item.id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.recentFoodsList}
-              />
-            </View>
-          )}
-        </LinearGradient>
+        {/* Macro Trends Section */}
+        <MacroTrendsSection />
+
+        {/* Weekly Comparison Chart */}
+        <WeeklyComparisonChart />
+
+        {/* Consistency Heatmap */}
+        <ConsistencyHeatmap />
 
         {/* Eaten Meals Card */}
         {todaysMealPlans.length > 0 && (
@@ -563,65 +537,6 @@ const styles = StyleSheet.create({
     color: '#00D084',
   },
 
-  // Quick Actions Styles
-  primaryAction: {
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  primaryActionGradient: {
-    padding: 16,
-    alignItems: 'center',
-  },
-  primaryActionText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 2,
-  },
-  primaryActionSubtext: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
-  },
-
-  // Recent Foods Styles
-  recentFoodsSection: {
-    marginTop: 8,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginBottom: 12,
-  },
-  recentFoodsList: {
-    paddingRight: 16,
-  },
-  recentFoodItem: {
-    marginRight: 8,
-    borderRadius: 8,
-    overflow: 'hidden',
-    width: 80,
-  },
-  recentFoodGradient: {
-    padding: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 60,
-  },
-  recentFoodName: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    marginBottom: 2,
-  },
-  recentFoodCategory: {
-    fontSize: 8,
-    color: '#8E8E93',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
 
   // Weekly Insights Styles
   weeklyStatsContainer: {

@@ -11,7 +11,10 @@ const ACTIONS = {
   CREATE_MEAL_PLAN: 'CREATE_MEAL_PLAN',
   UPDATE_MEAL_PLAN: 'UPDATE_MEAL_PLAN',
   DELETE_MEAL_PLAN: 'DELETE_MEAL_PLAN',
-  LOAD_MEAL_PLANS: 'LOAD_MEAL_PLANS'
+  LOAD_MEAL_PLANS: 'LOAD_MEAL_PLANS',
+  LOAD_DAILY_SUMMARIES: 'LOAD_DAILY_SUMMARIES',
+  UPDATE_DAILY_SUMMARY: 'UPDATE_DAILY_SUMMARY',
+  DELETE_OLD_DATA: 'DELETE_OLD_DATA'
 };
 
 const defaultMeals = [
@@ -182,6 +185,28 @@ function mealReducer(state, action) {
         mealPlans: state.mealPlans.filter(plan => plan.id !== action.payload)
       };
     
+    case ACTIONS.LOAD_DAILY_SUMMARIES:
+      return {
+        ...state,
+        dailySummaries: action.payload
+      };
+    
+    case ACTIONS.UPDATE_DAILY_SUMMARY:
+      return {
+        ...state,
+        dailySummaries: {
+          ...state.dailySummaries,
+          [action.payload.date]: action.payload.summary
+        }
+      };
+    
+    case ACTIONS.DELETE_OLD_DATA:
+      return {
+        ...state,
+        mealPlans: action.payload.mealPlans,
+        dailySummaries: action.payload.dailySummaries
+      };
+    
     default:
       return state;
   }
@@ -190,6 +215,7 @@ function mealReducer(state, action) {
 const initialState = {
   meals: [],
   mealPlans: [],
+  dailySummaries: {},
   loading: true
 };
 
@@ -199,6 +225,7 @@ export function MealProvider({ children }) {
   useEffect(() => {
     loadMeals();
     loadMealPlans();
+    loadDailySummaries();
   }, []);
 
   useEffect(() => {
@@ -212,6 +239,35 @@ export function MealProvider({ children }) {
       saveMealPlans();
     }
   }, [state.mealPlans, state.loading]);
+
+  useEffect(() => {
+    if (!state.loading) {
+      saveDailySummaries();
+    }
+  }, [state.dailySummaries, state.loading]);
+
+  // Automatic data lifecycle management
+  useEffect(() => {
+    const runDataLifecycle = async () => {
+      if (!state.loading) {
+        try {
+          // Get retention days from settings (default 90)
+          const retentionDays = 90; // TODO: Get from settings context
+          await processDataLifecycle(retentionDays);
+        } catch (error) {
+          console.error('Automatic data lifecycle failed:', error);
+        }
+      }
+    };
+
+    // Run immediately on load
+    runDataLifecycle();
+
+    // Set up daily interval (24 hours)
+    const interval = setInterval(runDataLifecycle, 24 * 60 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [state.loading, state.mealPlans.length]);
 
   const loadMeals = async () => {
     try {
@@ -261,6 +317,29 @@ export function MealProvider({ children }) {
     }
   };
 
+  const loadDailySummaries = async () => {
+    try {
+      const storedSummaries = await AsyncStorage.getItem('dailySummaries');
+      if (storedSummaries) {
+        const summaries = JSON.parse(storedSummaries);
+        dispatch({ type: ACTIONS.LOAD_DAILY_SUMMARIES, payload: summaries });
+      } else {
+        dispatch({ type: ACTIONS.LOAD_DAILY_SUMMARIES, payload: {} });
+      }
+    } catch (error) {
+      console.error('Error loading daily summaries:', error);
+      dispatch({ type: ACTIONS.LOAD_DAILY_SUMMARIES, payload: {} });
+    }
+  };
+
+  const saveDailySummaries = async () => {
+    try {
+      await AsyncStorage.setItem('dailySummaries', JSON.stringify(state.dailySummaries));
+    } catch (error) {
+      console.error('Error saving daily summaries:', error);
+    }
+  };
+
   const addMeal = (meal) => {
     dispatch({ type: ACTIONS.ADD_MEAL, payload: meal });
   };
@@ -307,6 +386,255 @@ export function MealProvider({ children }) {
     console.log('Reloading meals...');
     await loadMeals();
     await loadMealPlans();
+    await loadDailySummaries();
+  };
+
+  // Daily Summary Functions
+  const createDailySummary = (date, mealPlans) => {
+    if (!mealPlans || mealPlans.length === 0) {
+      return null;
+    }
+
+    // Calculate total macros for the day
+    const macros = mealPlans.reduce((total, plan) => ({
+      protein: total.protein + (plan.calculatedMacros?.protein || 0),
+      carbs: total.carbs + (plan.calculatedMacros?.carbs || 0),
+      fat: total.fat + (plan.calculatedMacros?.fat || 0),
+      calories: total.calories + (plan.calculatedMacros?.calories || 0)
+    }), { protein: 0, carbs: 0, fat: 0, calories: 0 });
+
+    // Calculate sub-macros
+    const subMacros = mealPlans.reduce((total, plan) => ({
+      fiber: total.fiber + (plan.calculatedMacros?.fiber || 0),
+      omega3: total.omega3 + (plan.calculatedMacros?.omega3 || 0),
+      saturatedFat: total.saturatedFat + (plan.calculatedMacros?.saturatedFat || 0),
+      monounsaturatedFat: total.monounsaturatedFat + (plan.calculatedMacros?.monounsaturatedFat || 0),
+      polyunsaturatedFat: total.polyunsaturatedFat + (plan.calculatedMacros?.polyunsaturatedFat || 0),
+      transFat: total.transFat + (plan.calculatedMacros?.transFat || 0),
+      addedSugars: total.addedSugars + (plan.calculatedMacros?.addedSugars || 0),
+      naturalSugars: total.naturalSugars + (plan.calculatedMacros?.naturalSugars || 0)
+    }), { fiber: 0, omega3: 0, saturatedFat: 0, monounsaturatedFat: 0, polyunsaturatedFat: 0, transFat: 0, addedSugars: 0, naturalSugars: 0 });
+
+    // Calculate micronutrients
+    const micronutrients = mealPlans.reduce((total, plan) => ({
+      iron: total.iron + (plan.calculatedMacros?.iron || 0),
+      calcium: total.calcium + (plan.calculatedMacros?.calcium || 0),
+      zinc: total.zinc + (plan.calculatedMacros?.zinc || 0),
+      magnesium: total.magnesium + (plan.calculatedMacros?.magnesium || 0),
+      vitaminB6: total.vitaminB6 + (plan.calculatedMacros?.vitaminB6 || 0),
+      vitaminB12: total.vitaminB12 + (plan.calculatedMacros?.vitaminB12 || 0),
+      vitaminC: total.vitaminC + (plan.calculatedMacros?.vitaminC || 0),
+      vitaminD: total.vitaminD + (plan.calculatedMacros?.vitaminD || 0)
+    }), { iron: 0, calcium: 0, zinc: 0, magnesium: 0, vitaminB6: 0, vitaminB12: 0, vitaminC: 0, vitaminD: 0 });
+
+    // Calculate targets achieved
+    const targets = getDailyTargets();
+    const subMacroTargets = defaultDailySubMacroTargets;
+    const microTargets = defaultDailyMicronutrientTargets;
+    
+    let targetsAchieved = 0;
+    let totalTargets = 8; // 3 main macros + 5 key nutrients
+
+    // Main macros (within 5% of target)
+    if (Math.abs(macros.protein - targets.protein) / targets.protein <= 0.05) targetsAchieved++;
+    if (Math.abs(macros.carbs - targets.carbs) / targets.carbs <= 0.05) targetsAchieved++;
+    if (Math.abs(macros.fat - targets.fat) / targets.fat <= 0.05) targetsAchieved++;
+    
+    // Key nutrients (meet minimum targets)
+    if (subMacros.fiber >= subMacroTargets.minFiber) targetsAchieved++;
+    if (subMacros.omega3 >= subMacroTargets.omega3) targetsAchieved++;
+    if (micronutrients.iron >= microTargets.iron) targetsAchieved++;
+    if (micronutrients.calcium >= microTargets.calcium) targetsAchieved++;
+    if (micronutrients.vitaminD >= microTargets.vitaminD) targetsAchieved++;
+
+    const consistencyScore = Math.round((targetsAchieved / totalTargets) * 100);
+
+    // Get top 3 most used foods by weight
+    const foodUsage = {};
+    mealPlans.forEach(plan => {
+      plan.selectedFoods?.forEach(food => {
+        foodUsage[food.foodId] = (foodUsage[food.foodId] || 0) + food.portionGrams;
+      });
+    });
+    
+    const topFoods = Object.entries(foodUsage)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([foodId]) => foodId);
+
+    return {
+      macros,
+      subMacros,
+      micronutrients,
+      targetsAchieved,
+      consistencyScore,
+      topFoods,
+      createdAt: new Date().toISOString()
+    };
+  };
+
+  const updateDailySummary = (date, summary) => {
+    dispatch({ 
+      type: ACTIONS.UPDATE_DAILY_SUMMARY, 
+      payload: { date, summary } 
+    });
+  };
+
+  const getDailySummariesForPeriod = (days = 7) => {
+    const summaries = [];
+    const today = new Date();
+    
+    for (let i = 0; i < days; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateKey = date.toDateString();
+      
+      if (state.dailySummaries[dateKey]) {
+        summaries.unshift({
+          date: dateKey,
+          ...state.dailySummaries[dateKey]
+        });
+      }
+    }
+    
+    return summaries;
+  };
+
+  const getWeeklyComparison = () => {
+    const thisWeekSummaries = getDailySummariesForPeriod(7);
+    const lastWeekSummaries = getDailySummariesForPeriod(14).slice(0, 7);
+    
+    const calculateAverage = (summaries) => {
+      if (summaries.length === 0) return { protein: 0, carbs: 0, fat: 0, calories: 0 };
+      
+      return summaries.reduce((total, summary) => ({
+        protein: total.protein + summary.macros.protein,
+        carbs: total.carbs + summary.macros.carbs,
+        fat: total.fat + summary.macros.fat,
+        calories: total.calories + summary.macros.calories
+      }), { protein: 0, carbs: 0, fat: 0, calories: 0 });
+    };
+    
+    const thisWeek = calculateAverage(thisWeekSummaries);
+    const lastWeek = calculateAverage(lastWeekSummaries);
+    
+    // Calculate averages
+    if (thisWeekSummaries.length > 0) {
+      Object.keys(thisWeek).forEach(key => {
+        thisWeek[key] = thisWeek[key] / thisWeekSummaries.length;
+      });
+    }
+    
+    if (lastWeekSummaries.length > 0) {
+      Object.keys(lastWeek).forEach(key => {
+        lastWeek[key] = lastWeek[key] / lastWeekSummaries.length;
+      });
+    }
+    
+    return { thisWeek, lastWeek };
+  };
+
+  // Data Lifecycle Management
+  const processDataLifecycle = async (retentionDays = 90) => {
+    const today = new Date();
+    const sevenDaysAgo = new Date(today);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const retentionCutoff = new Date(today);
+    retentionCutoff.setDate(retentionCutoff.getDate() - retentionDays);
+
+    // Step 1: Convert meal plans older than 7 days to daily summaries
+    const mealPlansToConvert = state.mealPlans.filter(plan => 
+      new Date(plan.createdAt) < sevenDaysAgo
+    );
+
+    // Group meal plans by date
+    const plansByDate = {};
+    mealPlansToConvert.forEach(plan => {
+      const dateKey = getMyTodayDate(new Date(plan.createdAt));
+      if (!plansByDate[dateKey]) {
+        plansByDate[dateKey] = [];
+      }
+      plansByDate[dateKey].push(plan);
+    });
+
+    // Create daily summaries for each date
+    const newSummaries = {};
+    Object.entries(plansByDate).forEach(([dateKey, plans]) => {
+      if (!state.dailySummaries[dateKey]) { // Don't overwrite existing summaries
+        const summary = createDailySummary(dateKey, plans);
+        if (summary) {
+          newSummaries[dateKey] = summary;
+        }
+      }
+    });
+
+    // Step 2: Remove old meal plans (now converted to summaries)
+    const remainingMealPlans = state.mealPlans.filter(plan => 
+      new Date(plan.createdAt) >= sevenDaysAgo
+    );
+
+    // Step 3: Remove old daily summaries based on retention period
+    const remainingSummaries = {};
+    Object.entries({ ...state.dailySummaries, ...newSummaries }).forEach(([dateKey, summary]) => {
+      const summaryDate = new Date(dateKey);
+      if (summaryDate >= retentionCutoff) {
+        remainingSummaries[dateKey] = summary;
+      }
+    });
+
+    // Update state with cleaned data
+    dispatch({
+      type: ACTIONS.DELETE_OLD_DATA,
+      payload: {
+        mealPlans: remainingMealPlans,
+        dailySummaries: remainingSummaries
+      }
+    });
+
+    // Update daily summaries with new ones
+    Object.entries(newSummaries).forEach(([dateKey, summary]) => {
+      dispatch({
+        type: ACTIONS.UPDATE_DAILY_SUMMARY,
+        payload: { date: dateKey, summary }
+      });
+    });
+
+    console.log(`Data lifecycle processed: 
+      - Converted ${Object.keys(newSummaries).length} days to summaries
+      - Kept ${remainingMealPlans.length} recent meal plans
+      - Kept ${Object.keys(remainingSummaries).length} daily summaries`);
+
+    return {
+      summariesCreated: Object.keys(newSummaries).length,
+      mealPlansRemaining: remainingMealPlans.length,
+      summariesRemaining: Object.keys(remainingSummaries).length
+    };
+  };
+
+  const cleanupOldData = async (retentionDays = 90) => {
+    try {
+      const result = await processDataLifecycle(retentionDays);
+      return result;
+    } catch (error) {
+      console.error('Error during data cleanup:', error);
+      throw error;
+    }
+  };
+
+  const getDataStorageInfo = () => {
+    const mealPlansSize = JSON.stringify(state.mealPlans).length;
+    const summariesSize = JSON.stringify(state.dailySummaries).length;
+    const totalSize = mealPlansSize + summariesSize;
+    
+    return {
+      mealPlansCount: state.mealPlans.length,
+      summariesCount: Object.keys(state.dailySummaries).length,
+      mealPlansSize: Math.round(mealPlansSize / 1024), // KB
+      summariesSize: Math.round(summariesSize / 1024), // KB
+      totalSize: Math.round(totalSize / 1024), // KB
+      estimatedSavings: Math.round((mealPlansSize * 0.9) / 1024) // Estimated 90% savings from conversion
+    };
   };
 
   // Dashboard helper functions
@@ -430,7 +758,16 @@ export function MealProvider({ children }) {
     getDailyTargets,
     getTodaysMealPlans,
     getDailyProgress,
-    getMealsCompletedToday
+    getMealsCompletedToday,
+    // Daily Summary functions
+    createDailySummary,
+    updateDailySummary,
+    getDailySummariesForPeriod,
+    getWeeklyComparison,
+    // Data Lifecycle functions
+    processDataLifecycle,
+    cleanupOldData,
+    getDataStorageInfo
   };
 
   return (

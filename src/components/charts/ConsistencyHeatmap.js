@@ -2,43 +2,62 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMeal } from '../../context/MealContext';
+import { useFood } from '../../context/FoodContext';
 
 export default function ConsistencyHeatmap() {
-  const { getDailySummariesForPeriod } = useMeal();
+  const { getDailySummariesForPeriod, getTodaysSummary } = useMeal();
+  const { getFoodById } = useFood();
+  
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
   
-  // Get data for the last 4 weeks (28 days) - simplified for debugging
-  const summaries = getDailySummariesForPeriod(28);
+  // Get all summaries for a longer period to cover multiple months
+  const allSummaries = getDailySummariesForPeriod(365);
   
   // Create a map of dates to summaries for easy lookup
-  const summaryMap = {};
-  summaries.forEach(summary => {
-    // Handle both date formats: ISO string (YYYY-MM-DD) and Date string
-    let dateKey;
-    if (summary.date.includes('-')) {
-      // ISO format YYYY-MM-DD
-      const dateObj = new Date(summary.date + 'T00:00:00');
-      dateKey = dateObj.toDateString();
-    } else {
-      // Already in toDateString format
-      dateKey = summary.date;
+  const summaryMap = useMemo(() => {
+    const map = {};
+    allSummaries.forEach(summary => {
+      // Handle both date formats: ISO string (YYYY-MM-DD) and Date string
+      let dateKey;
+      if (summary.date.includes('-')) {
+        // ISO format YYYY-MM-DD
+        const dateObj = new Date(summary.date + 'T00:00:00');
+        dateKey = dateObj.toDateString();
+      } else {
+        // Already in toDateString format
+        dateKey = summary.date;
+      }
+      map[dateKey] = summary;
+    });
+    
+    // Also add today's real-time summary if it exists
+    const todaysSummary = getTodaysSummary();
+    if (todaysSummary) {
+      const todayKey = new Date().toDateString();
+      map[todayKey] = todaysSummary;
     }
-    summaryMap[dateKey] = summary;
-  });
+    
+    return map;
+  }, [allSummaries, getTodaysSummary]);
   
-  // Generate calendar grid for last 4 weeks (memoized for performance)
-  const weeks = useMemo(() => {
+  // Generate calendar grid for current month
+  const calendarData = useMemo(() => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    // Get first day of month and first day of calendar grid (previous Sunday)
+    const firstDayOfMonth = new Date(year, month, 1);
+    const startDate = new Date(firstDayOfMonth);
+    startDate.setDate(startDate.getDate() - firstDayOfMonth.getDay()); // Go to previous Sunday
+    
     const weeks = [];
     const today = new Date();
-    const startDate = new Date(today);
-    startDate.setDate(today.getDate() - 27); // 28 days ago
     
-    // Find the start of the week (Sunday)
-    const dayOfWeek = startDate.getDay();
-    startDate.setDate(startDate.getDate() - dayOfWeek);
-    
-    for (let week = 0; week < 4; week++) {
+    // Generate 6 weeks to ensure we cover the full month
+    for (let week = 0; week < 6; week++) {
       const weekData = [];
+      
       for (let day = 0; day < 7; day++) {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + (week * 7) + day);
@@ -47,104 +66,189 @@ export default function ConsistencyHeatmap() {
         const summary = summaryMap[dateString];
         const isToday = dateString === today.toDateString();
         const isFuture = date > today;
+        const isCurrentMonth = date.getMonth() === month;
         
-        // Use real summary data only - no test/dummy data
-
         weekData.push({
           date: dateString,
           dateObj: date,
           summary: summary,
           isToday,
           isFuture,
+          isCurrentMonth,
+          dayNumber: date.getDate(),
           consistency: summary?.consistencyScore || 0
         });
-        
       }
       weeks.push(weekData);
     }
     
     return weeks;
-  }, [summaries]); // Memoize based on summaries data
+  }, [currentDate, summaryMap]);
   
-  // Get color based on consistency score (memoized)
-  const getConsistencyColor = useMemo(() => (consistency) => {
-    if (consistency === 0) return '#444444'; // No data - visible gray
+  // Navigation functions
+  const goToPreviousMonth = () => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(prev.getMonth() - 1);
+      return newDate;
+    });
+  };
+  
+  const goToNextMonth = () => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      newDate.setMonth(prev.getMonth() + 1);
+      return newDate;
+    });
+  };
+  
+  const goToPreviousYear = () => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      newDate.setFullYear(prev.getFullYear() - 1);
+      return newDate;
+    });
+  };
+  
+  const goToNextYear = () => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      newDate.setFullYear(prev.getFullYear() + 1);
+      return newDate;
+    });
+  };
+  
+  const goToToday = () => {
+    setCurrentDate(new Date());
+  };
+  
+  // Get color based on consistency score
+  const getConsistencyColor = (consistency) => {
+    if (consistency === 0) return 'rgba(255,255,255,0.1)'; // No data - subtle gray
     if (consistency < 0.3) return '#FF453A'; // Poor (red)
     if (consistency < 0.5) return '#FF9500'; // Below average (orange)
     if (consistency < 0.7) return '#FFD700'; // Average (yellow)
     if (consistency < 0.85) return '#32D74B'; // Good (light green)
     return '#00D084'; // Excellent (green)
-  }, []);
+  };
   
-  const getConsistencyLabel = useMemo(() => (consistency) => {
+  const getConsistencyLabel = (consistency) => {
     if (consistency === 0) return 'No data';
     if (consistency < 0.3) return 'Poor';
     if (consistency < 0.5) return 'Below Average';
     if (consistency < 0.7) return 'Average';
     if (consistency < 0.85) return 'Good';
     return 'Excellent';
-  }, []);
-  
-  const handleDayPress = (day) => {
-    if (day.summary && !day.isFuture) {
-      setSelectedDay(day);
-    }
   };
   
-  const renderDayDetail = () => {
-    if (!selectedDay || !selectedDay.summary) return null;
+  const handleDayPress = (day) => {
+    setSelectedDay(day);
+  };
+  
+  const renderMacroStatus = (macroName, result) => {
+    const statusIcon = result.achieved ? '✅' : '❌';
+    const statusText = result.status === 'hit' ? '✓ Hit' : 
+                     result.status === 'over' ? '✗ Over target' : 
+                     '✗ Under target';
     
-    const { summary } = selectedDay;
-    const date = new Date(selectedDay.dateObj).toLocaleDateString('en-US', {
+    return (
+      <Text style={[styles.dayDetailMacro, { color: result.achieved ? '#00D084' : '#FF453A' }]}>
+        {statusIcon} {macroName}: {Math.round(result.actual)}g ({Math.round(result.percentage * 100)}% of {Math.round(result.target)}g) {statusText}
+      </Text>
+    );
+  };
+
+  const renderNutrientStatus = (nutrientName, result, unit = 'g') => {
+    const statusIcon = result.achieved ? '✅' : '❌';
+    const deficitText = result.achieved ? '✓ Hit' : `✗ Need ${result.deficit.toFixed(1)}${unit} more`;
+    
+    return (
+      <Text style={[styles.dayDetailNutrient, { color: result.achieved ? '#00D084' : '#FF453A' }]}>
+        {statusIcon} {nutrientName}: {result.actual.toFixed(1)}{unit} (≥{result.target}{unit} minimum) {deficitText}
+      </Text>
+    );
+  };
+
+  const renderDayDetail = () => {
+    if (!selectedDay) return null;
+    
+    const date = selectedDay.dateObj.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric'
     });
     
+    if (!selectedDay.summary) {
+      return (
+        <View style={styles.dayDetail}>
+          <Text style={styles.dayDetailDate}>{date}</Text>
+          <Text style={styles.noDataText}>No meal data recorded for this day</Text>
+        </View>
+      );
+    }
+    
+    const { summary } = selectedDay;
+    
     return (
-      <View style={styles.dayDetail}>
+      <ScrollView style={styles.dayDetail} showsVerticalScrollIndicator={false}>
         <Text style={styles.dayDetailDate}>{date}</Text>
         <Text style={styles.dayDetailConsistency}>
-          Consistency: {getConsistencyLabel(summary.consistencyScore)} ({Math.round(summary.consistencyScore * 100)}%)
+          Overall Consistency: {getConsistencyLabel(summary.consistencyScore)} ({Math.round(summary.consistencyScore * 100)}%)
         </Text>
-        <View style={styles.dayDetailMacros}>
-          <Text style={styles.dayDetailMacro}>
-            Protein: {Math.round(summary.macros?.protein || 0)}g ({Math.round((summary.targetsAchieved?.protein || 0) * 100)}%)
-          </Text>
-          <Text style={styles.dayDetailMacro}>
-            Carbs: {Math.round(summary.macros?.carbs || 0)}g ({Math.round((summary.targetsAchieved?.carbs || 0) * 100)}%)
-          </Text>
-          <Text style={styles.dayDetailMacro}>
-            Fat: {Math.round(summary.macros?.fat || 0)}g ({Math.round((summary.targetsAchieved?.fat || 0) * 100)}%)
+        
+        {/* Macro Targets Section */}
+        {summary.macroResults && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>📊 MACRO TARGETS (60% weight)</Text>
+            {renderMacroStatus('Protein', summary.macroResults.protein)}
+            {renderMacroStatus('Carbs', summary.macroResults.carbs)}
+            {renderMacroStatus('Fat', summary.macroResults.fat)}
+            <Text style={styles.scoreText}>
+              → Macro Score: {summary.macroScore || 0}/60 points
+            </Text>
+          </View>
+        )}
+        
+        {/* Nutrient Targets Section */}
+        {summary.nutrientResults && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>🔬 NUTRIENT TARGETS (40% weight)</Text>
+            {renderNutrientStatus('Fiber', summary.nutrientResults.fiber)}
+            {renderNutrientStatus('Omega-3', summary.nutrientResults.omega3)}
+            {renderNutrientStatus('Iron', summary.nutrientResults.iron, 'mg')}
+            {renderNutrientStatus('Calcium', summary.nutrientResults.calcium, 'mg')}
+            {renderNutrientStatus('Vitamin D', summary.nutrientResults.vitaminD, 'mcg')}
+            <Text style={styles.scoreText}>
+              → Nutrient Score: {summary.nutrientScore || 0}/40 points
+            </Text>
+          </View>
+        )}
+        
+        {/* Total Score */}
+        <View style={styles.totalScore}>
+          <Text style={styles.totalScoreText}>
+            TOTAL: {(summary.macroScore || 0) + (summary.nutrientScore || 0)}/100 = {getConsistencyLabel(summary.consistencyScore)} ({Math.round(summary.consistencyScore * 100)}%)
           </Text>
         </View>
+        
+        {/* Top Foods */}
         {summary.topFoods && summary.topFoods.length > 0 && (
           <View style={styles.topFoods}>
             <Text style={styles.topFoodsTitle}>Top Foods:</Text>
             <Text style={styles.topFoodsText}>
               {summary.topFoods.map(foodId => {
-                // Note: This should be enhanced to get actual food names from FoodContext
-                return foodId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                const food = getFoodById(foodId);
+                return food ? food.name : foodId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
               }).join(', ')}
             </Text>
           </View>
         )}
-      </View>
+      </ScrollView>
     );
   };
   
-  // Calculate overall stats (memoized for performance)
-  const stats = useMemo(() => {
-    const totalDays = summaries.length;
-    const excellentDays = summaries.filter(s => s.consistencyScore >= 0.85).length;
-    const goodDays = summaries.filter(s => s.consistencyScore >= 0.7 && s.consistencyScore < 0.85).length;
-    const averageConsistency = totalDays > 0 
-      ? summaries.reduce((sum, s) => sum + s.consistencyScore, 0) / totalDays 
-      : 0;
-    
-    return { totalDays, excellentDays, goodDays, averageConsistency };
-  }, [summaries]);
+  const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   
   return (
     <LinearGradient
@@ -155,20 +259,47 @@ export default function ConsistencyHeatmap() {
     >
       <View style={styles.header}>
         <Text style={styles.title}>Consistency Calendar</Text>
-        <Text style={styles.subtitle}>Your daily macro tracking over time</Text>
+        <Text style={styles.subtitle}>Track your daily macro achievements</Text>
+      </View>
+      
+      {/* Navigation Controls */}
+      <View style={styles.navigation}>
+        <View style={styles.yearNavigation}>
+          <TouchableOpacity onPress={goToPreviousYear} style={styles.navButton}>
+            <Text style={styles.navButtonText}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.yearText}>{currentDate.getFullYear()}</Text>
+          <TouchableOpacity onPress={goToNextYear} style={styles.navButton}>
+            <Text style={styles.navButtonText}>→</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.monthNavigation}>
+          <TouchableOpacity onPress={goToPreviousMonth} style={styles.navButton}>
+            <Text style={styles.navButtonText}>‹</Text>
+          </TouchableOpacity>
+          <Text style={styles.monthText}>{monthName}</Text>
+          <TouchableOpacity onPress={goToNextMonth} style={styles.navButton}>
+            <Text style={styles.navButtonText}>›</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <TouchableOpacity onPress={goToToday} style={styles.todayButton}>
+          <Text style={styles.todayButtonText}>Today</Text>
+        </TouchableOpacity>
       </View>
       
       <View style={styles.calendar}>
         {/* Day labels */}
         <View style={styles.dayLabels}>
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
             <Text key={index} style={styles.dayLabel}>{day}</Text>
           ))}
         </View>
         
-        {/* Calendar grid - each row is a week */}
+        {/* Calendar grid */}
         <View style={styles.calendarGrid}>
-          {weeks.map((week, weekIndex) => (
+          {calendarData.map((week, weekIndex) => (
             <View key={weekIndex} style={styles.weekRow}>
               {week.map((day, dayIndex) => (
                 <TouchableOpacity
@@ -176,22 +307,23 @@ export default function ConsistencyHeatmap() {
                   style={[
                     styles.day,
                     {
-                      backgroundColor: day.isFuture 
-                        ? 'rgba(255,255,255,0.05)' 
-                        : getConsistencyColor(day.consistency),
+                      backgroundColor: getConsistencyColor(day.consistency),
                       borderColor: day.isToday ? '#FFFFFF' : 'transparent',
-                      borderWidth: day.isToday ? 1 : 0,
+                      borderWidth: day.isToday ? 2 : 0,
+                      opacity: day.isCurrentMonth ? 1 : 0.3,
                     }
                   ]}
                   onPress={() => handleDayPress(day)}
-                  disabled={day.isFuture || !day.summary}
                 >
-                  {/* Show day number if it has data or is today */}
-                  {(day.summary || day.isToday) && (
-                    <Text style={styles.dayText}>
-                      {day.dateObj.getDate()}
-                    </Text>
-                  )}
+                  <Text style={[
+                    styles.dayText,
+                    { 
+                      color: day.isCurrentMonth ? '#FFFFFF' : '#8E8E93',
+                      fontWeight: day.isToday ? 'bold' : 'normal'
+                    }
+                  ]}>
+                    {day.dayNumber}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -204,7 +336,7 @@ export default function ConsistencyHeatmap() {
         <Text style={styles.legendTitle}>Consistency Levels</Text>
         <View style={styles.legendItems}>
           <View style={styles.legendItem}>
-            <View style={[styles.legendColor, { backgroundColor: '#1A1A1A' }]} />
+            <View style={[styles.legendColor, { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
             <Text style={styles.legendText}>No data</Text>
           </View>
           <View style={styles.legendItem}>
@@ -227,26 +359,6 @@ export default function ConsistencyHeatmap() {
             <View style={[styles.legendColor, { backgroundColor: '#00D084' }]} />
             <Text style={styles.legendText}>Excellent</Text>
           </View>
-        </View>
-      </View>
-      
-      {/* Stats */}
-      <View style={styles.stats}>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{stats.totalDays}</Text>
-          <Text style={styles.statLabel}>Days Tracked</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{stats.excellentDays}</Text>
-          <Text style={styles.statLabel}>Excellent Days</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{stats.goodDays}</Text>
-          <Text style={styles.statLabel}>Good Days</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statValue}>{Math.round(stats.averageConsistency * 100)}%</Text>
-          <Text style={styles.statLabel}>Avg Consistency</Text>
         </View>
       </View>
       
@@ -281,6 +393,56 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#8E8E93',
   },
+  navigation: {
+    marginBottom: 16,
+  },
+  yearNavigation: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  monthNavigation: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  navButton: {
+    padding: 8,
+    marginHorizontal: 16,
+  },
+  navButtonText: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  yearText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    minWidth: 60,
+    textAlign: 'center',
+  },
+  monthText: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    minWidth: 140,
+    textAlign: 'center',
+  },
+  todayButton: {
+    alignSelf: 'center',
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  todayButtonText: {
+    color: '#00D084',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   calendar: {
     marginBottom: 16,
   },
@@ -293,7 +455,7 @@ const styles = StyleSheet.create({
   dayLabel: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 10,
+    fontSize: 12,
     color: '#8E8E93',
     fontWeight: '600',
   },
@@ -309,16 +471,15 @@ const styles = StyleSheet.create({
   day: {
     flex: 1,
     aspectRatio: 1,
-    borderRadius: 4,
+    borderRadius: 6,
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 1,
-    minHeight: 28,
+    minHeight: 32,
   },
   dayText: {
-    fontSize: 11,
-    color: '#FFFFFF',
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '500',
   },
   legend: {
     marginBottom: 16,
@@ -350,33 +511,11 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#8E8E93',
   },
-  stats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-    paddingTop: 16,
-    marginBottom: 16,
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#00D084',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 10,
-    color: '#8E8E93',
-    textAlign: 'center',
-  },
   dayDetail: {
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 8,
     padding: 12,
+    maxHeight: 300,
   },
   dayDetailDate: {
     fontSize: 14,
@@ -387,15 +526,45 @@ const styles = StyleSheet.create({
   dayDetailConsistency: {
     fontSize: 12,
     color: '#00D084',
-    marginBottom: 8,
+    marginBottom: 12,
+    fontWeight: '600',
   },
-  dayDetailMacros: {
-    marginBottom: 8,
+  section: {
+    marginBottom: 12,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 6,
   },
   dayDetailMacro: {
-    fontSize: 11,
+    fontSize: 10,
+    marginBottom: 3,
+    lineHeight: 14,
+  },
+  dayDetailNutrient: {
+    fontSize: 10,
+    marginBottom: 3,
+    lineHeight: 14,
+  },
+  scoreText: {
+    fontSize: 10,
     color: '#8E8E93',
-    marginBottom: 2,
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  totalScore: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 6,
+    padding: 8,
+    marginBottom: 12,
+  },
+  totalScoreText: {
+    fontSize: 11,
+    color: '#00D084',
+    fontWeight: '700',
+    textAlign: 'center',
   },
   topFoods: {
     marginTop: 4,
@@ -409,5 +578,10 @@ const styles = StyleSheet.create({
   topFoodsText: {
     fontSize: 10,
     color: '#8E8E93',
+  },
+  noDataText: {
+    fontSize: 12,
+    color: '#8E8E93',
+    fontStyle: 'italic',
   },
 });

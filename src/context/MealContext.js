@@ -432,22 +432,90 @@ export function MealProvider({ children }) {
     const subMacroTargets = defaultDailySubMacroTargets;
     const microTargets = defaultDailyMicronutrientTargets;
     
-    let targetsAchieved = 0;
-    let totalTargets = 8; // 3 main macros + 5 key nutrients
+    // Calculate individual macro achievement percentages
+    const targetsAchieved = {
+      protein: targets.protein > 0 ? macros.protein / targets.protein : 0,
+      carbs: targets.carbs > 0 ? macros.carbs / targets.carbs : 0,
+      fat: targets.fat > 0 ? macros.fat / targets.fat : 0
+    };
 
-    // Main macros (within 5% of target)
-    if (Math.abs(macros.protein - targets.protein) / targets.protein <= 0.05) targetsAchieved++;
-    if (Math.abs(macros.carbs - targets.carbs) / targets.carbs <= 0.05) targetsAchieved++;
-    if (Math.abs(macros.fat - targets.fat) / targets.fat <= 0.05) targetsAchieved++;
+    // Calculate weighted consistency score
+    // Main Macros: 60% weight (20% each) - Critical for body composition
+    // Key Nutrients: 40% weight (8% each) - Important but secondary
     
-    // Key nutrients (meet minimum targets)
-    if (subMacros.fiber >= subMacroTargets.minFiber) targetsAchieved++;
-    if (subMacros.omega3 >= subMacroTargets.omega3) targetsAchieved++;
-    if (micronutrients.iron >= microTargets.iron) targetsAchieved++;
-    if (micronutrients.calcium >= microTargets.calcium) targetsAchieved++;
-    if (micronutrients.vitaminD >= microTargets.vitaminD) targetsAchieved++;
-
-    const consistencyScore = Math.round((targetsAchieved / totalTargets) * 100);
+    let macroScore = 0;
+    let nutrientScore = 0;
+    
+    // Macro scoring (60% total weight, 20% each)
+    const macroResults = {
+      protein: {
+        achieved: targetsAchieved.protein >= 0.95 && targetsAchieved.protein <= 1.05,
+        percentage: targetsAchieved.protein,
+        target: targets.protein,
+        actual: macros.protein,
+        status: targetsAchieved.protein < 0.95 ? 'under' : targetsAchieved.protein > 1.05 ? 'over' : 'hit'
+      },
+      carbs: {
+        achieved: targetsAchieved.carbs >= 0.95 && targetsAchieved.carbs <= 1.05,
+        percentage: targetsAchieved.carbs,
+        target: targets.carbs,
+        actual: macros.carbs,
+        status: targetsAchieved.carbs < 0.95 ? 'under' : targetsAchieved.carbs > 1.05 ? 'over' : 'hit'
+      },
+      fat: {
+        achieved: targetsAchieved.fat >= 0.95 && targetsAchieved.fat <= 1.05,
+        percentage: targetsAchieved.fat,
+        target: targets.fat,
+        actual: macros.fat,
+        status: targetsAchieved.fat < 0.95 ? 'under' : targetsAchieved.fat > 1.05 ? 'over' : 'hit'
+      }
+    };
+    
+    if (macroResults.protein.achieved) macroScore += 20;
+    if (macroResults.carbs.achieved) macroScore += 20;
+    if (macroResults.fat.achieved) macroScore += 20;
+    
+    // Nutrient scoring (40% total weight, 8% each)
+    const nutrientResults = {
+      fiber: {
+        achieved: subMacros.fiber >= subMacroTargets.minFiber,
+        actual: subMacros.fiber,
+        target: subMacroTargets.minFiber,
+        deficit: Math.max(0, subMacroTargets.minFiber - subMacros.fiber)
+      },
+      omega3: {
+        achieved: subMacros.omega3 >= subMacroTargets.omega3,
+        actual: subMacros.omega3,
+        target: subMacroTargets.omega3,
+        deficit: Math.max(0, subMacroTargets.omega3 - subMacros.omega3)
+      },
+      iron: {
+        achieved: micronutrients.iron >= microTargets.iron,
+        actual: micronutrients.iron,
+        target: microTargets.iron,
+        deficit: Math.max(0, microTargets.iron - micronutrients.iron)
+      },
+      calcium: {
+        achieved: micronutrients.calcium >= microTargets.calcium,
+        actual: micronutrients.calcium,
+        target: microTargets.calcium,
+        deficit: Math.max(0, microTargets.calcium - micronutrients.calcium)
+      },
+      vitaminD: {
+        achieved: micronutrients.vitaminD >= microTargets.vitaminD,
+        actual: micronutrients.vitaminD,
+        target: microTargets.vitaminD,
+        deficit: Math.max(0, microTargets.vitaminD - micronutrients.vitaminD)
+      }
+    };
+    
+    if (nutrientResults.fiber.achieved) nutrientScore += 8;
+    if (nutrientResults.omega3.achieved) nutrientScore += 8;
+    if (nutrientResults.iron.achieved) nutrientScore += 8;
+    if (nutrientResults.calcium.achieved) nutrientScore += 8;
+    if (nutrientResults.vitaminD.achieved) nutrientScore += 8;
+    
+    const consistencyScore = (macroScore + nutrientScore) / 100;
 
     // Get top 3 most used foods by weight
     const foodUsage = {};
@@ -468,6 +536,10 @@ export function MealProvider({ children }) {
       micronutrients,
       targetsAchieved,
       consistencyScore,
+      macroScore,
+      nutrientScore,
+      macroResults,
+      nutrientResults,
       topFoods,
       createdAt: new Date().toISOString()
     };

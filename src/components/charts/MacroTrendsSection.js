@@ -28,17 +28,17 @@ export default function MacroTrendsSection() {
         <View style={styles.emptyState}>
           <Text style={styles.emptyStateTitle}>Building Your Trends</Text>
           <Text style={styles.emptyStateText}>
-            Keep logging meals for a few more days to see your macro trends and patterns.
+            Log meals for {2 - weeklyData.length} more day{2 - weeklyData.length > 1 ? 's' : ''} to see your macro trends and patterns.
           </Text>
           <View style={styles.emptyStateProgress}>
             <Text style={styles.progressText}>
-              {weeklyData.length}/7 days logged
+              {weeklyData.length}/2 days logged
             </Text>
             <View style={styles.progressBar}>
               <View 
                 style={[
                   styles.progressFill, 
-                  { width: `${(weeklyData.length / 7) * 100}%` }
+                  { width: `${(weeklyData.length / 2) * 100}%` }
                 ]} 
               />
             </View>

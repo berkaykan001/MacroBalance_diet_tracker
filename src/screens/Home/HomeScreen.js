@@ -17,7 +17,6 @@ export default function HomeScreen() {
   const { 
     getDailyProgress, 
     getMealsCompletedToday, 
-    getRecentMealPlans,
     getTodaysMealPlans,
     getMealById,
     deleteMealPlan,
@@ -31,7 +30,6 @@ export default function HomeScreen() {
 
   const dailyProgress = getDailyProgress();
   const mealsToday = getMealsCompletedToday().filter(meal => meal.name !== 'Snack');
-  const recentMealPlans = getRecentMealPlans(3);
   const todaysMealPlans = getTodaysMealPlans();
 
   // Note: getNextMeal logic postponed for now
@@ -40,35 +38,7 @@ export default function HomeScreen() {
     return foods.find(food => food.id === id);
   };
 
-  const getWeeklyConsistency = () => {
-    // Simple calculation for demo - in real app would track historical data
-    const completedToday = mealsToday.filter(meal => meal.completed).length;
-    const totalMeals = mealsToday.length;
-    const todayProgress = totalMeals > 0 ? (completedToday / totalMeals) * 100 : 0;
-    
-    // Get most used food from recent meal plans
-    const foodUsage = {};
-    recentMealPlans.forEach(plan => {
-      plan.selectedFoods.forEach(selectedFood => {
-        const food = getFoodById(selectedFood.foodId);
-        if (food) {
-          foodUsage[food.name] = (foodUsage[food.name] || 0) + selectedFood.portionGrams;
-        }
-      });
-    });
-    
-    const mostUsedFood = Object.keys(foodUsage).length > 0 
-      ? Object.keys(foodUsage).reduce((a, b) => foodUsage[a] > foodUsage[b] ? a : b)
-      : 'No data';
-    
-    return {
-      streak: Math.floor(Math.random() * 7) + 1, // Demo data
-      weeklyAverage: Math.round((todayProgress + 85) / 2), // Demo calculation
-      mostUsedFood
-    };
-  };
 
-  const weeklyStats = getWeeklyConsistency();
 
   const handleEditMeal = (mealPlan) => {
     setSelectedMealPlan(mealPlan);
@@ -292,16 +262,7 @@ export default function HomeScreen() {
           </View>
         </LinearGradient>
 
-        {/* Macro Trends Section */}
-        <MacroTrendsSection />
-
-        {/* Weekly Comparison Chart */}
-        <WeeklyComparisonChart />
-
-        {/* Consistency Heatmap */}
-        <ConsistencyHeatmap />
-
-        {/* Eaten Meals Card */}
+        {/* Today's Meals Card */}
         {todaysMealPlans.length > 0 && (
           <LinearGradient
             colors={['#1A1A1A', '#2A2A2A']}
@@ -326,39 +287,14 @@ export default function HomeScreen() {
           </LinearGradient>
         )}
 
-        {/* Weekly Insights Card */}
-        <LinearGradient
-          colors={['#1A1A1A', '#2A2A2A']}
-          style={styles.card}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
-          <Text style={styles.cardTitle}>Weekly Insights</Text>
-          
-          <View style={styles.weeklyStatsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{weeklyStats.streak}</Text>
-              <Text style={styles.statLabel}>Day Streak</Text>
-            </View>
-            
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{weeklyStats.weeklyAverage}%</Text>
-              <Text style={styles.statLabel}>Weekly Avg</Text>
-            </View>
-            
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{getTodaysMealPlans().length}</Text>
-              <Text style={styles.statLabel}>Plans Today</Text>
-            </View>
-          </View>
+        {/* Macro Trends Section */}
+        <MacroTrendsSection />
 
-          {weeklyStats.mostUsedFood !== 'No data' && (
-            <View style={styles.favoriteFood}>
-              <Text style={styles.favoriteFoodLabel}>Most Used: </Text>
-              <Text style={styles.favoriteFoodName}>{weeklyStats.mostUsedFood}</Text>
-            </View>
-          )}
-        </LinearGradient>
+        {/* Weekly Comparison Chart */}
+        <WeeklyComparisonChart />
+
+        {/* Consistency Heatmap */}
+        <ConsistencyHeatmap />
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
@@ -470,44 +406,6 @@ const styles = StyleSheet.create({
   },
 
 
-  // Weekly Insights Styles
-  weeklyStatsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#00D084',
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: '#8E8E93',
-    textAlign: 'center',
-  },
-  favoriteFood: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-  },
-  favoriteFoodLabel: {
-    fontSize: 12,
-    color: '#8E8E93',
-  },
-  favoriteFoodName: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
 
   bottomSpacer: {
     height: 20,

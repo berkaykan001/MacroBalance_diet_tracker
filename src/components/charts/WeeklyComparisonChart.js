@@ -11,12 +11,14 @@ export default function WeeklyComparisonChart() {
   const comparison = getWeeklyComparison();
   const targets = getDailyTargets();
 
-  // Check if we have enough data for comparison
-  const hasData = comparison && 
-    (comparison.thisWeek.protein > 0 || comparison.thisWeek.carbs > 0 || comparison.thisWeek.fat > 0) &&
+  // Check if we have data for this week (show chart even if last week is empty)
+  const hasThisWeekData = comparison && 
+    (comparison.thisWeek.protein > 0 || comparison.thisWeek.carbs > 0 || comparison.thisWeek.fat > 0);
+  
+  const hasLastWeekData = comparison &&
     (comparison.lastWeek.protein > 0 || comparison.lastWeek.carbs > 0 || comparison.lastWeek.fat > 0);
 
-  if (!hasData) {
+  if (!hasThisWeekData) {
     return (
       <LinearGradient
         colors={['#1A1A1A', '#2A2A2A']}
@@ -40,7 +42,7 @@ export default function WeeklyComparisonChart() {
     {
       name: 'Protein',
       thisWeek: comparison.thisWeek.protein,
-      lastWeek: comparison.lastWeek.protein,
+      lastWeek: hasLastWeekData ? comparison.lastWeek.protein : 0,
       target: targets.protein,
       color: '#FF6B6B',
       unit: 'g'
@@ -48,7 +50,7 @@ export default function WeeklyComparisonChart() {
     {
       name: 'Carbs',
       thisWeek: comparison.thisWeek.carbs,
-      lastWeek: comparison.lastWeek.carbs,
+      lastWeek: hasLastWeekData ? comparison.lastWeek.carbs : 0,
       target: targets.carbs,
       color: '#4ECDC4',
       unit: 'g'
@@ -56,7 +58,7 @@ export default function WeeklyComparisonChart() {
     {
       name: 'Fat',
       thisWeek: comparison.thisWeek.fat,
-      lastWeek: comparison.lastWeek.fat,
+      lastWeek: hasLastWeekData ? comparison.lastWeek.fat : 0,
       target: targets.fat,
       color: '#45B7D1',
       unit: 'g'
@@ -64,7 +66,7 @@ export default function WeeklyComparisonChart() {
     {
       name: 'Calories',
       thisWeek: comparison.thisWeek.calories,
-      lastWeek: comparison.lastWeek.calories,
+      lastWeek: hasLastWeekData ? comparison.lastWeek.calories : 0,
       target: (targets.protein * 4) + (targets.carbs * 4) + (targets.fat * 9),
       color: '#9B59B6',
       unit: 'cal'
@@ -119,20 +121,30 @@ function MacroComparisonBar({ name, thisWeek, lastWeek, target, color, unit }) {
   // Calculate percentages for bar visualization
   const maxValue = Math.max(thisWeek, lastWeek, target) * 1.1; // Add 10% padding
   const thisWeekPercent = (thisWeek / maxValue) * 100;
-  const lastWeekPercent = (lastWeek / maxValue) * 100;
+  const lastWeekPercent = lastWeek > 0 ? (lastWeek / maxValue) * 100 : 0; // Force 0% width when lastWeek is 0
   const targetPercent = (target / maxValue) * 100;
 
-  // Calculate change percentage
-  const change = lastWeek > 0 ? ((thisWeek - lastWeek) / lastWeek) * 100 : 0;
-  const changeText = change > 0 ? `+${change.toFixed(1)}%` : `${change.toFixed(1)}%`;
-  const changeColor = change > 0 ? '#00D084' : change < 0 ? '#FF453A' : '#8E8E93';
+  // Calculate change percentage - handle case where lastWeek is 0 (no data)
+  let change = 0;
+  let changeText = '—';
+  let changeColor = '#8E8E93';
+  
+  if (lastWeek > 0) {
+    change = ((thisWeek - lastWeek) / lastWeek) * 100;
+    changeText = change > 0 ? `+${change.toFixed(1)}%` : `${change.toFixed(1)}%`;
+    changeColor = change > 0 ? '#00D084' : change < 0 ? '#FF453A' : '#8E8E93';
+  } else if (thisWeek > 0) {
+    // If there's no last week data but this week has data, show "New"
+    changeText = 'New';
+    changeColor = '#4ECDC4';
+  }
 
   return (
     <View style={styles.macroRow}>
       <View style={styles.macroHeader}>
         <Text style={styles.macroName}>{name}</Text>
         <Text style={[styles.changeText, { color: changeColor }]}>
-          {change !== 0 ? changeText : '—'}
+          {changeText}
         </Text>
       </View>
 

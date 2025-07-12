@@ -16,10 +16,16 @@ export default function CircularProgress({
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   
-  // Calculate progress percentage (don't cap at 100%)
+  // Calculate progress percentage
   const actualPercentage = target > 0 ? (current / target) * 100 : 0;
-  const displayPercentage = Math.min(150, actualPercentage); // Cap display at 150% for visual purposes
-  const strokeDashoffset = circumference - (displayPercentage / 150) * circumference;
+  
+  // Base progress (up to 100%)
+  const basePercentage = Math.min(100, actualPercentage);
+  const baseStrokeDashoffset = circumference - (basePercentage / 100) * circumference;
+  
+  // Overflow progress (beyond 100%, up to 200% max display)
+  const overflowPercentage = Math.max(0, Math.min(100, actualPercentage - 100));
+  const overflowStrokeDashoffset = circumference - (overflowPercentage / 100) * circumference;
   
   // Determine colors based on achievement
   const isComplete = actualPercentage >= 95 && actualPercentage <= 105;
@@ -27,10 +33,17 @@ export default function CircularProgress({
   const isSlightlyOver = actualPercentage > 105 && actualPercentage <= 120;
   const isSignificantlyOver = actualPercentage > 120;
   
-  const ringColor = isSignificantlyOver ? '#FF453A' : 
-                   isSlightlyOver ? '#FF9500' : 
-                   isComplete ? '#00D084' : 
+  // Base colors (lighter)
+  const baseColor = isSignificantlyOver ? '#FF6B6B' : 
+                   isSlightlyOver ? '#FFB84D' : 
+                   isComplete ? '#32D74B' : 
                    color[0];
+  
+  // Overflow colors (darker versions)
+  const overflowColor = isSignificantlyOver ? '#CC1F1F' : 
+                       isSlightlyOver ? '#CC7A00' : 
+                       isComplete ? '#1B7A2B' : 
+                       '#1B7A2B'; // Default to dark green for any overflow
   
   return (
     <View style={[styles.container, { width: size, height: size }]}>
@@ -52,24 +65,40 @@ export default function CircularProgress({
           strokeWidth={strokeWidth}
         />
         
-        {/* Progress circle */}
+        {/* Base progress circle (up to 100%) */}
         <Circle
           cx={center}
           cy={center}
           r={radius}
           fill="none"
-          stroke={isSlightlyOver || isSignificantlyOver || isComplete ? ringColor : "url(#gradient)"}
+          stroke={baseColor}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
+          strokeDashoffset={baseStrokeDashoffset}
           strokeLinecap="round"
           transform={`rotate(-90 ${center} ${center})`}
         />
+        
+        {/* Overflow progress circle (beyond 100%) */}
+        {overflowPercentage > 0 && (
+          <Circle
+            cx={center}
+            cy={center}
+            r={radius}
+            fill="none"
+            stroke={overflowColor}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={overflowStrokeDashoffset}
+            strokeLinecap="round"
+            transform={`rotate(-90 ${center} ${center})`}
+          />
+        )}
       </Svg>
       
       {/* Center content */}
       <View style={styles.centerContent}>
-        <Text style={[styles.percentage, { color: ringColor }]}>
+        <Text style={[styles.percentage, { color: overflowPercentage > 0 ? overflowColor : baseColor }]}>
           {Math.round(actualPercentage)}%
         </Text>
         <Text style={styles.values}>

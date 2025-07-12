@@ -753,13 +753,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   screenHeader: {
-    marginBottom: 16,
+    marginBottom: 8,
   },
   screenTitle: {
     fontSize: 24,
     fontWeight: '700',
     color: '#FFFFFF',
-    textAlign: 'center',
+    marginBottom: 4,
+    letterSpacing: -0.3,
   },
   scrollableContent: {
     flex: 1,

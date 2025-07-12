@@ -268,7 +268,7 @@ export default function SettingsScreen() {
             </Text>
             
             <FlatList
-              data={meals}
+              data={meals.filter(meal => meal.name !== 'Snack')}
               renderItem={renderMealTargetItem}
               keyExtractor={(item) => item.id}
               showsVerticalScrollIndicator={false}
@@ -462,13 +462,6 @@ export default function SettingsScreen() {
                 'Automatically optimize portions when adding foods',
                 appPreferences.autoOptimize,
                 (value) => updateAppPreferences({ autoOptimize: value })
-              )}
-              
-              {renderPreferenceItem(
-                'Notifications',
-                'Receive reminders and updates (coming soon)',
-                appPreferences.notifications,
-                (value) => updateAppPreferences({ notifications: value })
               )}
             </View>
 

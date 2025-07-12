@@ -48,7 +48,7 @@ export default function AppNavigator() {
           name="Foods" 
           component={FoodsStackNavigator}
           options={{
-            title: 'Foods',
+            title: 'Food Database',
             tabBarIcon: ({ color, size }) => (
               <Text style={{ fontSize: 20, color: color }}>🥗</Text>
             ),

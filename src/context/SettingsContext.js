@@ -41,7 +41,6 @@ function settingsReducer(state, action) {
 const defaultSettings = {
   selectedQuickFoods: ['1', '2', '3'], // Default to first 3 foods
   appPreferences: {
-    notifications: true,
     autoOptimize: true
   },
   isLoading: true

@@ -721,7 +721,7 @@ export default function FoodManagementScreen({ navigation }) {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.headerButtonText}>+ Food</Text>
+              <Text style={styles.headerButtonText}>Add a Food</Text>
             </LinearGradient>
           </TouchableOpacity>
           <TouchableOpacity 
@@ -734,7 +734,7 @@ export default function FoodManagementScreen({ navigation }) {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.headerButtonText}>🍲 Dish</Text>
+              <Text style={styles.headerButtonText}>Add a Dish</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>

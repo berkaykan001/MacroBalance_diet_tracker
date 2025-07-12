@@ -132,7 +132,6 @@ export function CircularProgressSection() {
     >
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Daily Target Progress</Text>
-        <Text style={styles.sectionSubtitle}>Circular view of your macro goals</Text>
       </View>
       
       <View style={styles.progressGrid}>

@@ -504,6 +504,11 @@ export default function MealPlanningScreen({ route, navigation }) {
       {/* Fixed Header Section - Compact */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.fixedHeader}>
+        {/* Header */}
+        <View style={styles.screenHeader}>
+          <Text style={styles.screenTitle}>Plan Meal</Text>
+        </View>
+        
         {/* Meal Selector */}
         <View style={styles.mealSelector}>
           <Text style={styles.mealSelectorLabel}>Meal:</Text>
@@ -746,6 +751,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     paddingTop: 10,
     paddingHorizontal: 16,
+  },
+  screenHeader: {
+    marginBottom: 16,
+  },
+  screenTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    textAlign: 'center',
   },
   scrollableContent: {
     flex: 1,

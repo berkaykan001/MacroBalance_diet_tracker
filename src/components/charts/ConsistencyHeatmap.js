@@ -120,6 +120,7 @@ export default function ConsistencyHeatmap() {
   
   const goToToday = () => {
     setCurrentDate(new Date());
+    setSelectedDay(null); // Clear any selected day when navigating to today
   };
   
   // Get color based on consistency score

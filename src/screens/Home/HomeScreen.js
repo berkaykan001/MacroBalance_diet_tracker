@@ -198,7 +198,6 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Dashboard</Text>
-          <Text style={styles.subtitle}>Track your daily macro progress</Text>
         </View>
 
         {/* Circular Progress Section */}
@@ -213,9 +212,6 @@ export default function HomeScreen() {
         >
           <View style={styles.cardHeader}>
             <Text style={styles.cardTitle}>Today's Progress</Text>
-            <Text style={styles.cardSubtitle}>
-              {dailyProgress.consumed.calories} / {Math.round((dailyProgress.targets.protein * 4) + (dailyProgress.targets.carbs * 4) + (dailyProgress.targets.fat * 9))} cal
-            </Text>
           </View>
 
           {/* Sub-Macro Progress */}

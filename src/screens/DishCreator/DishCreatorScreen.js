@@ -40,7 +40,7 @@ export default function DishCreatorScreen({ navigation }) {
 
   const updateIngredientPortion = (foodId, grams) => {
     setIngredients(ingredients.map(ing => 
-      ing.foodId === foodId ? { ...ing, grams: Math.max(5, Math.round(grams)) } : ing
+      ing.foodId === foodId ? { ...ing, grams: Math.max(0.1, Math.round(grams * 10) / 10) } : ing
     ));
   };
 

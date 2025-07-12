@@ -48,44 +48,15 @@ export default function ConsistencyHeatmap() {
         const isToday = dateString === today.toDateString();
         const isFuture = date > today;
         
-        // For testing, add some hardcoded consistency values
-        let testConsistency = 0;
-        if (!isFuture) {
-          // Cycle through different consistency values for testing
-          const dayOfMonth = date.getDate();
-          if (dayOfMonth % 5 === 0) testConsistency = 0.9; // Excellent
-          else if (dayOfMonth % 4 === 0) testConsistency = 0.75; // Good  
-          else if (dayOfMonth % 3 === 0) testConsistency = 0.55; // Average
-          else if (dayOfMonth % 2 === 0) testConsistency = 0.35; // Below average
-          else testConsistency = 0.15; // Poor
-        }
-
-        // Create a more complete test summary for clicked days
-        let testSummary = null;
-        if (!isFuture && testConsistency > 0) {
-          testSummary = {
-            consistencyScore: testConsistency,
-            macros: {
-              protein: Math.round(120 * (0.8 + Math.random() * 0.4)), // 96-168g
-              carbs: Math.round(180 * (0.8 + Math.random() * 0.4)),   // 144-252g  
-              fat: Math.round(60 * (0.8 + Math.random() * 0.4))       // 48-84g
-            },
-            targetsAchieved: {
-              protein: 0.8 + Math.random() * 0.4, // 80-120%
-              carbs: 0.8 + Math.random() * 0.4,   // 80-120%
-              fat: 0.8 + Math.random() * 0.4      // 80-120%
-            },
-            topFoods: ['chicken-breast', 'brown-rice', 'avocado'].slice(0, Math.floor(Math.random() * 3) + 1)
-          };
-        }
+        // Use real summary data only - no test/dummy data
 
         weekData.push({
           date: dateString,
           dateObj: date,
-          summary: testSummary,
+          summary: summary,
           isToday,
           isFuture,
-          consistency: testConsistency
+          consistency: summary?.consistencyScore || 0
         });
         
       }
@@ -153,13 +124,8 @@ export default function ConsistencyHeatmap() {
             <Text style={styles.topFoodsTitle}>Top Foods:</Text>
             <Text style={styles.topFoodsText}>
               {summary.topFoods.map(foodId => {
-                // Map dummy food IDs to names
-                const foodNames = {
-                  'chicken-breast': 'Chicken Breast',
-                  'brown-rice': 'Brown Rice', 
-                  'avocado': 'Avocado'
-                };
-                return foodNames[foodId] || foodId;
+                // Note: This should be enhanced to get actual food names from FoodContext
+                return foodId.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
               }).join(', ')}
             </Text>
           </View>
@@ -192,48 +158,46 @@ export default function ConsistencyHeatmap() {
         <Text style={styles.subtitle}>Your daily macro tracking over time</Text>
       </View>
       
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.calendarScroll}>
-        <View style={styles.calendar}>
-          {/* Day labels */}
-          <View style={styles.dayLabels}>
-            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-              <Text key={index} style={styles.dayLabel}>{day}</Text>
-            ))}
-          </View>
-          
-          {/* Calendar grid - each row is a week */}
-          <View style={styles.calendarGrid}>
-            {weeks.map((week, weekIndex) => (
-              <View key={weekIndex} style={styles.weekRow}>
-                {week.map((day, dayIndex) => (
-                  <TouchableOpacity
-                    key={dayIndex}
-                    style={[
-                      styles.day,
-                      {
-                        backgroundColor: day.isFuture 
-                          ? 'rgba(255,255,255,0.05)' 
-                          : getConsistencyColor(day.consistency),
-                        borderColor: day.isToday ? '#FFFFFF' : 'transparent',
-                        borderWidth: day.isToday ? 1 : 0,
-                      }
-                    ]}
-                    onPress={() => handleDayPress(day)}
-                    disabled={day.isFuture || !day.summary}
-                  >
-                    {/* Show day number if it has data or is today */}
-                    {(day.summary || day.isToday) && (
-                      <Text style={styles.dayText}>
-                        {day.dateObj.getDate()}
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ))}
-          </View>
+      <View style={styles.calendar}>
+        {/* Day labels */}
+        <View style={styles.dayLabels}>
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+            <Text key={index} style={styles.dayLabel}>{day}</Text>
+          ))}
         </View>
-      </ScrollView>
+        
+        {/* Calendar grid - each row is a week */}
+        <View style={styles.calendarGrid}>
+          {weeks.map((week, weekIndex) => (
+            <View key={weekIndex} style={styles.weekRow}>
+              {week.map((day, dayIndex) => (
+                <TouchableOpacity
+                  key={dayIndex}
+                  style={[
+                    styles.day,
+                    {
+                      backgroundColor: day.isFuture 
+                        ? 'rgba(255,255,255,0.05)' 
+                        : getConsistencyColor(day.consistency),
+                      borderColor: day.isToday ? '#FFFFFF' : 'transparent',
+                      borderWidth: day.isToday ? 1 : 0,
+                    }
+                  ]}
+                  onPress={() => handleDayPress(day)}
+                  disabled={day.isFuture || !day.summary}
+                >
+                  {/* Show day number if it has data or is today */}
+                  {(day.summary || day.isToday) && (
+                    <Text style={styles.dayText}>
+                      {day.dateObj.getDate()}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          ))}
+        </View>
+      </View>
       
       {/* Legend */}
       <View style={styles.legend}>
@@ -317,20 +281,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#8E8E93',
   },
-  calendarScroll: {
-    marginBottom: 16,
-  },
   calendar: {
-    alignItems: 'flex-start',
+    marginBottom: 16,
   },
   dayLabels: {
     flexDirection: 'row',
-    marginBottom: 8,
     justifyContent: 'space-between',
-    paddingHorizontal: 2,
+    marginBottom: 8,
+    paddingHorizontal: 4,
   },
   dayLabel: {
-    width: 18,
+    flex: 1,
     textAlign: 'center',
     fontSize: 10,
     color: '#8E8E93',
@@ -342,17 +303,20 @@ const styles = StyleSheet.create({
   weekRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 3,
+    marginBottom: 4,
+    paddingHorizontal: 4,
   },
   day: {
-    width: 18,
-    height: 18,
-    borderRadius: 3,
+    flex: 1,
+    aspectRatio: 1,
+    borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
+    marginHorizontal: 1,
+    minHeight: 28,
   },
   dayText: {
-    fontSize: 8,
+    fontSize: 11,
     color: '#FFFFFF',
     fontWeight: '600',
   },

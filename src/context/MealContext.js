@@ -480,62 +480,54 @@ export function MealProvider({ children }) {
     });
   };
 
+  const getTodaysSummary = () => {
+    const today = new Date();
+    const todayKey = today.toDateString();
+    
+    // Check if we already have a daily summary for today
+    if (state.dailySummaries[todayKey]) {
+      return {
+        date: todayKey,
+        ...state.dailySummaries[todayKey]
+      };
+    }
+    
+    // Get today's meal plans
+    const todaysMealPlans = state.mealPlans.filter(plan => {
+      const planDate = new Date(plan.createdAt);
+      return planDate.toDateString() === todayKey;
+    });
+    
+    if (todaysMealPlans.length === 0) {
+      return null;
+    }
+    
+    // Create real-time summary from today's meal plans
+    const summary = createDailySummary(todayKey, todaysMealPlans);
+    return summary ? { date: todayKey, ...summary } : null;
+  };
+
   const getDailySummariesForPeriod = (days = 7) => {
     const summaries = [];
     const today = new Date();
     
     for (let i = 0; i < days; i++) {
       const date = new Date(today);
-      date.setDate(date.getDate() - i);
+      date.setDate(today.getDate() - i);
       const dateKey = date.toDateString();
       
-      if (state.dailySummaries[dateKey]) {
-        summaries.unshift({
-          date: dateKey,
-          ...state.dailySummaries[dateKey]
-        });
+      if (i === 0) {
+        // For today, get real-time summary
+        const todaysSummary = getTodaysSummary();
+        if (todaysSummary) {
+          summaries.unshift(todaysSummary);
+        }
       } else {
-        // Add dummy data for debugging/testing (last 14 days)
-        if (i < 14) {
-          const targets = getDailyTargets();
-          const variation = () => 0.7 + (Math.random() * 0.6); // 70% to 130% of target
-          
+        // For past days, use stored daily summaries
+        if (state.dailySummaries[dateKey]) {
           summaries.unshift({
-            date: date.toISOString().split('T')[0], // Use YYYY-MM-DD format
-            macros: {
-              protein: Math.round(targets.protein * variation()),
-              carbs: Math.round(targets.carbs * variation()),
-              fat: Math.round(targets.fat * variation()),
-              calories: Math.round((targets.protein * 4 + targets.carbs * 4 + targets.fat * 9) * variation())
-            },
-            subMacros: {
-              fiber: Math.round(25 * variation()),
-              omega3: Math.round(2 * variation()),
-              saturatedFat: Math.round(20 * variation()),
-              monounsaturatedFat: Math.round(15 * variation()),
-              polyunsaturatedFat: Math.round(10 * variation()),
-              transFat: Math.round(2 * Math.random()),
-              addedSugars: Math.round(25 * Math.random()),
-              naturalSugars: Math.round(30 * variation())
-            },
-            micronutrients: {
-              iron: Math.round(18 * variation()),
-              calcium: Math.round(1000 * variation()),
-              zinc: Math.round(11 * variation()),
-              magnesium: Math.round(400 * variation()),
-              vitaminB6: Math.round(1.3 * variation()),
-              vitaminB12: Math.round(2.4 * variation()),
-              vitaminC: Math.round(90 * variation()),
-              vitaminD: Math.round(20 * variation())
-            },
-            targetsAchieved: {
-              protein: Math.min(1, variation()),
-              carbs: Math.min(1, variation()),
-              fat: Math.min(1, variation())
-            },
-            consistencyScore: 0.6 + (Math.random() * 0.4), // 60% to 100%
-            topFoods: ['chicken-breast', 'brown-rice', 'avocado'].slice(0, Math.floor(Math.random() * 3) + 1),
-            createdAt: date.toISOString()
+            date: dateKey,
+            ...state.dailySummaries[dateKey]
           });
         }
       }
@@ -806,6 +798,7 @@ export function MealProvider({ children }) {
     // Daily Summary functions
     createDailySummary,
     updateDailySummary,
+    getTodaysSummary,
     getDailySummariesForPeriod,
     getWeeklyComparison,
     // Data Lifecycle functions

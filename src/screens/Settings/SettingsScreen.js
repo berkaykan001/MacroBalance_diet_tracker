@@ -463,6 +463,38 @@ export default function SettingsScreen() {
                 appPreferences.autoOptimize,
                 (value) => updateAppPreferences({ autoOptimize: value })
               )}
+              
+              <View style={styles.preferenceItem}>
+                <View style={styles.preferenceInfo}>
+                  <Text style={styles.preferenceTitle}>Day Reset Hour</Text>
+                  <Text style={styles.preferenceDescription}>
+                    When your day resets
+                  </Text>
+                </View>
+                <View style={styles.hourPickerContainer}>
+                  <TouchableOpacity
+                    style={styles.hourButton}
+                    onPress={() => {
+                      const currentHour = appPreferences.dayResetHour || 4;
+                      const newHour = currentHour > 0 ? currentHour - 1 : 23;
+                      updateAppPreferences({ dayResetHour: newHour });
+                    }}
+                  >
+                    <Text style={styles.hourButtonText}>-</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.hourText}>{appPreferences.dayResetHour || 4}:00</Text>
+                  <TouchableOpacity
+                    style={styles.hourButton}
+                    onPress={() => {
+                      const currentHour = appPreferences.dayResetHour || 4;
+                      const newHour = currentHour < 23 ? currentHour + 1 : 0;
+                      updateAppPreferences({ dayResetHour: newHour });
+                    }}
+                  >
+                    <Text style={styles.hourButtonText}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
 
             <View style={styles.resetSection}>
@@ -1000,5 +1032,32 @@ const styles = StyleSheet.create({
 
   bottomSpacer: {
     height: 40,
+  },
+
+  // Hour Picker
+  hourPickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  hourButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 4,
+  },
+  hourButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  hourText: {
+    color: '#007AFF',
+    fontSize: 16,
+    fontWeight: '600',
+    minWidth: 50,
+    textAlign: 'center',
   },
 });

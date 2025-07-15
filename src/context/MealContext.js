@@ -644,17 +644,22 @@ export function MealProvider({ children }) {
 
   // Data Lifecycle Management
   const processDataLifecycle = async (retentionDays = 90) => {
+    // Use consistent date calculation with getMyTodayDate logic
     const today = new Date();
-    const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const myToday = getMyTodayDate(today);
+    const myTodayDate = new Date(myToday);
     
-    const retentionCutoff = new Date(today);
-    retentionCutoff.setDate(retentionCutoff.getDate() - retentionDays);
+    const sevenDaysAgo = new Date(myTodayDate);
+    sevenDaysAgo.setDate(myTodayDate.getDate() - 7);
+    
+    const retentionCutoff = new Date(myTodayDate);
+    retentionCutoff.setDate(myTodayDate.getDate() - retentionDays);
 
     // Step 1: Convert meal plans older than 7 days to daily summaries
-    const mealPlansToConvert = state.mealPlans.filter(plan => 
-      new Date(plan.createdAt) < sevenDaysAgo
-    );
+    const mealPlansToConvert = state.mealPlans.filter(plan => {
+      const planDate = new Date(getMyTodayDate(new Date(plan.createdAt)));
+      return planDate < sevenDaysAgo;
+    });
 
     // Group meal plans by date
     const plansByDate = {};
@@ -678,9 +683,10 @@ export function MealProvider({ children }) {
     });
 
     // Step 2: Remove old meal plans (now converted to summaries)
-    const remainingMealPlans = state.mealPlans.filter(plan => 
-      new Date(plan.createdAt) >= sevenDaysAgo
-    );
+    const remainingMealPlans = state.mealPlans.filter(plan => {
+      const planDate = new Date(getMyTodayDate(new Date(plan.createdAt)));
+      return planDate >= sevenDaysAgo;
+    });
 
     // Step 3: Remove old daily summaries based on retention period
     const remainingSummaries = {};
@@ -761,11 +767,11 @@ export function MealProvider({ children }) {
     );
   };
 
-  // Helper function to get "today" based on 4 AM reset instead of midnight
-  const getMyTodayDate = (date = new Date()) => {
+  // Helper function to get "today" based on custom reset hour instead of midnight
+  const getMyTodayDate = (date = new Date(), dayResetHour = 4) => {
     const currentDate = new Date(date);
-    // If it's before 4 AM, consider it as the previous day
-    if (currentDate.getHours() < 4) {
+    // If it's before the reset hour, consider it as the previous day
+    if (currentDate.getHours() < dayResetHour) {
       currentDate.setDate(currentDate.getDate() - 1);
     }
     return currentDate.toDateString();
@@ -876,7 +882,9 @@ export function MealProvider({ children }) {
     // Data Lifecycle functions
     processDataLifecycle,
     cleanupOldData,
-    getDataStorageInfo
+    getDataStorageInfo,
+    // Helper functions
+    getMyTodayDate
   };
 
   return (

@@ -41,7 +41,8 @@ function settingsReducer(state, action) {
 const defaultSettings = {
   selectedQuickFoods: ['1', '2', '3'], // Default to first 3 foods
   appPreferences: {
-    autoOptimize: true
+    autoOptimize: true,
+    dayResetHour: 4 // Hour when the day resets (default 4 AM)
   },
   isLoading: true
 };

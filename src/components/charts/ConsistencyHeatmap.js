@@ -3,10 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMeal } from '../../context/MealContext';
 import { useFood } from '../../context/FoodContext';
+import { useSettings } from '../../context/SettingsContext';
 
 export default function ConsistencyHeatmap() {
-  const { getDailySummariesForPeriod, getTodaysSummary } = useMeal();
+  const { getDailySummariesForPeriod, getTodaysSummary, getMyTodayDate } = useMeal();
   const { getFoodById } = useFood();
+  const { appPreferences } = useSettings();
+  
+  const dayResetHour = appPreferences?.dayResetHour || 4;
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
@@ -34,12 +38,12 @@ export default function ConsistencyHeatmap() {
     // Also add today's real-time summary if it exists
     const todaysSummary = getTodaysSummary();
     if (todaysSummary) {
-      const todayKey = new Date().toDateString();
+      const todayKey = getMyTodayDate(new Date(), dayResetHour);
       map[todayKey] = todaysSummary;
     }
     
     return map;
-  }, [allSummaries, getTodaysSummary]);
+  }, [allSummaries, getTodaysSummary, dayResetHour]);
   
   // Generate calendar grid for current month
   const calendarData = useMemo(() => {
@@ -64,8 +68,10 @@ export default function ConsistencyHeatmap() {
         
         const dateString = date.toDateString();
         const summary = summaryMap[dateString];
-        const isToday = dateString === today.toDateString();
-        const isFuture = date > today;
+        // Use getMyTodayDate function for consistent custom reset hour logic
+        const myTodayString = getMyTodayDate(new Date(), dayResetHour);
+        const isToday = dateString === myTodayString;
+        const isFuture = date > new Date(myTodayString);
         const isCurrentMonth = date.getMonth() === month;
         
         weekData.push({
@@ -83,7 +89,7 @@ export default function ConsistencyHeatmap() {
     }
     
     return weeks;
-  }, [currentDate, summaryMap]);
+  }, [currentDate, summaryMap, dayResetHour]);
   
   // Navigation functions
   const goToPreviousMonth = () => {
@@ -306,7 +312,7 @@ export default function ConsistencyHeatmap() {
                 <TouchableOpacity
                   key={dayIndex}
                   style={[
-                    styles.day,
+                    day.isToday ? styles.todayDay : styles.day,
                     {
                       backgroundColor: getConsistencyColor(day.consistency),
                       borderColor: day.isToday ? '#FFFFFF' : 'transparent',
@@ -477,6 +483,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 1,
     minHeight: 32,
+  },
+  todayDay: {
+    flex: 1,
+    aspectRatio: 1,
+    borderRadius: 4, // Reduce border radius by 2 to account for 2px border
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: 1,
+    minHeight: 28, // Reduce height by 4 (2px border on top and bottom)
   },
   dayText: {
     fontSize: 12,

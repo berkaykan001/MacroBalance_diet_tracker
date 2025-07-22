@@ -32,6 +32,8 @@ export class CalculationService {
       calcium: nutrition.calcium ? Math.round(nutrition.calcium * multiplier * 10) / 10 : 0,
       zinc: nutrition.zinc ? Math.round(nutrition.zinc * multiplier * 10) / 10 : 0,
       magnesium: nutrition.magnesium ? Math.round(nutrition.magnesium * multiplier * 10) / 10 : 0,
+      sodium: nutrition.sodium ? Math.round(nutrition.sodium * multiplier * 10) / 10 : 0,
+      potassium: nutrition.potassium ? Math.round(nutrition.potassium * multiplier * 10) / 10 : 0,
       vitaminB6: nutrition.vitaminB6 ? Math.round(nutrition.vitaminB6 * multiplier * 10) / 10 : 0,
       vitaminB12: nutrition.vitaminB12 ? Math.round(nutrition.vitaminB12 * multiplier * 10) / 10 : 0,
       vitaminC: nutrition.vitaminC ? Math.round(nutrition.vitaminC * multiplier * 10) / 10 : 0,
@@ -60,6 +62,8 @@ export class CalculationService {
       calcium: 0,
       zinc: 0,
       magnesium: 0,
+      sodium: 0,
+      potassium: 0,
       vitaminB6: 0,
       vitaminB12: 0,
       vitaminC: 0,
@@ -89,6 +93,8 @@ export class CalculationService {
         totals.calcium += macros.calcium || 0;
         totals.zinc += macros.zinc || 0;
         totals.magnesium += macros.magnesium || 0;
+        totals.sodium += macros.sodium || 0;
+        totals.potassium += macros.potassium || 0;
         totals.vitaminB6 += macros.vitaminB6 || 0;
         totals.vitaminB12 += macros.vitaminB12 || 0;
         totals.vitaminC += macros.vitaminC || 0;
@@ -116,6 +122,8 @@ export class CalculationService {
       calcium: Math.round(totals.calcium * 10) / 10,
       zinc: Math.round(totals.zinc * 10) / 10,
       magnesium: Math.round(totals.magnesium * 10) / 10,
+      sodium: Math.round(totals.sodium * 10) / 10,
+      potassium: Math.round(totals.potassium * 10) / 10,
       vitaminB6: Math.round(totals.vitaminB6 * 10) / 10,
       vitaminB12: Math.round(totals.vitaminB12 * 10) / 10,
       vitaminC: Math.round(totals.vitaminC * 10) / 10,
@@ -359,6 +367,8 @@ export class CalculationService {
       calcium: 0,
       zinc: 0,
       magnesium: 0,
+      sodium: 0,
+      potassium: 0,
       vitaminB6: 0,
       vitaminB12: 0,
       vitaminC: 0,

@@ -100,8 +100,8 @@ const defaultDailySubMacroTargets = {
   minFiber: 29,           // 29g fiber daily (middle of 28-30g range)
   
   // Additional targets you can customize later
-  maxSodium: 2300,        // Max 2300mg sodium daily (optional)
-  minPotassium: 3500      // Min 3500mg potassium daily (optional)
+  maxSodium: 2300,        // Max 2300mg sodium daily (FDA limit)
+  minPotassium: 4700      // Min 4700mg potassium daily (FDA requirement)
 };
 
 // Daily micronutrient targets (Personalized for 30-year-old male, 72kg)
@@ -111,6 +111,8 @@ const defaultDailyMicronutrientTargets = {
   calcium: 1300,         // 1300mg daily (as recommended)
   zinc: 11,              // 11mg daily for men
   magnesium: 420,        // 420mg daily for men
+  sodium: 2300,          // Max 2300mg sodium daily (FDA limit)
+  potassium: 4700,       // Min 4700mg potassium daily (FDA requirement)
   
   // Vitamins
   vitaminB6: 1.7,        // 1.7mg daily (as recommended)
@@ -421,11 +423,13 @@ export function MealProvider({ children }) {
       calcium: total.calcium + (plan.calculatedMacros?.calcium || 0),
       zinc: total.zinc + (plan.calculatedMacros?.zinc || 0),
       magnesium: total.magnesium + (plan.calculatedMacros?.magnesium || 0),
+      sodium: total.sodium + (plan.calculatedMacros?.sodium || 0),
+      potassium: total.potassium + (plan.calculatedMacros?.potassium || 0),
       vitaminB6: total.vitaminB6 + (plan.calculatedMacros?.vitaminB6 || 0),
       vitaminB12: total.vitaminB12 + (plan.calculatedMacros?.vitaminB12 || 0),
       vitaminC: total.vitaminC + (plan.calculatedMacros?.vitaminC || 0),
       vitaminD: total.vitaminD + (plan.calculatedMacros?.vitaminD || 0)
-    }), { iron: 0, calcium: 0, zinc: 0, magnesium: 0, vitaminB6: 0, vitaminB12: 0, vitaminC: 0, vitaminD: 0 });
+    }), { iron: 0, calcium: 0, zinc: 0, magnesium: 0, sodium: 0, potassium: 0, vitaminB6: 0, vitaminB12: 0, vitaminC: 0, vitaminD: 0 });
 
     // Calculate targets achieved
     const targets = getDailyTargets();
@@ -800,6 +804,8 @@ export function MealProvider({ children }) {
       calcium: total.calcium + (plan.calculatedMacros?.calcium || 0),
       zinc: total.zinc + (plan.calculatedMacros?.zinc || 0),
       magnesium: total.magnesium + (plan.calculatedMacros?.magnesium || 0),
+      sodium: total.sodium + (plan.calculatedMacros?.sodium || 0),
+      potassium: total.potassium + (plan.calculatedMacros?.potassium || 0),
       vitaminB6: total.vitaminB6 + (plan.calculatedMacros?.vitaminB6 || 0),
       vitaminB12: total.vitaminB12 + (plan.calculatedMacros?.vitaminB12 || 0),
       vitaminC: total.vitaminC + (plan.calculatedMacros?.vitaminC || 0),
@@ -808,7 +814,7 @@ export function MealProvider({ children }) {
       protein: 0, carbs: 0, fat: 0, calories: 0,
       omega3: 0, monounsaturatedFat: 0, polyunsaturatedFat: 0, saturatedFat: 0, transFat: 0,
       addedSugars: 0, naturalSugars: 0, fiber: 0,
-      iron: 0, calcium: 0, zinc: 0, magnesium: 0, vitaminB6: 0, vitaminB12: 0, vitaminC: 0, vitaminD: 0
+      iron: 0, calcium: 0, zinc: 0, magnesium: 0, sodium: 0, potassium: 0, vitaminB6: 0, vitaminB12: 0, vitaminC: 0, vitaminD: 0
     });
 
     return {
@@ -836,6 +842,8 @@ export function MealProvider({ children }) {
         calcium: defaultDailyMicronutrientTargets.calcium > 0 ? (consumed.calcium / defaultDailyMicronutrientTargets.calcium) * 100 : 0,
         zinc: defaultDailyMicronutrientTargets.zinc > 0 ? (consumed.zinc / defaultDailyMicronutrientTargets.zinc) * 100 : 0,
         magnesium: defaultDailyMicronutrientTargets.magnesium > 0 ? (consumed.magnesium / defaultDailyMicronutrientTargets.magnesium) * 100 : 0,
+        sodium: defaultDailyMicronutrientTargets.sodium > 0 ? (consumed.sodium / defaultDailyMicronutrientTargets.sodium) * 100 : 0,
+        potassium: defaultDailyMicronutrientTargets.potassium > 0 ? (consumed.potassium / defaultDailyMicronutrientTargets.potassium) * 100 : 0,
         vitaminB6: defaultDailyMicronutrientTargets.vitaminB6 > 0 ? (consumed.vitaminB6 / defaultDailyMicronutrientTargets.vitaminB6) * 100 : 0,
         vitaminB12: defaultDailyMicronutrientTargets.vitaminB12 > 0 ? (consumed.vitaminB12 / defaultDailyMicronutrientTargets.vitaminB12) * 100 : 0,
         vitaminC: defaultDailyMicronutrientTargets.vitaminC > 0 ? (consumed.vitaminC / defaultDailyMicronutrientTargets.vitaminC) * 100 : 0,

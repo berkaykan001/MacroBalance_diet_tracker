@@ -237,6 +237,8 @@ export default function HomeScreen() {
               {renderSubMacroBar('Calcium', dailyProgress.consumed.calcium, dailyProgress.micronutrientTargets.calcium, ['#F39C12', '#E67E22'], false, 'mg')}
               {renderSubMacroBar('Zinc', dailyProgress.consumed.zinc, dailyProgress.micronutrientTargets.zinc, ['#3498DB', '#2980B9'], false, 'mg')}
               {renderSubMacroBar('Magnesium', dailyProgress.consumed.magnesium, dailyProgress.micronutrientTargets.magnesium, ['#27AE60', '#229954'], false, 'mg')}
+              {renderSubMacroBar('Sodium', dailyProgress.consumed.sodium, dailyProgress.micronutrientTargets.sodium, ['#FF9500', '#FFB84D'], true, 'mg')}
+              {renderSubMacroBar('Potassium', dailyProgress.consumed.potassium, dailyProgress.micronutrientTargets.potassium, ['#8E44AD', '#9B59B6'], false, 'mg')}
               {renderSubMacroBar('Vitamin B6', dailyProgress.consumed.vitaminB6, dailyProgress.micronutrientTargets.vitaminB6, ['#9B59B6', '#8E44AD'], false, 'mg')}
               {renderSubMacroBar('Vitamin B12', dailyProgress.consumed.vitaminB12, dailyProgress.micronutrientTargets.vitaminB12, ['#1ABC9C', '#16A085'], false, 'μg')}
               {renderSubMacroBar('Vitamin C', dailyProgress.consumed.vitaminC, dailyProgress.micronutrientTargets.vitaminC, ['#F1C40F', '#F39C12'], false, 'mg')}

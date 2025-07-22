@@ -36,6 +36,8 @@ export default function FoodManagementScreen({ navigation }) {
       iron: '',
       calcium: '',
       zinc: '',
+      sodium: '',
+      potassium: '',
       vitaminB6: '',
       vitaminB12: '',
       vitaminC: ''
@@ -96,6 +98,8 @@ export default function FoodManagementScreen({ navigation }) {
         iron: '',
         calcium: '',
         zinc: '',
+        sodium: '',
+        potassium: '',
         vitaminB6: '',
         vitaminB12: '',
         vitaminC: ''
@@ -185,6 +189,8 @@ export default function FoodManagementScreen({ navigation }) {
         calcium: parseFloat(nutrition.calcium) || 0,
         zinc: parseFloat(nutrition.zinc) || 0,
         magnesium: parseFloat(nutrition.magnesium) || 0,
+        sodium: parseFloat(nutrition.sodium) || 0,
+        potassium: parseFloat(nutrition.potassium) || 0,
       }
     };
 
@@ -689,6 +695,38 @@ export default function FoodManagementScreen({ navigation }) {
                   onChangeText={(text) => setFormData({
                     ...formData,
                     nutritionPer100g: {...formData.nutritionPer100g, magnesium: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+            </View>
+
+            <View style={styles.nutritionInputRow}>
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Sodium (mg)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.sodium}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, sodium: text}
+                  })}
+                  placeholder="0"
+                  placeholderTextColor="#8E8E93"
+                  keyboardType="numeric"
+                />
+              </View>
+              
+              <View style={styles.nutritionInputGroup}>
+                <Text style={styles.inputLabel}>Potassium (mg)</Text>
+                <TextInput
+                  style={styles.nutritionInput}
+                  value={formData.nutritionPer100g.potassium}
+                  onChangeText={(text) => setFormData({
+                    ...formData,
+                    nutritionPer100g: {...formData.nutritionPer100g, potassium: text}
                   })}
                   placeholder="0"
                   placeholderTextColor="#8E8E93"

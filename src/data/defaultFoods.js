@@ -26,7 +26,9 @@ export const defaultFoods = [
       zinc: 1.0,
       vitaminB6: 0.5,
       vitaminB12: 0.3,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 77,
+      potassium: 568
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -58,7 +60,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.1,
       vitaminB12: 0.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 400,
+      potassium: 900
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -90,7 +94,9 @@ export const defaultFoods = [
       zinc: 1.3,
       vitaminB6: 0.1,
       vitaminB12: 1.1,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 142,
+      potassium: 138
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -122,7 +128,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.04,
       vitaminB12: 0.2,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 36,
+      potassium: 141
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -154,7 +162,9 @@ export const defaultFoods = [
       zinc: 0.6,
       vitaminB6: 0.8,
       vitaminB12: 4.9,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 52,
+      potassium: 430
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -188,7 +198,9 @@ export const defaultFoods = [
       zinc: 3.6,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 2,
+      potassium: 420
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -220,7 +232,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 1,
+      potassium: 35
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -252,7 +266,9 @@ export const defaultFoods = [
       zinc: 0.3,
       vitaminB6: 0.2,
       vitaminB12: 0,
-      vitaminC: 2.4
+      vitaminC: 2.4,
+      sodium: 36,
+      potassium: 475
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -284,7 +300,9 @@ export const defaultFoods = [
       zinc: 0.15,
       vitaminB6: 0.37,
       vitaminB12: 0,
-      vitaminC: 8.7
+      vitaminC: 8.7,
+      sodium: 1,
+      potassium: 358
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -316,7 +334,9 @@ export const defaultFoods = [
       zinc: 1.16,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 455,
+      potassium: 254
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -350,7 +370,9 @@ export const defaultFoods = [
       zinc: 0,
       vitaminB6: 0,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 2,
+      potassium: 1
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -382,7 +404,9 @@ export const defaultFoods = [
       zinc: 0.6,
       vitaminB6: 0.3,
       vitaminB12: 0,
-      vitaminC: 10
+      vitaminC: 10,
+      sodium: 8,
+      potassium: 507
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -414,7 +438,9 @@ export const defaultFoods = [
       zinc: 3.1,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 1,
+      potassium: 726
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -446,7 +472,9 @@ export const defaultFoods = [
       zinc: 2.5,
       vitaminB6: 0.4,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 480,
+      potassium: 600
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -480,7 +508,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.2,
       vitaminB12: 0,
-      vitaminC: 89
+      vitaminC: 89,
+      sodium: 33,
+      potassium: 357
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -512,7 +542,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.2,
       vitaminB12: 0,
-      vitaminC: 28
+      vitaminC: 28,
+      sodium: 79,
+      potassium: 558
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -544,7 +576,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.3,
       vitaminB12: 0,
-      vitaminC: 158
+      vitaminC: 158,
+      sodium: 3,
+      potassium: 184
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -576,7 +610,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 2.8
+      vitaminC: 2.8,
+      sodium: 2,
+      potassium: 140
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -610,7 +646,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.04,
       vitaminB12: 0.45,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 52,
+      potassium: 172
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -642,7 +680,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.04,
       vitaminB12: 0.4,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 380,
+      potassium: 120
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -676,7 +716,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 1,
+      potassium: 44
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -708,7 +750,9 @@ export const defaultFoods = [
       zinc: 4.5,
       vitaminB6: 0.35,
       vitaminB12: 2.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 75,
+      potassium: 350
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -740,7 +784,9 @@ export const defaultFoods = [
       zinc: 0.3,
       vitaminB6: 0.35,
       vitaminB12: 0,
-      vitaminC: 12
+      vitaminC: 12,
+      sodium: 6,
+      potassium: 535
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -772,7 +818,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 25
+      vitaminC: 25,
+      sodium: 35,
+      potassium: 200
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -804,7 +852,9 @@ export const defaultFoods = [
       zinc: 0.3,
       vitaminB6: 0.06,
       vitaminB12: 0,
-      vitaminC: 20
+      vitaminC: 20,
+      sodium: 15,
+      potassium: 160
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -835,7 +885,9 @@ export const defaultFoods = [
       zinc: 4.5,
       vitaminB6: 0.3,
       vitaminB12: 2.12,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 65,
+      potassium: 348
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -866,7 +918,9 @@ export const defaultFoods = [
       zinc: 2,
       vitaminB6: 0.2,
       vitaminB12: 1,
-      vitaminC: 2
+      vitaminC: 2,
+      sodium: 640,
+      potassium: 158
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -897,7 +951,9 @@ export const defaultFoods = [
       zinc: 0.8,
       vitaminB6: 0.1,
       vitaminB12: 0.1,
-      vitaminC: 5
+      vitaminC: 5,
+      sodium: 440,
+      potassium: 90
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -928,7 +984,9 @@ export const defaultFoods = [
       zinc: 0.3,
       vitaminB6: 0.08,
       vitaminB12: 0,
-      vitaminC: 8
+      vitaminC: 8,
+      sodium: 279,
+      potassium: 92
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -959,7 +1017,9 @@ export const defaultFoods = [
       zinc: 1,
       vitaminB6: 0.15,
       vitaminB12: 0,
-      vitaminC: 15
+      vitaminC: 15,
+      sodium: 320,
+      potassium: 271
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -990,7 +1050,9 @@ export const defaultFoods = [
       zinc: 0.6,
       vitaminB6: 0.1,
       vitaminB12: 0.2,
-      vitaminC: 2
+      vitaminC: 2,
+      sodium: 400,
+      potassium: 300
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1021,7 +1083,9 @@ export const defaultFoods = [
       zinc: 0.8,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 8
+      vitaminC: 8,
+      sodium: 336,
+      potassium: 388
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1052,7 +1116,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.08,
       vitaminB12: 0,
-      vitaminC: 10
+      vitaminC: 10,
+      sodium: 279,
+      potassium: 92
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1083,7 +1149,9 @@ export const defaultFoods = [
       zinc: 1.2,
       vitaminB6: 0.16,
       vitaminB12: 0,
-      vitaminC: 22
+      vitaminC: 22,
+      sodium: 3,
+      potassium: 271
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1114,7 +1182,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.1,
       vitaminB12: 0.1,
-      vitaminC: 2
+      vitaminC: 2,
+      sodium: 400,
+      potassium: 300
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1145,7 +1215,9 @@ export const defaultFoods = [
       zinc: 0.8,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 7
+      vitaminC: 7,
+      sodium: 230,
+      potassium: 218
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1176,7 +1248,9 @@ export const defaultFoods = [
       zinc: 2,
       vitaminB6: 0.3,
       vitaminB12: 1.2,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 600,
+      potassium: 300
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1207,7 +1281,9 @@ export const defaultFoods = [
       zinc: 1.8,
       vitaminB6: 0.4,
       vitaminB12: 0.8,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 720,
+      potassium: 300
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1238,7 +1314,9 @@ export const defaultFoods = [
       zinc: 1.5,
       vitaminB6: 0.2,
       vitaminB12: 0.5,
-      vitaminC: 5
+      vitaminC: 5,
+      sodium: 280,
+      potassium: 250
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1269,7 +1347,9 @@ export const defaultFoods = [
       zinc: 4,
       vitaminB6: 0.3,
       vitaminB12: 5,
-      vitaminC: 2
+      vitaminC: 2,
+      sodium: 480,
+      potassium: 180
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1300,7 +1380,9 @@ export const defaultFoods = [
       zinc: 1.5,
       vitaminB6: 0.6,
       vitaminB12: 0.3,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 415,
+      potassium: 290
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1331,7 +1413,9 @@ export const defaultFoods = [
       zinc: 1.5,
       vitaminB6: 0.2,
       vitaminB12: 0.5,
-      vitaminC: 1
+      vitaminC: 1,
+      sodium: 320,
+      potassium: 270
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1362,7 +1446,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 4
+      vitaminC: 4,
+      sodium: 3,
+      potassium: 100
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1393,7 +1479,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 4
+      vitaminC: 4,
+      sodium: 0,
+      potassium: 100
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1424,7 +1512,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.05,
       vitaminB12: 0,
-      vitaminC: 15
+      vitaminC: 15,
+      sodium: 0,
+      potassium: 120
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1455,7 +1545,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 12
+      vitaminC: 12,
+      sodium: 0,
+      potassium: 110
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1486,7 +1578,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 5
+      vitaminC: 5,
+      sodium: 0,
+      potassium: 105
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1517,7 +1611,9 @@ export const defaultFoods = [
       zinc: 3,
       vitaminB6: 0.3,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 100,
+      potassium: 450
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1548,7 +1644,9 @@ export const defaultFoods = [
       zinc: 3.2,
       vitaminB6: 0.25,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 12,
+      potassium: 420
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1579,7 +1677,9 @@ export const defaultFoods = [
       zinc: 3,
       vitaminB6: 0.2,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 12,
+      potassium: 400
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1610,7 +1710,9 @@ export const defaultFoods = [
       zinc: 3.5,
       vitaminB6: 0.12,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 7,
+      potassium: 420
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1641,7 +1743,9 @@ export const defaultFoods = [
       zinc: 4,
       vitaminB6: 0.15,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 2,
+      potassium: 566
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1672,7 +1776,9 @@ export const defaultFoods = [
       zinc: 0.3,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 10
+      vitaminC: 10,
+      sodium: 352,
+      potassium: 348
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1703,7 +1809,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.1,
       vitaminB12: 0.1,
-      vitaminC: 10
+      vitaminC: 10,
+      sodium: 380,
+      potassium: 320
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1734,7 +1842,9 @@ export const defaultFoods = [
       zinc: 1.5,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 8
+      vitaminC: 8,
+      sodium: 1200,
+      potassium: 200
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1765,7 +1875,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.12,
       vitaminB12: 0,
-      vitaminC: 15
+      vitaminC: 15,
+      sodium: 350,
+      potassium: 360
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1796,7 +1908,9 @@ export const defaultFoods = [
       zinc: 3,
       vitaminB6: 0.4,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 344,
+      potassium: 600
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1827,7 +1941,9 @@ export const defaultFoods = [
       zinc: 0.16,
       vitaminB6: 0.052,
       vitaminB12: 0,
-      vitaminC: 9.7
+      vitaminC: 9.7,
+      sodium: 1,
+      potassium: 77
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1858,7 +1974,9 @@ export const defaultFoods = [
       zinc: 0.14,
       vitaminB6: 0.047,
       vitaminB12: 0,
-      vitaminC: 58.8
+      vitaminC: 58.8,
+      sodium: 1,
+      potassium: 153
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1889,7 +2007,9 @@ export const defaultFoods = [
       zinc: 3.5,
       vitaminB6: 0.3,
       vitaminB12: 0,
-      vitaminC: 2
+      vitaminC: 2,
+      sodium: 12,
+      potassium: 597
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1920,7 +2040,9 @@ export const defaultFoods = [
       zinc: 3.2,
       vitaminB6: 0.09,
       vitaminB12: 1.4,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 1529,
+      potassium: 125
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1951,7 +2073,9 @@ export const defaultFoods = [
       zinc: 3.9,
       vitaminB6: 0.08,
       vitaminB12: 1.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 600,
+      potassium: 80
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -1982,7 +2106,9 @@ export const defaultFoods = [
       zinc: 4,
       vitaminB6: 0.1,
       vitaminB12: 3,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 214,
+      potassium: 111
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2013,7 +2139,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.01,
       vitaminB12: 0.1,
-      vitaminC: 7
+      vitaminC: 7,
+      sodium: 500,
+      potassium: 5
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2044,7 +2172,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 5
+      vitaminC: 5,
+      sodium: 800,
+      potassium: 50
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2075,7 +2205,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 15
+      vitaminC: 15,
+      sodium: 907,
+      potassium: 281
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2106,7 +2238,9 @@ export const defaultFoods = [
       zinc: 1.5,
       vitaminB6: 0.15,
       vitaminB12: 0,
-      vitaminC: 2
+      vitaminC: 2,
+      sodium: 1200,
+      potassium: 10
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2137,7 +2271,9 @@ export const defaultFoods = [
       zinc: 1.8,
       vitaminB6: 0.18,
       vitaminB12: 0,
-      vitaminC: 3
+      vitaminC: 3,
+      sodium: 1960,
+      potassium: 200
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2168,7 +2304,9 @@ export const defaultFoods = [
       zinc: 0.3,
       vitaminB6: 0.08,
       vitaminB12: 0,
-      vitaminC: 5
+      vitaminC: 5,
+      sodium: 284,
+      potassium: 150
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2199,7 +2337,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 8
+      vitaminC: 8,
+      sodium: 418,
+      potassium: 291
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2230,7 +2370,9 @@ export const defaultFoods = [
       zinc: 0.3,
       vitaminB6: 0.15,
       vitaminB12: 0,
-      vitaminC: 25
+      vitaminC: 25,
+      sodium: 396,
+      potassium: 200
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2261,7 +2403,9 @@ export const defaultFoods = [
       zinc: 4.5,
       vitaminB6: 0.3,
       vitaminB12: 2.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 32,
+      potassium: 324
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2292,7 +2436,9 @@ export const defaultFoods = [
       zinc: 4.2,
       vitaminB6: 0.3,
       vitaminB12: 2.8,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 60,
+      potassium: 324
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2323,7 +2469,9 @@ export const defaultFoods = [
       zinc: 4.0,
       vitaminB6: 0.25,
       vitaminB12: 2.2,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 65,
+      potassium: 348
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2354,7 +2502,9 @@ export const defaultFoods = [
       zinc: 4.5,
       vitaminB6: 0.3,
       vitaminB12: 1.71,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 48,
+      potassium: 348
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2385,7 +2535,9 @@ export const defaultFoods = [
       zinc: 4.5,
       vitaminB6: 0.3,
       vitaminB12: 2.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 32,
+      potassium: 324
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2416,7 +2568,9 @@ export const defaultFoods = [
       zinc: 1.0,
       vitaminB6: 0.6,
       vitaminB12: 0.6,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 600,
+      potassium: 300
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2447,7 +2601,9 @@ export const defaultFoods = [
       zinc: 1.2,
       vitaminB6: 0.6,
       vitaminB12: 0.8,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 720,
+      potassium: 280
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2478,7 +2634,9 @@ export const defaultFoods = [
       zinc: 1.2,
       vitaminB6: 0.6,
       vitaminB12: 0.8,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 600,
+      potassium: 290
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2509,7 +2667,9 @@ export const defaultFoods = [
       zinc: 1.8,
       vitaminB6: 0.4,
       vitaminB12: 0.6,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 1333,
+      potassium: 500
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2540,7 +2700,9 @@ export const defaultFoods = [
       zinc: 1.5,
       vitaminB6: 0.5,
       vitaminB12: 0.8,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 520,
+      potassium: 250
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2571,7 +2733,9 @@ export const defaultFoods = [
       zinc: 4.5,
       vitaminB6: 0.3,
       vitaminB12: 2.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 760,
+      potassium: 320
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2602,7 +2766,9 @@ export const defaultFoods = [
       zinc: 1.8,
       vitaminB6: 0.5,
       vitaminB12: 0.8,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 587,
+      potassium: 270
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2633,7 +2799,9 @@ export const defaultFoods = [
       zinc: 1.2,
       vitaminB6: 0.6,
       vitaminB12: 0.8,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 600,
+      potassium: 290
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2664,7 +2832,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 8
+      vitaminC: 8,
+      sodium: 0,
+      potassium: 110
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2695,7 +2865,9 @@ export const defaultFoods = [
       zinc: 3,
       vitaminB6: 0.3,
       vitaminB12: 0,
-      vitaminC: 5
+      vitaminC: 5,
+      sodium: 12,
+      potassium: 450
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2726,7 +2898,9 @@ export const defaultFoods = [
       zinc: 3,
       vitaminB6: 0.2,
       vitaminB12: 0,
-      vitaminC: 8
+      vitaminC: 8,
+      sodium: 12,
+      potassium: 430
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2757,7 +2931,9 @@ export const defaultFoods = [
       zinc: 4,
       vitaminB6: 0.4,
       vitaminB12: 0,
-      vitaminC: 3
+      vitaminC: 3,
+      sodium: 12,
+      potassium: 500
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2788,7 +2964,9 @@ export const defaultFoods = [
       zinc: 3.5,
       vitaminB6: 0.25,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 12,
+      potassium: 480
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2819,7 +2997,9 @@ export const defaultFoods = [
       zinc: 4.0,
       vitaminB6: 0.3,
       vitaminB12: 2.0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 720,
+      potassium: 340
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2850,7 +3030,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.02,
       vitaminB12: 0.4,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 36,
+      potassium: 89
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2881,7 +3063,9 @@ export const defaultFoods = [
       zinc: 2.0,
       vitaminB6: 0.15,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 400,
+      potassium: 198
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2912,7 +3096,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 2.1
+      vitaminC: 2.1,
+      sodium: 5,
+      potassium: 300
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2943,7 +3129,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 5.9
+      vitaminC: 5.9,
+      sodium: 69,
+      potassium: 320
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -2974,7 +3162,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 13.7
+      vitaminC: 13.7,
+      sodium: 5,
+      potassium: 237
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3005,7 +3195,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.05,
       vitaminB12: 0,
-      vitaminC: 20
+      vitaminC: 20,
+      sodium: 2,
+      potassium: 120
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3036,7 +3228,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.01,
       vitaminB12: 0,
-      vitaminC: 0.5
+      vitaminC: 0.5,
+      sodium: 13200,
+      potassium: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3067,7 +3261,9 @@ export const defaultFoods = [
       zinc: 0,
       vitaminB6: 0,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 3000,
+      potassium: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3098,7 +3294,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.01,
       vitaminB12: 0.01,
-      vitaminC: 0.5
+      vitaminC: 0.5,
+      sodium: 520,
+      potassium: 50
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3129,7 +3327,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.05,
       vitaminB12: 0.4,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 52,
+      potassium: 172
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3160,7 +3360,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.05,
       vitaminB12: 0,
-      vitaminC: 5
+      vitaminC: 5,
+      sodium: 32,
+      potassium: 220
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3191,7 +3393,9 @@ export const defaultFoods = [
       zinc: 1.5,
       vitaminB6: 0.2,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 240,
+      potassium: 291
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3222,7 +3426,9 @@ export const defaultFoods = [
       zinc: 1.0,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 15
+      vitaminC: 15,
+      sodium: 2,
+      potassium: 244
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3253,7 +3459,9 @@ export const defaultFoods = [
       zinc: 1.0,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 260,
+      potassium: 320
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3284,7 +3492,9 @@ export const defaultFoods = [
       zinc: 1.0,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 5
+      vitaminC: 5,
+      sodium: 260,
+      potassium: 320
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3315,7 +3525,9 @@ export const defaultFoods = [
       zinc: 1.0,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 256,
+      potassium: 405
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3346,7 +3558,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 5
+      vitaminC: 5,
+      sodium: 220,
+      potassium: 218
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3377,7 +3591,9 @@ export const defaultFoods = [
       zinc: 1.0,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 120,
+      potassium: 315
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3408,7 +3624,9 @@ export const defaultFoods = [
       zinc: 1.5,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 100,
+      potassium: 120
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3439,7 +3657,9 @@ export const defaultFoods = [
       zinc: 3.0,
       vitaminB6: 0.3,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 12,
+      potassium: 450
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3470,7 +3690,9 @@ export const defaultFoods = [
       zinc: 3,
       vitaminB6: 0.3,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 12,
+      potassium: 430
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3501,7 +3723,9 @@ export const defaultFoods = [
       zinc: 4.2,
       vitaminB6: 0.3,
       vitaminB12: 1.8,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 32,
+      potassium: 324
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3532,7 +3756,9 @@ export const defaultFoods = [
       zinc: 4.5,
       vitaminB6: 0.3,
       vitaminB12: 2.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 364,
+      potassium: 270
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3563,7 +3789,9 @@ export const defaultFoods = [
       zinc: 4.5,
       vitaminB6: 0.3,
       vitaminB12: 2.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 320,
+      potassium: 270
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3594,7 +3822,9 @@ export const defaultFoods = [
       zinc: 4,
       vitaminB6: 0.3,
       vitaminB12: 2.2,
-      vitaminC: 2
+      vitaminC: 2,
+      sodium: 224,
+      potassium: 242
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3625,7 +3855,9 @@ export const defaultFoods = [
       zinc: 4.2,
       vitaminB6: 0.3,
       vitaminB12: 2.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 248,
+      potassium: 242
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3656,7 +3888,9 @@ export const defaultFoods = [
       zinc: 4.5,
       vitaminB6: 0.3,
       vitaminB12: 2.12,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 65,
+      potassium: 348
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3687,7 +3921,9 @@ export const defaultFoods = [
       zinc: 1.1,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 4,
+      potassium: 563
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3718,7 +3954,9 @@ export const defaultFoods = [
       zinc: 4.6,
       vitaminB6: 0.2,
       vitaminB12: 0,
-      vitaminC: 1.6
+      vitaminC: 1.6,
+      sodium: 16,
+      potassium: 407
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3749,7 +3987,9 @@ export const defaultFoods = [
       zinc: 2,
       vitaminB6: 0.15,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 400,
+      potassium: 198
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3780,7 +4020,9 @@ export const defaultFoods = [
       zinc: 2,
       vitaminB6: 0.15,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 400,
+      potassium: 198
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3811,7 +4053,9 @@ export const defaultFoods = [
       zinc: 0.8,
       vitaminB6: 0.05,
       vitaminB12: 0.1,
-      vitaminC: 2
+      vitaminC: 2,
+      sodium: 6760,
+      potassium: 50
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3842,7 +4086,9 @@ export const defaultFoods = [
       zinc: 0.8,
       vitaminB6: 0.05,
       vitaminB12: 0.1,
-      vitaminC: 1
+      vitaminC: 1,
+      sodium: 6760,
+      potassium: 50
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3873,7 +4119,9 @@ export const defaultFoods = [
       zinc: 1.2,
       vitaminB6: 1.2,
       vitaminB12: 0,
-      vitaminC: 31
+      vitaminC: 31,
+      sodium: 8,
+      potassium: 420
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3904,7 +4152,9 @@ export const defaultFoods = [
       zinc: 0.3,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 15
+      vitaminC: 15,
+      sodium: 212,
+      potassium: 150
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3935,7 +4185,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 7.4
+      vitaminC: 7.4,
+      sodium: 16,
+      potassium: 146
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3966,7 +4218,9 @@ export const defaultFoods = [
       zinc: 0.3,
       vitaminB6: 0.02,
       vitaminB12: 0.2,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 32,
+      potassium: 95
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -3997,7 +4251,9 @@ export const defaultFoods = [
       zinc: 1.1,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 133
+      vitaminC: 133,
+      sodium: 52,
+      potassium: 554
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4028,7 +4284,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 1800,
+      potassium: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4059,7 +4317,9 @@ export const defaultFoods = [
       zinc: 0.9,
       vitaminB6: 0.15,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 3933,
+      potassium: 33
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4090,7 +4350,9 @@ export const defaultFoods = [
       zinc: 0.8,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 5
+      vitaminC: 5,
+      sodium: 9200,
+      potassium: 0
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4121,7 +4383,9 @@ export const defaultFoods = [
       zinc: 1.5,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 440,
+      potassium: 270
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4152,7 +4416,9 @@ export const defaultFoods = [
       zinc: 1.4,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 480,
+      potassium: 270
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4183,7 +4449,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 0,
+      potassium: 315
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4214,7 +4482,9 @@ export const defaultFoods = [
       zinc: 0.06,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 38
+      vitaminC: 38,
+      sodium: 0,
+      potassium: 315
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4245,7 +4515,9 @@ export const defaultFoods = [
       zinc: 0.06,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 38
+      vitaminC: 38,
+      sodium: 2,
+      potassium: 138
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4276,7 +4548,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.05,
       vitaminB12: 0,
-      vitaminC: 25
+      vitaminC: 25,
+      sodium: 0,
+      potassium: 130
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4307,7 +4581,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.06,
       vitaminB12: 0,
-      vitaminC: 36
+      vitaminC: 36,
+      sodium: 0,
+      potassium: 130
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4338,7 +4614,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 30
+      vitaminC: 30,
+      sodium: 0,
+      potassium: 120
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4369,7 +4647,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.03,
       vitaminB12: 0,
-      vitaminC: 15
+      vitaminC: 15,
+      sodium: 0,
+      potassium: 125
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4400,7 +4680,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.05,
       vitaminB12: 0.4,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 52,
+      potassium: 172
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4431,7 +4713,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.05,
       vitaminB12: 0.4,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 52,
+      potassium: 172
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4462,7 +4746,9 @@ export const defaultFoods = [
       zinc: 4.2,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 12,
+      potassium: 420
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4493,7 +4779,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.02,
       vitaminB12: 0,
-      vitaminC: 3
+      vitaminC: 3,
+      sodium: 244,
+      potassium: 120
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4524,7 +4812,9 @@ export const defaultFoods = [
       zinc: 2.9,
       vitaminB6: 0.4,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 3,
+      potassium: 44
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4555,7 +4845,9 @@ export const defaultFoods = [
       zinc: 0.6,
       vitaminB6: 0.15,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 5,
+      potassium: 86
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4586,7 +4878,9 @@ export const defaultFoods = [
       zinc: 0.7,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 2,
+      potassium: 107
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4617,7 +4911,9 @@ export const defaultFoods = [
       zinc: 1.7,
       vitaminB6: 0.37,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 5,
+      potassium: 315
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4648,7 +4944,9 @@ export const defaultFoods = [
       zinc: 0.03,
       vitaminB6: 0.005,
       vitaminB12: 0.09,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 55,
+      potassium: 54
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4679,7 +4977,9 @@ export const defaultFoods = [
       zinc: 0.8,
       vitaminB6: 0.5,
       vitaminB12: 10.9,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 37,
+      potassium: 407
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4710,7 +5010,9 @@ export const defaultFoods = [
       zinc: 0.04,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 4.6
+      vitaminC: 4.6,
+      sodium: 1,
+      potassium: 107
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4741,7 +5043,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.02,
       vitaminB12: 0.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 500,
+      potassium: 135
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4772,7 +5076,9 @@ export const defaultFoods = [
       zinc: 1.6,
       vitaminB6: 0.6,
       vitaminB12: 0.4,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 837,
+      potassium: 200
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4803,7 +5109,9 @@ export const defaultFoods = [
       zinc: 1.2,
       vitaminB6: 0.3,
       vitaminB12: 0.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 600,
+      potassium: 250
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4834,7 +5142,9 @@ export const defaultFoods = [
       zinc: 2.6,
       vitaminB6: 0.2,
       vitaminB12: 1.1,
-      vitaminC: 1
+      vitaminC: 1,
+      sodium: 0,
+      potassium: 120
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4865,7 +5175,9 @@ export const defaultFoods = [
       zinc: 0.9,
       vitaminB6: 0.2,
       vitaminB12: 0.3,
-      vitaminC: 1.2
+      vitaminC: 1.2,
+      sodium: 0,
+      potassium: 125
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4896,7 +5208,9 @@ export const defaultFoods = [
       zinc: 1.1,
       vitaminB6: 0.08,
       vitaminB12: 0.7,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 769,
+      potassium: 199
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4927,7 +5241,9 @@ export const defaultFoods = [
       zinc: 0.4,
       vitaminB6: 0.5,
       vitaminB12: 0,
-      vitaminC: 5
+      vitaminC: 5,
+      sodium: 460,
+      potassium: 181
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4958,7 +5274,9 @@ export const defaultFoods = [
       zinc: 0.7,
       vitaminB6: 0.3,
       vitaminB12: 0.2,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 531,
+      potassium: 189
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -4989,7 +5307,9 @@ export const defaultFoods = [
       zinc: 2.5,
       vitaminB6: 0.2,
       vitaminB12: 1.0,
-      vitaminC: 3
+      vitaminC: 3,
+      sodium: 313,
+      potassium: 169
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5020,7 +5340,9 @@ export const defaultFoods = [
       zinc: 2.7,
       vitaminB6: 0.2,
       vitaminB12: 1.3,
-      vitaminC: 0.9
+      vitaminC: 0.9,
+      sodium: 189,
+      potassium: 596
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5051,7 +5373,9 @@ export const defaultFoods = [
       zinc: 0.3,
       vitaminB6: 0.1,
       vitaminB12: 0,
-      vitaminC: 2
+      vitaminC: 2,
+      sodium: 776,
+      potassium: 167
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5082,7 +5406,9 @@ export const defaultFoods = [
       zinc: 0.8,
       vitaminB6: 0.05,
       vitaminB12: 0.1,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 400,
+      potassium: 120
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5113,7 +5439,9 @@ export const defaultFoods = [
       zinc: 0.06,
       vitaminB6: 0.08,
       vitaminB12: 0,
-      vitaminC: 53
+      vitaminC: 53,
+      sodium: 2,
+      potassium: 138
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5144,7 +5472,9 @@ export const defaultFoods = [
       zinc: 0.22,
       vitaminB6: 0.02,
       vitaminB12: 0,
-      vitaminC: 0.5
+      vitaminC: 0.5,
+      sodium: 4,
+      potassium: 52
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5175,7 +5505,9 @@ export const defaultFoods = [
       zinc: 0.5,
       vitaminB6: 0.02,
       vitaminB12: 0.5,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 500,
+      potassium: 135
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5206,7 +5538,9 @@ export const defaultFoods = [
       zinc: 0.2,
       vitaminB6: 0.01,
       vitaminB12: 0,
-      vitaminC: 1
+      vitaminC: 1,
+      sodium: 1556,
+      potassium: 8
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5237,7 +5571,9 @@ export const defaultFoods = [
       zinc: 1.5,
       vitaminB6: 0.05,
       vitaminB12: 0.8,
-      vitaminC: 2
+      vitaminC: 2,
+      sodium: 688,
+      potassium: 247
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5268,7 +5604,9 @@ export const defaultFoods = [
       zinc: 0,
       vitaminB6: 0.03,
       vitaminB12: 0.01,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 4,
+      potassium: 27
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5299,7 +5637,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.05,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 4,
+      potassium: 99
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5330,7 +5670,9 @@ export const defaultFoods = [
       zinc: 0.1,
       vitaminB6: 0.04,
       vitaminB12: 0,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 5,
+      potassium: 71
     },
     userAdded: false,
     createdAt: new Date().toISOString(),
@@ -5361,7 +5703,9 @@ export const defaultFoods = [
       zinc: 0.11,
       vitaminB6: 0.04,
       vitaminB12: 0.01,
-      vitaminC: 0
+      vitaminC: 0,
+      sodium: 4,
+      potassium: 85
     },
     userAdded: false,
     createdAt: new Date().toISOString(),

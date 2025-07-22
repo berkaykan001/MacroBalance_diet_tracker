@@ -501,103 +501,99 @@ export default function MealPlanningScreen({ route, navigation }) {
       colors={['#0A0A0A', '#1A1A1A']}
       style={styles.container}
     >
-      {/* Fixed Header Section - Compact */}
+      {/* Fixed Header Section - Only up to Total Calories */}
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.fixedHeader}>
-        {/* Header */}
-        <View style={styles.screenHeader}>
-          <Text style={styles.screenTitle}>Plan Meal</Text>
-        </View>
-        
-        {/* Meal Selector */}
-        <View style={styles.mealSelector}>
-          <Text style={styles.mealSelectorLabel}>Meal:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.mealOptions}>
-            {meals.map((meal) => (
-              <TouchableOpacity
-                key={meal.id}
-                style={[
-                  styles.mealOption,
-                  selectedMealId === meal.id && styles.mealOptionSelected
-                ]}
-                onPress={() => setSelectedMealId(meal.id)}
-              >
-                <Text style={[
-                  styles.mealOptionText,
-                  selectedMealId === meal.id && styles.mealOptionTextSelected
-                ]}>
-                  {meal.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-
-        {progress && selectedMeal && selectedFoods.length > 0 && selectedMeal.name !== 'Snack' && (
-          <View style={styles.compactProgressSection}>
-            <SegmentedProgressBar
-              label="Protein"
-              current={currentMacros.protein}
-              target={selectedMeal.macroTargets.protein}
-              segments={getSegmentsForMacro('protein', currentMacros)}
-            />
-            <SegmentedProgressBar
-              label="Carbs"
-              current={currentMacros.carbs}
-              target={selectedMeal.macroTargets.carbs}
-              segments={getSegmentsForMacro('carbs', currentMacros)}
-            />
-            <SegmentedProgressBar
-              label="Fat"
-              current={currentMacros.fat}
-              target={selectedMeal.macroTargets.fat}
-              segments={getSegmentsForMacro('fat', currentMacros)}
-            />
-            
-            <View style={styles.compactCalories}>
-              <Text style={styles.compactCaloriesLabel}>Total: </Text>
-              <Text style={styles.compactCaloriesValue}>
-                {currentMacros.calories}/{targetCalories} cal
-              </Text>
-            </View>
+          {/* Header */}
+          <View style={styles.screenHeader}>
+            <Text style={styles.screenTitle}>Plan Meal</Text>
           </View>
-        )}
-
-        {selectedMeal && selectedFoods.length > 0 && selectedMeal.name === 'Snack' && (
-          <View style={styles.snackCaloriesSection}>
-            <Text style={styles.snackCaloriesLabel}>Snack: </Text>
-            <Text style={styles.snackCaloriesValue}>
-              {currentMacros.calories} cal • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
-            </Text>
-          </View>
-        )}
-
-        <View style={styles.actionButtonsRow}>
+          
+          {/* Meal Selector Card */}
           <LinearGradient
-            colors={['#007AFF', '#0051D5']}
-            style={styles.addFoodButtonCompact}
+            colors={['#1A1A1A', '#2A2A2A']}
+            style={styles.card}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <TouchableOpacity 
-              style={styles.addFoodButtonInner}
-              onPress={() => setShowFoodList(!showFoodList)}
-            >
-              <Text style={styles.addFoodButtonText}>
-                {showFoodList ? '✕ Hide Foods' : '+ Add Foods'}
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.mealSelector}>
+              <Text style={styles.mealSelectorLabel}>Meal:</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.mealOptions}>
+                {meals.map((meal) => (
+                  <TouchableOpacity
+                    key={meal.id}
+                    style={[
+                      styles.mealOption,
+                      selectedMealId === meal.id && styles.mealOptionSelected
+                    ]}
+                    onPress={() => setSelectedMealId(meal.id)}
+                  >
+                    <Text style={[
+                      styles.mealOptionText,
+                      selectedMealId === meal.id && styles.mealOptionTextSelected
+                    ]}>
+                      {meal.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
           </LinearGradient>
-          
-          {selectedFoods.length > 0 && (
-            <TouchableOpacity 
-              style={styles.resetButton}
-              onPress={resetMealPlan}
+
+          {/* Progress Card - Always visible for non-Snack meals */}
+          {selectedMeal && selectedMeal.name !== 'Snack' && (
+            <LinearGradient
+              colors={['#1A1A1A', '#2A2A2A']}
+              style={styles.card}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
             >
-              <Text style={styles.resetButtonText}>↺ Reset</Text>
-            </TouchableOpacity>
+              <View style={styles.compactProgressSection}>
+                <SegmentedProgressBar
+                  label="Protein"
+                  current={currentMacros.protein}
+                  target={selectedMeal.macroTargets.protein}
+                  segments={getSegmentsForMacro('protein', currentMacros)}
+                />
+                <SegmentedProgressBar
+                  label="Carbs"
+                  current={currentMacros.carbs}
+                  target={selectedMeal.macroTargets.carbs}
+                  segments={getSegmentsForMacro('carbs', currentMacros)}
+                />
+                <SegmentedProgressBar
+                  label="Fat"
+                  current={currentMacros.fat}
+                  target={selectedMeal.macroTargets.fat}
+                  segments={getSegmentsForMacro('fat', currentMacros)}
+                />
+                
+                <View style={styles.compactCalories}>
+                  <Text style={styles.compactCaloriesLabel}>Total: </Text>
+                  <Text style={styles.compactCaloriesValue}>
+                    {currentMacros.calories}/{targetCalories} cal
+                  </Text>
+                </View>
+              </View>
+            </LinearGradient>
           )}
-        </View>
+
+          {/* Snack Calories Card */}
+          {selectedMeal && selectedFoods.length > 0 && selectedMeal.name === 'Snack' && (
+            <LinearGradient
+              colors={['#1A1A1A', '#2A2A2A']}
+              style={styles.card}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.snackCaloriesSection}>
+                <Text style={styles.snackCaloriesLabel}>Snack: </Text>
+                <Text style={styles.snackCaloriesValue}>
+                  {currentMacros.calories} cal • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+                </Text>
+              </View>
+            </LinearGradient>
+          )}
         </View>
       </TouchableWithoutFeedback>
 
@@ -608,134 +604,183 @@ export default function MealPlanningScreen({ route, navigation }) {
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
-        {showFoodList && (
-          <View style={styles.foodListContainer}>
-            <View style={styles.foodListHeader}>
-              <View>
-                <Text style={styles.foodListTitle}>Add Foods</Text>
-                <Text style={styles.foodListSubtitle}>
-                  {foodSearchQuery 
-                    ? `${getAvailableFoods().length} results found` 
-                    : `Your ${selectedQuickFoods.length} quick foods`
-                  }
-                </Text>
-              </View>
-              <TouchableOpacity 
-                style={styles.closeFoodListButton}
-                onPress={() => {
-                  setShowFoodList(false);
-                  setFoodSearchQuery('');
-                  searchFoods(''); // Clear search when closing
-                }}
-              >
-                <Text style={styles.closeFoodListText}>✕</Text>
-              </TouchableOpacity>
-            </View>
+        {/* Combined Add Foods + Available Foods Card */}
+        <LinearGradient
+          colors={['#1A1A1A', '#2A2A2A']}
+          style={styles.card}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.combinedFoodCard}>
+            <Text style={styles.cardTitle}>Add Foods to Meal</Text>
             
-            {/* Search Bar */}
-            <View style={styles.foodSearchContainer}>
-              <TextInput
-                style={styles.foodSearchInput}
-                value={foodSearchQuery}
-                onChangeText={handleFoodSearch}
-                placeholder="Search foods to add..."
-                placeholderTextColor="#8E8E93"
-              />
-            </View>
-
-            {/* Food List */}
-            <FlatList
-              data={getAvailableFoods()}
-              renderItem={renderAvailableFood}
-              keyExtractor={(item) => item.id}
-              scrollEnabled={false}
-              numColumns={3}
-              columnWrapperStyle={styles.foodListRow}
-              ListEmptyComponent={
-                <View style={styles.noFoodsFound}>
-                  <Text style={styles.noFoodsFoundText}>
-                    {foodSearchQuery ? 'No foods found' : 'No quick foods selected'}
+            {/* Action Buttons Row */}
+            <View style={styles.actionButtonsRow}>
+              <LinearGradient
+                colors={['#007AFF', '#0051D5']}
+                style={styles.addFoodButtonCompact}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <TouchableOpacity 
+                  style={styles.addFoodButtonInner}
+                  onPress={() => setShowFoodList(!showFoodList)}
+                >
+                  <Text style={styles.addFoodButtonText}>
+                    {showFoodList ? '✕ Hide Foods' : '+ Add Foods'}
                   </Text>
-                  <Text style={styles.noFoodsFoundSubtext}>
-                    {foodSearchQuery 
-                      ? 'Try adjusting your search' 
-                      : 'Go to Settings to select your favorite foods for quick access'
-                    }
-                  </Text>
-                </View>
-              }
-            />
-          </View>
-        )}
-
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.selectedFoodsContainer}>
-            <Text style={styles.sectionTitle}>Selected Foods</Text>
-          {selectedFoods.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyIcon}>🍽️</Text>
-              <Text style={styles.emptyText}>No foods selected yet</Text>
-              <Text style={styles.emptySubtext}>Add foods above to start planning your perfect meal</Text>
-            </View>
-          ) : (
-            <>
-              <FlatList
-                data={selectedFoods}
-                renderItem={renderFoodItem}
-                keyExtractor={(item) => item.foodId}
-                scrollEnabled={false}
-                showsVerticalScrollIndicator={false}
-              />
+                </TouchableOpacity>
+              </LinearGradient>
               
-              {/* Action Buttons */}
-              {editingMealPlan ? (
-                <View style={styles.editActionButtons}>
+              {selectedFoods.length > 0 && (
+                <TouchableOpacity 
+                  style={styles.resetButton}
+                  onPress={resetMealPlan}
+                >
+                  <Text style={styles.resetButtonText}>↺ Reset</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Available Foods Section - Conditionally Shown */}
+            {showFoodList && (
+              <View style={styles.availableFoodsSection}>
+                <View style={styles.foodListHeader}>
+                  <View>
+                    <Text style={styles.foodListTitle}>Available Foods</Text>
+                    <Text style={styles.foodListSubtitle}>
+                      {foodSearchQuery 
+                        ? `${getAvailableFoods().length} results found` 
+                        : `Your ${selectedQuickFoods.length} quick foods`
+                      }
+                    </Text>
+                  </View>
                   <TouchableOpacity 
-                    style={styles.cancelButton}
-                    onPress={cancelEditing}
+                    style={styles.closeFoodListButton}
+                    onPress={() => {
+                      setShowFoodList(false);
+                      setFoodSearchQuery('');
+                      searchFoods(''); // Clear search when closing
+                    }}
                   >
-                    <Text style={styles.cancelButtonText}>✕ Cancel</Text>
+                    <Text style={styles.closeFoodListText}>✕</Text>
                   </TouchableOpacity>
-                  
+                </View>
+                
+                {/* Search Bar */}
+                <View style={styles.foodSearchContainer}>
+                  <TextInput
+                    style={styles.foodSearchInput}
+                    value={foodSearchQuery}
+                    onChangeText={handleFoodSearch}
+                    placeholder="Search foods to add..."
+                    placeholderTextColor="#8E8E93"
+                  />
+                </View>
+
+                {/* Food List */}
+                <FlatList
+                  data={getAvailableFoods()}
+                  renderItem={renderAvailableFood}
+                  keyExtractor={(item) => item.id}
+                  scrollEnabled={false}
+                  numColumns={3}
+                  columnWrapperStyle={styles.foodListRow}
+                  ListEmptyComponent={
+                    <View style={styles.noFoodsFound}>
+                      <Text style={styles.noFoodsFoundText}>
+                        {foodSearchQuery ? 'No foods found' : 'No quick foods selected'}
+                      </Text>
+                      <Text style={styles.noFoodsFoundSubtext}>
+                        {foodSearchQuery 
+                          ? 'Try adjusting your search' 
+                          : 'Go to Settings to select your favorite foods for quick access'
+                      }
+                      </Text>
+                    </View>
+                  }
+                />
+              </View>
+            )}
+          </View>
+        </LinearGradient>
+
+        {/* Selected Foods Card */}
+        <LinearGradient
+          colors={['#1A1A1A', '#2A2A2A']}
+          style={styles.card}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.selectedFoodsContainer}>
+              <Text style={styles.cardTitle}>Selected Foods</Text>
+            {selectedFoods.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyIcon}>🍽️</Text>
+                <Text style={styles.emptyText}>No foods selected yet</Text>
+                <Text style={styles.emptySubtext}>Add foods above to start planning your perfect meal</Text>
+              </View>
+            ) : (
+              <>
+                <FlatList
+                  data={selectedFoods}
+                  renderItem={renderFoodItem}
+                  keyExtractor={(item) => item.foodId}
+                  scrollEnabled={false}
+                  showsVerticalScrollIndicator={false}
+                />
+                
+                {/* Action Buttons */}
+                {editingMealPlan ? (
+                  <View style={styles.editActionButtons}>
+                    <TouchableOpacity 
+                      style={styles.cancelButton}
+                      onPress={cancelEditing}
+                    >
+                      <Text style={styles.cancelButtonText}>✕ Cancel</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={styles.updateButton}
+                      onPress={saveMealPlan}
+                    >
+                      <LinearGradient
+                        colors={['#00D084', '#00A86B']}
+                        style={styles.updateButtonGradient}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                      >
+                        <Text style={styles.updateButtonText}>✓ Update Meal</Text>
+                        <Text style={styles.updateButtonSubtext}>
+                          {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+                        </Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                ) : (
                   <TouchableOpacity 
-                    style={styles.updateButton}
+                    style={styles.eatenButton}
                     onPress={saveMealPlan}
                   >
                     <LinearGradient
                       colors={['#00D084', '#00A86B']}
-                      style={styles.updateButtonGradient}
+                      style={styles.eatenButtonGradient}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                     >
-                      <Text style={styles.updateButtonText}>✓ Update Meal</Text>
-                      <Text style={styles.updateButtonSubtext}>
+                      <Text style={styles.eatenButtonText}>✓ Mark as Eaten</Text>
+                      <Text style={styles.eatenButtonSubtext}>
                         {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
                       </Text>
                     </LinearGradient>
                   </TouchableOpacity>
-                </View>
-              ) : (
-                <TouchableOpacity 
-                  style={styles.eatenButton}
-                  onPress={saveMealPlan}
-                >
-                  <LinearGradient
-                    colors={['#00D084', '#00A86B']}
-                    style={styles.eatenButtonGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                  >
-                    <Text style={styles.eatenButtonText}>✓ Mark as Eaten</Text>
-                    <Text style={styles.eatenButtonSubtext}>
-                      {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
-                    </Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              )}
-            </>
-          )}
-          </View>
-        </TouchableWithoutFeedback>
+                )}
+              </>
+            )}
+            </View>
+          </TouchableWithoutFeedback>
+        </LinearGradient>
         
         <View style={styles.bottomSpacer} />
       </ScrollView>
@@ -751,6 +796,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     paddingTop: 10,
     paddingHorizontal: 16,
+    paddingBottom: 8,
   },
   screenHeader: {
     marginBottom: 8,
@@ -767,6 +813,34 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 8,
+    paddingHorizontal: 16,
+  },
+  
+  // Card Styles
+  card: {
+    marginBottom: 16,
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+  combinedFoodCard: {
+    // Combined card for add foods + available foods
+  },
+  availableFoodsSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
   },
   header: {
     padding: 16,

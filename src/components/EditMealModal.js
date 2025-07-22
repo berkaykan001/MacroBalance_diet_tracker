@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert, Modal, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert, Modal } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
 import { useFood } from '../context/FoodContext';
@@ -451,7 +451,11 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
           </LinearGradient>
         </TouchableOpacity>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={styles.content} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           {showFoodList && (
             <View style={styles.foodListContainer}>
               <View style={styles.foodListHeader}>
@@ -503,9 +507,8 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
             </View>
           )}
 
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.selectedFoodsContainer}>
-              <Text style={styles.sectionTitle}>Selected Foods</Text>
+          <View style={styles.selectedFoodsContainer}>
+            <Text style={styles.sectionTitle}>Selected Foods</Text>
               {selectedFoods.length === 0 ? (
                 <View style={styles.emptyState}>
                   <Text style={styles.emptyIcon}>🍽️</Text>
@@ -521,8 +524,7 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
                   showsVerticalScrollIndicator={false}
                 />
               )}
-            </View>
-          </TouchableWithoutFeedback>
+          </View>
         </ScrollView>
       </LinearGradient>
     </Modal>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, TextInput, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, TextInput, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
 import { useFood } from '../../context/FoodContext';
@@ -502,20 +502,20 @@ export default function MealPlanningScreen({ route, navigation }) {
       style={styles.container}
     >
       {/* Fixed Header Section - Only up to Total Calories */}
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.fixedHeader}>
-          {/* Header */}
-          <View style={styles.screenHeader}>
-            <Text style={styles.screenTitle}>Plan Meal</Text>
-          </View>
+      <View style={styles.fixedHeader}>
+        {/* Header */}
+        <View style={styles.screenHeader}>
+          <Text style={styles.screenTitle}>Plan Meal</Text>
+        </View>
           
-          {/* Meal Selector Card */}
+          {/* Combined Meal Selector + Progress Card */}
           <LinearGradient
             colors={['#1A1A1A', '#2A2A2A']}
             style={styles.card}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
+            {/* Meal Selector - Always Visible */}
             <View style={styles.mealSelector}>
               <Text style={styles.mealSelectorLabel}>Meal:</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.mealOptions}>
@@ -538,64 +538,53 @@ export default function MealPlanningScreen({ route, navigation }) {
                 ))}
               </ScrollView>
             </View>
-          </LinearGradient>
 
-          {/* Progress Card - Always visible for non-Snack meals */}
-          {selectedMeal && selectedMeal.name !== 'Snack' && (
-            <LinearGradient
-              colors={['#1A1A1A', '#2A2A2A']}
-              style={styles.card}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={styles.compactProgressSection}>
-                <SegmentedProgressBar
-                  label="Protein"
-                  current={currentMacros.protein}
-                  target={selectedMeal.macroTargets.protein}
-                  segments={getSegmentsForMacro('protein', currentMacros)}
-                />
-                <SegmentedProgressBar
-                  label="Carbs"
-                  current={currentMacros.carbs}
-                  target={selectedMeal.macroTargets.carbs}
-                  segments={getSegmentsForMacro('carbs', currentMacros)}
-                />
-                <SegmentedProgressBar
-                  label="Fat"
-                  current={currentMacros.fat}
-                  target={selectedMeal.macroTargets.fat}
-                  segments={getSegmentsForMacro('fat', currentMacros)}
-                />
-                
-                <View style={styles.compactCalories}>
-                  <Text style={styles.compactCaloriesLabel}>Total: </Text>
-                  <Text style={styles.compactCaloriesValue}>
-                    {currentMacros.calories}/{targetCalories} cal
+            {/* Progress Bars - Hidden for Snack */}
+            {selectedMeal && selectedMeal.name !== 'Snack' && (
+              <View style={styles.progressSeparator}>
+                <View style={styles.compactProgressSection}>
+                  <SegmentedProgressBar
+                    label="Protein"
+                    current={currentMacros.protein}
+                    target={selectedMeal.macroTargets.protein}
+                    segments={getSegmentsForMacro('protein', currentMacros)}
+                  />
+                  <SegmentedProgressBar
+                    label="Carbs"
+                    current={currentMacros.carbs}
+                    target={selectedMeal.macroTargets.carbs}
+                    segments={getSegmentsForMacro('carbs', currentMacros)}
+                  />
+                  <SegmentedProgressBar
+                    label="Fat"
+                    current={currentMacros.fat}
+                    target={selectedMeal.macroTargets.fat}
+                    segments={getSegmentsForMacro('fat', currentMacros)}
+                  />
+                  
+                  <View style={styles.compactCalories}>
+                    <Text style={styles.compactCaloriesLabel}>Total: </Text>
+                    <Text style={styles.compactCaloriesValue}>
+                      {currentMacros.calories}/{targetCalories} cal
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
+            {/* Snack Calories - Only for Snack with Foods */}
+            {selectedMeal && selectedFoods.length > 0 && selectedMeal.name === 'Snack' && (
+              <View style={styles.progressSeparator}>
+                <View style={styles.snackCaloriesSection}>
+                  <Text style={styles.snackCaloriesLabel}>Snack: </Text>
+                  <Text style={styles.snackCaloriesValue}>
+                    {currentMacros.calories} cal • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
                   </Text>
                 </View>
               </View>
-            </LinearGradient>
-          )}
-
-          {/* Snack Calories Card */}
-          {selectedMeal && selectedFoods.length > 0 && selectedMeal.name === 'Snack' && (
-            <LinearGradient
-              colors={['#1A1A1A', '#2A2A2A']}
-              style={styles.card}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={styles.snackCaloriesSection}>
-                <Text style={styles.snackCaloriesLabel}>Snack: </Text>
-                <Text style={styles.snackCaloriesValue}>
-                  {currentMacros.calories} cal • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
-                </Text>
-              </View>
-            </LinearGradient>
-          )}
-        </View>
-      </TouchableWithoutFeedback>
+            )}
+          </LinearGradient>
+      </View>
 
       {/* Scrollable Content Section */}
       <ScrollView 
@@ -712,9 +701,8 @@ export default function MealPlanningScreen({ route, navigation }) {
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
         >
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.selectedFoodsContainer}>
-              <Text style={styles.cardTitle}>Selected Foods</Text>
+          <View style={styles.selectedFoodsContainer}>
+            <Text style={styles.cardTitle}>Selected Foods</Text>
             {selectedFoods.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyIcon}>🍽️</Text>
@@ -778,8 +766,7 @@ export default function MealPlanningScreen({ route, navigation }) {
                 )}
               </>
             )}
-            </View>
-          </TouchableWithoutFeedback>
+          </View>
         </LinearGradient>
         
         <View style={styles.bottomSpacer} />
@@ -837,6 +824,12 @@ const styles = StyleSheet.create({
     // Combined card for add foods + available foods
   },
   availableFoodsSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  progressSeparator: {
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
@@ -1113,7 +1106,7 @@ const styles = StyleSheet.create({
 
   // Selected Foods
   selectedFoodsContainer: {
-    paddingHorizontal: 16,
+    // No horizontal padding - let food cards extend to edges
   },
   sectionTitle: {
     fontSize: 16,
@@ -1145,7 +1138,8 @@ const styles = StyleSheet.create({
   // Selected Food Card - Ultra Compact
   selectedFood: {
     borderRadius: 8,
-    padding: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 0,
     marginBottom: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },

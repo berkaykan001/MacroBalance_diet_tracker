@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFood } from '../../context/FoodContext';
 
@@ -745,8 +745,7 @@ export default function FoodManagementScreen({ navigation }) {
   return (
     <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
       {/* Header */}
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.header}>
+      <View style={styles.header}>
         <Text style={styles.title}>Food Database</Text>
         <View style={styles.headerButtonGroup}>
           <TouchableOpacity 
@@ -776,8 +775,7 @@ export default function FoodManagementScreen({ navigation }) {
             </LinearGradient>
           </TouchableOpacity>
         </View>
-        </View>
-      </TouchableWithoutFeedback>
+      </View>
 
       {/* Search Bar */}
       <View style={styles.searchContainer}>

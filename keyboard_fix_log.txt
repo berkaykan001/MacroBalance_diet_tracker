@@ -1,0 +1,76 @@
+KEYBOARD DOUBLE-TAP FIX LOG
+===========================
+Date: 2025-01-22
+Issue: Persistent double-tap keyboard problem across the app
+
+PROBLEM DESCRIPTION:
+- When screen keyboard is open and user presses a button/touchable element
+- First tap dismisses keyboard but doesn't trigger the action
+- Second tap is required to actually trigger the button action
+- User reported this has been an ongoing issue tried to fix twice before
+
+RESEARCH CONDUCTED:
+- Used brave-search MCP to research React Native keyboard handling best practices
+- Found that TouchableWithoutFeedback can block touch events when dismissing keyboard
+- keyboardShouldPersistTaps="handled" is the recommended solution for ScrollView components
+
+ROOT CAUSE IDENTIFIED:
+1. TouchableWithoutFeedback wrappers were blocking touch propagation
+2. Manual Keyboard.dismiss() calls with setTimeout delays were interfering with natural touch handling
+3. Missing keyboardShouldPersistTaps="handled" on some ScrollView components
+
+SOLUTION IMPLEMENTED:
+Applied systematic fixes across 4 key files:
+
+1. /src/screens/MealPlanning/MealPlanningScreen.js
+   - REMOVED: TouchableWithoutFeedback wrapper around entire content
+   - CONFIRMED: keyboardShouldPersistTaps="handled" on ScrollView (line 178)
+   - CLEANED: Imports to remove unused TouchableWithoutFeedback and Keyboard
+
+2. /src/screens/FoodManagement/FoodManagementScreen.js
+   - REMOVED: TouchableWithoutFeedback wrapper from header section
+   - CONFIRMED: keyboardShouldPersistTaps="handled" already present on FlatList (line 225)
+   - CLEANED: Imports to remove unused TouchableWithoutFeedback and Keyboard
+
+3. /src/components/EditMealModal.js
+   - CONFIRMED: keyboardShouldPersistTaps="handled" already present on ScrollView (line 457)
+   - REMOVED: TouchableWithoutFeedback wrapper from selectedFoodsContainer section
+   - CLEANED: Imports to remove unused TouchableWithoutFeedback
+
+4. /src/screens/DishCreator/DishCreatorScreen.js
+   - REMOVED: Keyboard.dismiss() and setTimeout() calls from button handlers
+   - CONFIRMED: keyboardShouldPersistTaps="handled" already present on ScrollView (line 178)
+   - FIXED: Three button handlers that were manually dismissing keyboard:
+     * Remove ingredient button (line 104-106 → simplified to direct call)
+     * Add ingredient from food list (line 143-145 → simplified to direct call)
+     * Add ingredient toggle button (line 198-200 → simplified to direct call)
+
+TECHNICAL DETAILS:
+- keyboardShouldPersistTaps="handled" allows ScrollView to handle touches properly when keyboard is open
+- Removing TouchableWithoutFeedback prevents touch event blocking
+- Eliminating manual Keyboard.dismiss() calls lets React Native handle keyboard naturally
+- All screens now use consistent keyboard handling approach
+
+FILES MODIFIED:
+1. src/screens/MealPlanning/MealPlanningScreen.js
+2. src/screens/FoodManagement/FoodManagementScreen.js  
+3. src/components/EditMealModal.js
+4. src/screens/DishCreator/DishCreatorScreen.js
+
+TESTING RECOMMENDATIONS:
+- Test button interactions while TextInput keyboard is open
+- Verify single-tap behavior works across all 4 modified screens
+- Check that keyboard still dismisses properly when tapping outside input fields
+- Confirm no regressions in existing functionality
+
+FALLBACK STRATEGIES IF ISSUE PERSISTS:
+1. Check if any other screens have similar TouchableWithoutFeedback patterns
+2. Verify all TextInput components have proper keyboard handling
+3. Consider adding keyboardShouldPersistTaps="handled" to any missed FlatList/ScrollView components
+4. Investigate if specific device/OS versions need different keyboard handling approaches
+5. Look into using KeyboardAvoidingView if vertical space issues arise
+
+PREVIOUS ATTEMPTS MENTIONED:
+- User mentioned this issue was "tried to fix it twice before but nothing worked"
+- This systematic approach addresses the root cause rather than symptom fixes
+- Focuses on React Native's built-in keyboard handling rather than manual intervention

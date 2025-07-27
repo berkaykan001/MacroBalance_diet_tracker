@@ -109,6 +109,17 @@ export default function FoodManagementScreen({ navigation }) {
   };
 
   const handleEditFood = (food) => {
+    // If it's a dish, navigate to DishCreator for ingredient editing
+    if (food.isDish) {
+      navigation.navigate('DishCreator', { 
+        editingDish: food,
+        dishName: food.name,
+        ingredients: food.ingredients || []
+      });
+      return;
+    }
+    
+    // Regular food editing
     setEditingFood(food);
     // Convert all nutrition values to strings for form inputs
     const nutritionAsStrings = {};

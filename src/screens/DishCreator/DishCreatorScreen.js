@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, FlatList, Alert, Pressable, Keyboard } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFood } from '../../context/FoodContext';
 import { CalculationService } from '../../services/calculationService';
 
-export default function DishCreatorScreen({ navigation }) {
-  const { foods, filteredFoods, searchFoods, createDish } = useFood();
-  const [dishName, setDishName] = useState('');
-  const [ingredients, setIngredients] = useState([]);
+export default function DishCreatorScreen({ navigation, route }) {
+  const { foods, filteredFoods, searchFoods, createDish, updateFood } = useFood();
+  
+  // Check if we're editing an existing dish
+  const editingDish = route?.params?.editingDish;
+  const isEditing = !!editingDish;
+  
+  const [dishName, setDishName] = useState(editingDish?.name || '');
+  const [ingredients, setIngredients] = useState(editingDish?.ingredients || []);
   const [showFoodSelector, setShowFoodSelector] = useState(false);
   const [foodSearchQuery, setFoodSearchQuery] = useState('');
 
@@ -40,7 +45,7 @@ export default function DishCreatorScreen({ navigation }) {
 
   const updateIngredientPortion = (foodId, grams) => {
     setIngredients(ingredients.map(ing => 
-      ing.foodId === foodId ? { ...ing, grams: Math.max(0.1, Math.round(grams * 10) / 10) } : ing
+      ing.foodId === foodId ? { ...ing, grams: Math.max(0, Math.round(grams * 10) / 10) } : ing
     ));
   };
 
@@ -74,7 +79,23 @@ export default function DishCreatorScreen({ navigation }) {
       return;
     }
 
-    createDish(dishName.trim(), ingredients);
+    if (isEditing) {
+      // Update existing dish
+      const dishSummary = calculateDishSummary();
+      const updatedDish = {
+        ...editingDish,
+        name: dishName.trim(),
+        ingredients: ingredients,
+        totalGrams: dishSummary.totalGrams,
+        nutritionPer100g: dishSummary.nutritionPer100g,
+        lastUsed: new Date().toISOString()
+      };
+      updateFood(updatedDish);
+    } else {
+      // Create new dish
+      createDish(dishName.trim(), ingredients);
+    }
+    
     // Navigate back immediately after saving
     navigation.goBack();
   };
@@ -156,7 +177,7 @@ export default function DishCreatorScreen({ navigation }) {
           >
             <Text style={styles.backButtonText}>← Back</Text>
           </Pressable>
-          <Text style={styles.title}>Create Dish</Text>
+          <Text style={styles.title}>{isEditing ? 'Edit Dish' : 'Create Dish'}</Text>
           <Pressable 
             style={styles.saveButton}
             onPressIn={() => Keyboard.dismiss()}
@@ -274,6 +295,135 @@ export default function DishCreatorScreen({ navigation }) {
                   <View style={styles.nutritionItem}>
                     <Text style={styles.nutritionValue}>{Math.round(dishSummary.nutritionPer100g.fat)}g</Text>
                     <Text style={styles.nutritionLabel}>Fat</Text>
+                  </View>
+                </View>
+              </LinearGradient>
+            </View>
+          )}
+
+          {/* Complete Macro Display */}
+          {ingredients.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Complete Nutrition Profile (per 100g)</Text>
+              <LinearGradient
+                colors={['#1A1A1A', '#2A2A2A']}
+                style={styles.macroDisplayCard}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                {/* Basic Macros */}
+                <View style={styles.macroSection}>
+                  <Text style={styles.macroSectionTitle}>Macronutrients</Text>
+                  <View style={styles.macroGrid}>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Calories</Text>
+                      <Text style={styles.macroValue}>{Math.round(dishSummary.nutritionPer100g.calories)}</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Protein</Text>
+                      <Text style={styles.macroValue}>{Math.round(dishSummary.nutritionPer100g.protein * 10) / 10}g</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Carbohydrates</Text>
+                      <Text style={styles.macroValue}>{Math.round(dishSummary.nutritionPer100g.carbs * 10) / 10}g</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Total Fat</Text>
+                      <Text style={styles.macroValue}>{Math.round(dishSummary.nutritionPer100g.fat * 10) / 10}g</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Detailed Carbs */}
+                <View style={styles.macroSection}>
+                  <Text style={styles.macroSectionTitle}>Carbohydrate Details</Text>
+                  <View style={styles.macroGrid}>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Fiber</Text>
+                      <Text style={styles.macroValue}>{Math.round(dishSummary.nutritionPer100g.fiber * 10) / 10}g</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Total Sugar</Text>
+                      <Text style={styles.macroValue}>{Math.round(dishSummary.nutritionPer100g.sugar * 10) / 10}g</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Natural Sugars</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.naturalSugars || 0) * 10) / 10}g</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Added Sugars</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.addedSugars || 0) * 10) / 10}g</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Detailed Fats */}
+                <View style={styles.macroSection}>
+                  <Text style={styles.macroSectionTitle}>Fat Details</Text>
+                  <View style={styles.macroGrid}>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Saturated Fat</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.saturatedFat || 0) * 10) / 10}g</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Monounsaturated Fat</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.monounsaturatedFat || 0) * 10) / 10}g</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Polyunsaturated Fat</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.polyunsaturatedFat || 0) * 10) / 10}g</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Omega-3</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.omega3 || 0) * 100) / 100}g</Text>
+                    </View>
+                  </View>
+                </View>
+
+                {/* Micronutrients */}
+                <View style={styles.macroSection}>
+                  <Text style={styles.macroSectionTitle}>Minerals & Vitamins</Text>
+                  <View style={styles.macroGrid}>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Sodium</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.sodium || 0))}mg</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Potassium</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.potassium || 0))}mg</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Magnesium</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.magnesium || 0))}mg</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Iron</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.iron || 0) * 10) / 10}mg</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Calcium</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.calcium || 0))}mg</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Zinc</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.zinc || 0) * 10) / 10}mg</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Vitamin D</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.vitaminD || 0) * 10) / 10}μg</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Vitamin B6</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.vitaminB6 || 0) * 100) / 100}mg</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Vitamin B12</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.vitaminB12 || 0) * 100) / 100}μg</Text>
+                    </View>
+                    <View style={styles.macroRow}>
+                      <Text style={styles.macroLabel}>Vitamin C</Text>
+                      <Text style={styles.macroValue}>{Math.round((dishSummary.nutritionPer100g.vitaminC || 0) * 10) / 10}mg</Text>
+                    </View>
                   </View>
                 </View>
               </LinearGradient>
@@ -566,5 +716,46 @@ const styles = StyleSheet.create({
 
   bottomSpacer: {
     height: 20,
+  },
+
+  // Macro Display Styles
+  macroDisplayCard: {
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+  },
+  macroSection: {
+    marginBottom: 16,
+  },
+  macroSectionTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+    paddingBottom: 4,
+  },
+  macroGrid: {
+    gap: 6,
+  },
+  macroRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 3,
+  },
+  macroLabel: {
+    color: '#8E8E93',
+    fontSize: 12,
+    fontWeight: '500',
+    flex: 1,
+  },
+  macroValue: {
+    color: '#BBB',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'right',
+    minWidth: 60,
   },
 });

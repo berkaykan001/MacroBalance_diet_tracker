@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, FlatList, Alert, Pressable, Keyboard } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFood } from '../../context/FoodContext';
 import { CalculationService } from '../../services/calculationService';
@@ -99,13 +99,13 @@ export default function DishCreatorScreen({ navigation }) {
             <Text style={styles.ingredientName}>{food.name}</Text>
             <Text style={styles.ingredientCategory}>{food.category}</Text>
           </View>
-          <TouchableOpacity 
+          <Pressable 
             style={styles.removeButton}
+            onPressIn={() => Keyboard.dismiss()}
             onPress={() => removeIngredient(item.foodId)}
-            activeOpacity={0.7}
           >
             <Text style={styles.removeButtonText}>×</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         <View style={styles.ingredientControls}>
@@ -135,41 +135,42 @@ export default function DishCreatorScreen({ navigation }) {
   };
 
   const renderAvailableFood = ({ item }) => (
-    <TouchableOpacity 
+    <Pressable 
       style={styles.foodSelectorItem}
+      onPressIn={() => Keyboard.dismiss()}
       onPress={() => addIngredient(item)}
-      activeOpacity={0.7}
     >
       <Text style={styles.foodSelectorName}>{item.name}</Text>
       <Text style={styles.foodSelectorCategory}>{item.category}</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 
   return (
     <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity 
+          <Pressable 
             style={styles.backButton}
+            onPressIn={() => Keyboard.dismiss()}
             onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
           >
             <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.title}>Create Dish</Text>
-          <TouchableOpacity 
+          <Pressable 
             style={styles.saveButton}
+            onPressIn={() => Keyboard.dismiss()}
             onPress={() => handleSaveDish()}
-            activeOpacity={0.7}
           >
             <Text style={styles.saveButtonText}>Save</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         <ScrollView 
           style={styles.content} 
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="always"
+          keyboardDismissMode="none"
         >
           {/* Dish Name */}
           <View style={styles.section}>
@@ -187,15 +188,15 @@ export default function DishCreatorScreen({ navigation }) {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Ingredients ({ingredients.length})</Text>
-              <TouchableOpacity 
+              <Pressable 
                 style={styles.addIngredientButton}
+                onPressIn={() => Keyboard.dismiss()}
                 onPress={() => setShowFoodSelector(!showFoodSelector)}
-                activeOpacity={0.7}
               >
                 <Text style={styles.addIngredientText}>
                   {showFoodSelector ? '✕ Hide' : '+ Add'}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
 
             {showFoodSelector && (

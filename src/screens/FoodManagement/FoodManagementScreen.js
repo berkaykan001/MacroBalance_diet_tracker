@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, FlatList, Alert, Pressable, Keyboard } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFood } from '../../context/FoodContext';
 
@@ -205,11 +205,12 @@ export default function FoodManagementScreen({ navigation }) {
   };
 
   const renderCategoryButton = ({ item }) => (
-    <TouchableOpacity
+    <Pressable
       style={[
         styles.categoryButton,
         selectedCategory === item.id && styles.categoryButtonActive
       ]}
+      onPressIn={() => Keyboard.dismiss()}
       onPress={() => setSelectedCategory(item.id)}
     >
       <Text style={[
@@ -218,7 +219,7 @@ export default function FoodManagementScreen({ navigation }) {
       ]}>
         {item.name} ({item.count})
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 
   const renderFoodItem = ({ item }) => (
@@ -238,20 +239,22 @@ export default function FoodManagementScreen({ navigation }) {
           {item.userAdded && <Text style={styles.userAddedBadge}>Custom</Text>}
         </View>
         <View style={styles.foodActions}>
-          <TouchableOpacity 
+          <Pressable 
             style={styles.editButton} 
+            onPressIn={() => Keyboard.dismiss()}
             onPress={() => handleEditFood(item)}
           >
             <Text style={styles.editButtonText}>Edit</Text>
-          </TouchableOpacity>
+          </Pressable>
           {item.userAdded && (
-            <TouchableOpacity 
+            <Pressable 
               style={styles.deleteButton} 
+              onPressIn={() => Keyboard.dismiss()}
               onPress={() => handleDeleteFood(item)}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={styles.deleteButtonText}>×</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       </View>
@@ -281,21 +284,23 @@ export default function FoodManagementScreen({ navigation }) {
     return (
       <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
         <View style={styles.formHeader}>
-          <TouchableOpacity 
+          <Pressable 
             style={styles.backButton}
+            onPressIn={() => Keyboard.dismiss()}
             onPress={() => setShowAddForm(false)}
           >
             <Text style={styles.backButtonText}>← Back</Text>
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.formTitle}>
             {editingFood ? 'Edit Food' : 'Add New Food'}
           </Text>
-          <TouchableOpacity 
+          <Pressable 
             style={styles.saveButton}
+            onPressIn={() => Keyboard.dismiss()}
             onPress={handleSaveFood}
           >
             <Text style={styles.saveButtonText}>Save</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
         
         <ScrollView style={styles.formContent} showsVerticalScrollIndicator={false}>
@@ -318,12 +323,13 @@ export default function FoodManagementScreen({ navigation }) {
               <Text style={styles.inputLabel}>Category *</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categorySelector}>
                 {['protein', 'carbs', 'fats', 'vegetables', 'fruits', 'grains', 'dairy', 'nuts', 'other'].map(cat => (
-                  <TouchableOpacity
+                  <Pressable
                     key={cat}
                     style={[
                       styles.categorySelectorButton,
                       formData.category === cat && styles.categorySelectorButtonActive
                     ]}
+                    onPressIn={() => Keyboard.dismiss()}
                     onPress={() => setFormData({...formData, category: cat})}
                   >
                     <Text style={[
@@ -332,7 +338,7 @@ export default function FoodManagementScreen({ navigation }) {
                     ]}>
                       {cat}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </ScrollView>
             </View>
@@ -748,8 +754,9 @@ export default function FoodManagementScreen({ navigation }) {
       <View style={styles.header}>
         <Text style={styles.title}>Food Database</Text>
         <View style={styles.headerButtonGroup}>
-          <TouchableOpacity 
+          <Pressable 
             style={styles.headerButton}
+            onPressIn={() => Keyboard.dismiss()}
             onPress={handleAddFood}
           >
             <LinearGradient
@@ -760,9 +767,10 @@ export default function FoodManagementScreen({ navigation }) {
             >
               <Text style={styles.headerButtonText}>Add a Food</Text>
             </LinearGradient>
-          </TouchableOpacity>
-          <TouchableOpacity 
+          </Pressable>
+          <Pressable 
             style={styles.headerButton}
+            onPressIn={() => Keyboard.dismiss()}
             onPress={() => navigation.navigate('DishCreator')}
           >
             <LinearGradient
@@ -773,7 +781,7 @@ export default function FoodManagementScreen({ navigation }) {
             >
               <Text style={styles.headerButtonText}>Add a Dish</Text>
             </LinearGradient>
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </View>
 
@@ -807,7 +815,8 @@ export default function FoodManagementScreen({ navigation }) {
         keyExtractor={(item) => item.id}
         style={styles.foodList}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
+        keyboardDismissMode="none"
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>🍽️</Text>

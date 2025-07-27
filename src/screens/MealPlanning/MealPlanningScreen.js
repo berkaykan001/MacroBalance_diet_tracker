@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, FlatList, Dimensions, TextInput, Alert, Pressable, Keyboard } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
 import { useFood } from '../../context/FoodContext';
@@ -10,11 +10,12 @@ import { CalculationService } from '../../services/calculationService';
 import LockButton from '../../components/LockButton';
 import LockControls from '../../components/LockControls';
 import SegmentedProgressBar from '../../components/SegmentedProgressBar';
+import AddFoodsModal from '../../components/AddFoodsModal';
 
 const { width } = Dimensions.get('window');
 
 export default function MealPlanningScreen({ route, navigation }) {
-  const { foods, filteredFoods, searchFoods } = useFood();
+  const { foods } = useFood();
   const { meals, createMealPlan, updateMealPlan } = useMeal();
   const { selectedQuickFoods, appPreferences } = useSettings();
   
@@ -23,8 +24,7 @@ export default function MealPlanningScreen({ route, navigation }) {
   
   const [selectedMealId, setSelectedMealId] = useState(editingMealPlan?.mealId || '1');
   const [selectedFoods, setSelectedFoods] = useState([]);
-  const [showFoodList, setShowFoodList] = useState(false);
-  const [foodSearchQuery, setFoodSearchQuery] = useState('');
+  const [showAddFoodsModal, setShowAddFoodsModal] = useState(false);
   const [lockedFoods, setLockedFoods] = useState(new Set()); // Track locked food IDs
   const [maxLimitFoods, setMaxLimitFoods] = useState(new Map()); // Track max limits: foodId -> maxValue
   const [minLimitFoods, setMinLimitFoods] = useState(new Map()); // Track min limits: foodId -> minValue
@@ -46,8 +46,7 @@ export default function MealPlanningScreen({ route, navigation }) {
   const resetMealPlan = () => {
     setSelectedMealId('1');
     setSelectedFoods([]);
-    setShowFoodList(false);
-    setFoodSearchQuery('');
+    setShowAddFoodsModal(false);
     setLockedFoods(new Set());
     setMaxLimitFoods(new Map());
     setMinLimitFoods(new Map());
@@ -65,25 +64,6 @@ export default function MealPlanningScreen({ route, navigation }) {
   // Always get the current meal data (updates when meals context changes)
   const selectedMeal = meals.find(meal => meal.id === selectedMealId) || meals[0];
 
-  const handleFoodSearch = (query) => {
-    setFoodSearchQuery(query);
-    searchFoods(query);
-  };
-
-  const getAvailableFoods = () => {
-    if (foodSearchQuery) {
-      // If searching, show filtered results
-      return filteredFoods;
-    } else {
-      // If not searching, show user's selected quick foods
-      const quickFoods = selectedQuickFoods
-        .map(foodId => foods.find(food => food.id === foodId))
-        .filter(Boolean); // Remove any undefined foods
-      
-      // If no quick foods selected, fallback to first 12 foods
-      return quickFoods.length > 0 ? quickFoods : foods.slice(0, 12);
-    }
-  };
 
   const addFood = (food) => {
     const exists = selectedFoods.find(sf => sf.foodId === food.id);
@@ -351,12 +331,15 @@ export default function MealPlanningScreen({ route, navigation }) {
                 maxLength={6}
               />
             ) : (
-              <TouchableOpacity onPress={() => {
-                setEditingPortion(food.id);
-                setTempPortionValue(item.portionGrams.toString());
-              }}>
+              <Pressable 
+                onPressIn={() => Keyboard.dismiss()}
+                onPress={() => {
+                  setEditingPortion(food.id);
+                  setTempPortionValue(item.portionGrams.toString());
+                }}
+              >
                 <Text style={styles.ultraCompactPortionLabel}>{item.portionGrams}g</Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
           
@@ -371,9 +354,13 @@ export default function MealPlanningScreen({ route, navigation }) {
             minLimitValue={getMinLimit(food.id)}
           />
           
-          <TouchableOpacity onPress={() => removeFood(food.id)} style={styles.ultraCompactRemoveButton}>
+          <Pressable 
+            onPressIn={() => Keyboard.dismiss()}
+            onPress={() => removeFood(food.id)} 
+            style={styles.ultraCompactRemoveButton}
+          >
             <Text style={styles.removeButtonText}>×</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* Bottom row: Slider with lock state */}
@@ -407,19 +394,6 @@ export default function MealPlanningScreen({ route, navigation }) {
     );
   };
 
-  const renderAvailableFood = ({ item }) => (
-    <TouchableOpacity style={styles.availableFood} onPress={() => addFood(item)}>
-      <LinearGradient
-        colors={['#1A1A1A', '#2A2A2A']}
-        style={styles.availableFoodGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <Text style={styles.availableFoodName}>{item.name}</Text>
-        <Text style={styles.availableFoodCategory}>{item.category}</Text>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
 
   const getSegmentsForMacro = (macroType, currentMacros) => {
     switch (macroType) {
@@ -520,12 +494,13 @@ export default function MealPlanningScreen({ route, navigation }) {
               <Text style={styles.mealSelectorLabel}>Meal:</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.mealOptions}>
                 {meals.map((meal) => (
-                  <TouchableOpacity
+                  <Pressable
                     key={meal.id}
                     style={[
                       styles.mealOption,
                       selectedMealId === meal.id && styles.mealOptionSelected
                     ]}
+                    onPressIn={() => Keyboard.dismiss()}
                     onPress={() => setSelectedMealId(meal.id)}
                   >
                     <Text style={[
@@ -534,7 +509,7 @@ export default function MealPlanningScreen({ route, navigation }) {
                     ]}>
                       {meal.name}
                     </Text>
-                  </TouchableOpacity>
+                  </Pressable>
                 ))}
               </ScrollView>
             </View>
@@ -591,7 +566,8 @@ export default function MealPlanningScreen({ route, navigation }) {
         style={styles.scrollableContent} 
         showsVerticalScrollIndicator={false} 
         contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
+        keyboardShouldPersistTaps="always"
+        keyboardDismissMode="none"
       >
         {/* Combined Add Foods + Available Foods Card */}
         <LinearGradient
@@ -611,86 +587,28 @@ export default function MealPlanningScreen({ route, navigation }) {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
               >
-                <TouchableOpacity 
+                <Pressable 
                   style={styles.addFoodButtonInner}
-                  onPress={() => setShowFoodList(!showFoodList)}
+                  onPressIn={() => Keyboard.dismiss()}
+                  onPress={() => setShowAddFoodsModal(true)}
                 >
                   <Text style={styles.addFoodButtonText}>
-                    {showFoodList ? '✕ Hide Foods' : '+ Add Foods'}
+                    + Add Foods
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               </LinearGradient>
               
               {selectedFoods.length > 0 && (
-                <TouchableOpacity 
+                <Pressable 
                   style={styles.resetButton}
+                  onPressIn={() => Keyboard.dismiss()}
                   onPress={resetMealPlan}
                 >
                   <Text style={styles.resetButtonText}>↺ Reset</Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
             </View>
 
-            {/* Available Foods Section - Conditionally Shown */}
-            {showFoodList && (
-              <View style={styles.availableFoodsSection}>
-                <View style={styles.foodListHeader}>
-                  <View>
-                    <Text style={styles.foodListTitle}>Available Foods</Text>
-                    <Text style={styles.foodListSubtitle}>
-                      {foodSearchQuery 
-                        ? `${getAvailableFoods().length} results found` 
-                        : `Your ${selectedQuickFoods.length} quick foods`
-                      }
-                    </Text>
-                  </View>
-                  <TouchableOpacity 
-                    style={styles.closeFoodListButton}
-                    onPress={() => {
-                      setShowFoodList(false);
-                      setFoodSearchQuery('');
-                      searchFoods(''); // Clear search when closing
-                    }}
-                  >
-                    <Text style={styles.closeFoodListText}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-                
-                {/* Search Bar */}
-                <View style={styles.foodSearchContainer}>
-                  <TextInput
-                    style={styles.foodSearchInput}
-                    value={foodSearchQuery}
-                    onChangeText={handleFoodSearch}
-                    placeholder="Search foods to add..."
-                    placeholderTextColor="#8E8E93"
-                  />
-                </View>
-
-                {/* Food List */}
-                <FlatList
-                  data={getAvailableFoods()}
-                  renderItem={renderAvailableFood}
-                  keyExtractor={(item) => item.id}
-                  scrollEnabled={false}
-                  numColumns={3}
-                  columnWrapperStyle={styles.foodListRow}
-                  ListEmptyComponent={
-                    <View style={styles.noFoodsFound}>
-                      <Text style={styles.noFoodsFoundText}>
-                        {foodSearchQuery ? 'No foods found' : 'No quick foods selected'}
-                      </Text>
-                      <Text style={styles.noFoodsFoundSubtext}>
-                        {foodSearchQuery 
-                          ? 'Try adjusting your search' 
-                          : 'Go to Settings to select your favorite foods for quick access'
-                      }
-                      </Text>
-                    </View>
-                  }
-                />
-              </View>
-            )}
           </View>
         </LinearGradient>
 
@@ -722,15 +640,17 @@ export default function MealPlanningScreen({ route, navigation }) {
                 {/* Action Buttons */}
                 {editingMealPlan ? (
                   <View style={styles.editActionButtons}>
-                    <TouchableOpacity 
+                    <Pressable 
                       style={styles.cancelButton}
+                      onPressIn={() => Keyboard.dismiss()}
                       onPress={cancelEditing}
                     >
                       <Text style={styles.cancelButtonText}>✕ Cancel</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                     
-                    <TouchableOpacity 
+                    <Pressable 
                       style={styles.updateButton}
+                      onPressIn={() => Keyboard.dismiss()}
                       onPress={saveMealPlan}
                     >
                       <LinearGradient
@@ -744,11 +664,12 @@ export default function MealPlanningScreen({ route, navigation }) {
                           {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
                         </Text>
                       </LinearGradient>
-                    </TouchableOpacity>
+                    </Pressable>
                   </View>
                 ) : (
-                  <TouchableOpacity 
+                  <Pressable 
                     style={styles.eatenButton}
+                    onPressIn={() => Keyboard.dismiss()}
                     onPress={saveMealPlan}
                   >
                     <LinearGradient
@@ -762,7 +683,7 @@ export default function MealPlanningScreen({ route, navigation }) {
                         {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
                       </Text>
                     </LinearGradient>
-                  </TouchableOpacity>
+                  </Pressable>
                 )}
               </>
             )}
@@ -771,6 +692,14 @@ export default function MealPlanningScreen({ route, navigation }) {
         
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Add Foods Modal */}
+      <AddFoodsModal
+        visible={showAddFoodsModal}
+        onClose={() => setShowAddFoodsModal(false)}
+        onAddFood={addFood}
+        selectedMeal={selectedMeal}
+      />
     </LinearGradient>
   );
 }

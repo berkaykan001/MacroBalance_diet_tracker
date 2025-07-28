@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, FlatList, Dimensions, TextInput, Alert, Pressable, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, FlatList, Dimensions, TextInput, Alert, Pressable, Keyboard, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
 import { useFood } from '../../context/FoodContext';
@@ -16,7 +16,7 @@ const { width } = Dimensions.get('window');
 
 export default function MealPlanningScreen({ route, navigation }) {
   const { foods } = useFood();
-  const { meals, createMealPlan, updateMealPlan } = useMeal();
+  const { meals, createMealPlan, updateMealPlan, getTodaysMealPlans } = useMeal();
   const { selectedQuickFoods, appPreferences } = useSettings();
   
   // Check if we're editing an existing meal plan
@@ -30,15 +30,88 @@ export default function MealPlanningScreen({ route, navigation }) {
   const [minLimitFoods, setMinLimitFoods] = useState(new Map()); // Track min limits: foodId -> minValue
   const [editingPortion, setEditingPortion] = useState(null); // Track which food portion is being manually edited
   const [tempPortionValue, setTempPortionValue] = useState(''); // Temporary value during manual input
+  const [currentEditingMealPlan, setCurrentEditingMealPlan] = useState(editingMealPlan); // Track current meal plan being edited
+  
+  // Toast notification state
+  const [confirmationVisible, setConfirmationVisible] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
+  const slideAnim = useState(new Animated.Value(-100))[0];
 
-  // Initialize with existing meal plan data if editing
+  // Function to find today's meal plan for a specific meal type
+  const findTodaysMealPlan = (mealId) => {
+    const todaysPlans = getTodaysMealPlans();
+    return todaysPlans.find(plan => plan.mealId === mealId);
+  };
+
+  // Enhanced meal selection that loads existing meal plans
+  const handleMealSelection = (mealId) => {
+    const selectedMeal = meals.find(meal => meal.id === mealId);
+    
+    // Special snack logic: Always start fresh for snacks (allow multiple per day)
+    if (selectedMeal && selectedMeal.name === 'Snack') {
+      setCurrentEditingMealPlan(null);
+      setSelectedMealId(mealId);
+      setSelectedFoods([]);
+      setLockedFoods(new Set());
+      setMaxLimitFoods(new Map());
+      setMinLimitFoods(new Map());
+      setEditingPortion(null);
+      setTempPortionValue('');
+      return;
+    }
+    
+    // Regular meals: Load existing if available
+    const existingPlan = findTodaysMealPlan(mealId);
+    
+    if (existingPlan) {
+      // Load existing meal plan for editing
+      setCurrentEditingMealPlan(existingPlan);
+      setSelectedMealId(existingPlan.mealId);
+      setSelectedFoods(existingPlan.selectedFoods.map(food => ({
+        ...food,
+        id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
+      })));
+    } else {
+      // Start fresh meal plan
+      setCurrentEditingMealPlan(null);
+      setSelectedMealId(mealId);
+      setSelectedFoods([]);
+      setLockedFoods(new Set());
+      setMaxLimitFoods(new Map());
+      setMinLimitFoods(new Map());
+      setEditingPortion(null);
+      setTempPortionValue('');
+    }
+  };
+
+  // Initialize with existing meal plan data if editing, or load today's meal plan for default meal
   useEffect(() => {
     if (editingMealPlan) {
+      // Editing specific meal plan (including snacks from dashboard)
+      setCurrentEditingMealPlan(editingMealPlan);
       setSelectedMealId(editingMealPlan.mealId);
       setSelectedFoods(editingMealPlan.selectedFoods.map(food => ({
         ...food,
         id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
       })));
+    } else {
+      // Check if there's an existing meal plan for the default selected meal
+      const defaultMealId = selectedMealId;
+      const selectedMeal = meals.find(meal => meal.id === defaultMealId);
+      
+      // Don't auto-load existing plans for snacks (let them start fresh)
+      if (selectedMeal && selectedMeal.name === 'Snack') {
+        return; // Keep snack area empty
+      }
+      
+      const existingPlan = findTodaysMealPlan(defaultMealId);
+      if (existingPlan) {
+        setCurrentEditingMealPlan(existingPlan);
+        setSelectedFoods(existingPlan.selectedFoods.map(food => ({
+          ...food,
+          id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
+        })));
+      }
     }
   }, [editingMealPlan]);
 
@@ -52,6 +125,7 @@ export default function MealPlanningScreen({ route, navigation }) {
     setMinLimitFoods(new Map());
     setEditingPortion(null);
     setTempPortionValue('');
+    setCurrentEditingMealPlan(null);
   };
 
   // Cancel editing and go back
@@ -59,6 +133,30 @@ export default function MealPlanningScreen({ route, navigation }) {
     if (navigation && navigation.goBack) {
       navigation.goBack();
     }
+  };
+
+  // Toast notification function
+  const showConfirmation = (message) => {
+    setConfirmationMessage(message);
+    setConfirmationVisible(true);
+    
+    // Slide in animation
+    Animated.timing(slideAnim, {
+      toValue: 20,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+    
+    // Auto hide after 2.5 seconds
+    setTimeout(() => {
+      Animated.timing(slideAnim, {
+        toValue: -100,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setConfirmationVisible(false);
+      });
+    }, 2500);
   };
 
   // Always get the current meal data (updates when meals context changes)
@@ -236,32 +334,62 @@ export default function MealPlanningScreen({ route, navigation }) {
       calculatedMacros: currentMacros
     };
 
+    // Special logic for snacks: Only edit if we came from dashboard (editingMealPlan set)
+    // If we're on snack chip (no editingMealPlan), always create new
+    const isEditingSnack = selectedMeal.name === 'Snack' && editingMealPlan;
+    const isEditingRegularMeal = selectedMeal.name !== 'Snack' && (editingMealPlan || currentEditingMealPlan);
+    const isEditing = isEditingSnack || isEditingRegularMeal;
+    
+    console.log('saveMealPlan - isEditing:', isEditing);
+    console.log('saveMealPlan - meal:', selectedMeal.name);
     console.log('saveMealPlan - editingMealPlan:', !!editingMealPlan);
-    console.log('saveMealPlan - creating new meal plan for:', selectedMeal.name);
+    console.log('saveMealPlan - currentEditingMealPlan:', !!currentEditingMealPlan);
 
-    if (editingMealPlan) {
-      // Update existing meal plan (when editing from dashboard)
-      console.log('Updating existing meal plan:', editingMealPlan.id);
+    if (isEditing) {
+      // Update existing meal plan
+      const existingPlan = editingMealPlan || currentEditingMealPlan;
+      console.log('Updating existing meal plan:', existingPlan.id);
       updateMealPlan({
-        ...editingMealPlan,
+        ...existingPlan,
         ...mealPlan
       });
-      Alert.alert(
-        'Meal Updated!', 
-        `${selectedMeal.name} has been updated with ${Math.round(currentMacros.calories)} calories.`
-      );
+      showConfirmation(`${selectedMeal.name} updated with ${Math.round(currentMacros.calories)} calories!`);
+      
+      // Special handling for snacks: Reset to empty after editing
+      if (selectedMeal.name === 'Snack') {
+        setCurrentEditingMealPlan(null);
+        setSelectedFoods([]);
+        setLockedFoods(new Set());
+        setMaxLimitFoods(new Map());
+        setMinLimitFoods(new Map());
+        setEditingPortion(null);
+        setTempPortionValue('');
+      } else {
+        // Update the current editing plan to reflect changes for regular meals
+        const updatedPlan = { ...existingPlan, ...mealPlan };
+        setCurrentEditingMealPlan(updatedPlan);
+      }
     } else {
-      // Always create new meal plan (allows multiple meals of same type per day)
+      // Create new meal plan
       console.log('Creating new meal plan');
       createMealPlan(mealPlan);
-      Alert.alert(
-        'Meal Saved!', 
-        `${selectedMeal.name} has been marked as eaten with ${Math.round(currentMacros.calories)} calories.`
-      );
+      showConfirmation(`${selectedMeal.name} marked as eaten with ${Math.round(currentMacros.calories)} calories!`);
+      
+      // Special handling for snacks: Reset to empty after saving
+      if (selectedMeal.name === 'Snack') {
+        setCurrentEditingMealPlan(null);
+        setSelectedFoods([]);
+        setLockedFoods(new Set());
+        setMaxLimitFoods(new Map());
+        setMinLimitFoods(new Map());
+        setEditingPortion(null);
+        setTempPortionValue('');
+      } else {
+        // After creating, treat it as an existing meal plan for future edits
+        const newPlan = { ...mealPlan, id: Date.now().toString(), createdAt: new Date().toISOString() };
+        setCurrentEditingMealPlan(newPlan);
+      }
     }
-    
-    // Clear the current meal plan after saving
-    setSelectedFoods([]);
   };
 
   const renderFoodItem = ({ item }) => {
@@ -501,7 +629,7 @@ export default function MealPlanningScreen({ route, navigation }) {
                       selectedMealId === meal.id && styles.mealOptionSelected
                     ]}
                     onPressIn={() => Keyboard.dismiss()}
-                    onPress={() => setSelectedMealId(meal.id)}
+                    onPress={() => handleMealSelection(meal.id)}
                   >
                     <Text style={[
                       styles.mealOptionText,
@@ -638,34 +766,24 @@ export default function MealPlanningScreen({ route, navigation }) {
                 />
                 
                 {/* Action Buttons */}
-                {editingMealPlan ? (
-                  <View style={styles.editActionButtons}>
-                    <Pressable 
-                      style={styles.cancelButton}
-                      onPressIn={() => Keyboard.dismiss()}
-                      onPress={cancelEditing}
+                {(editingMealPlan || currentEditingMealPlan) ? (
+                  <Pressable 
+                    style={styles.eatenButton}
+                    onPressIn={() => Keyboard.dismiss()}
+                    onPress={saveMealPlan}
+                  >
+                    <LinearGradient
+                      colors={['#00D084', '#00A86B']}
+                      style={styles.eatenButtonGradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
                     >
-                      <Text style={styles.cancelButtonText}>✕ Cancel</Text>
-                    </Pressable>
-                    
-                    <Pressable 
-                      style={styles.updateButton}
-                      onPressIn={() => Keyboard.dismiss()}
-                      onPress={saveMealPlan}
-                    >
-                      <LinearGradient
-                        colors={['#00D084', '#00A86B']}
-                        style={styles.updateButtonGradient}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                      >
-                        <Text style={styles.updateButtonText}>✓ Update Meal</Text>
-                        <Text style={styles.updateButtonSubtext}>
-                          {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
-                        </Text>
-                      </LinearGradient>
-                    </Pressable>
-                  </View>
+                      <Text style={styles.eatenButtonText}>✓ Update Meal</Text>
+                      <Text style={styles.eatenButtonSubtext}>
+                        {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+                      </Text>
+                    </LinearGradient>
+                  </Pressable>
                 ) : (
                   <Pressable 
                     style={styles.eatenButton}
@@ -700,6 +818,28 @@ export default function MealPlanningScreen({ route, navigation }) {
         onAddFood={addFood}
         selectedMeal={selectedMeal}
       />
+
+      {/* Confirmation Toast */}
+      {confirmationVisible && (
+        <Animated.View 
+          style={[
+            styles.confirmationToast,
+            {
+              transform: [{ translateY: slideAnim }]
+            }
+          ]}
+        >
+          <LinearGradient
+            colors={['#00C851', '#007E33']}
+            style={styles.confirmationGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <Text style={styles.confirmationIcon}>✓</Text>
+            <Text style={styles.confirmationText}>{confirmationMessage}</Text>
+          </LinearGradient>
+        </Animated.View>
+      )}
     </LinearGradient>
   );
 }
@@ -1577,6 +1717,43 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#00D084',
+  },
+
+  // Confirmation Toast Styles
+  confirmationToast: {
+    position: 'absolute',
+    top: 0,
+    left: 16,
+    right: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    zIndex: 1000,
+  },
+  confirmationGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  confirmationIcon: {
+    fontSize: 18,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    marginRight: 8,
+  },
+  confirmationText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '600',
+    flex: 1,
   },
 
 });

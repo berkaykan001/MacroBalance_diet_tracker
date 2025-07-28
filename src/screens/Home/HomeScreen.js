@@ -41,8 +41,11 @@ export default function HomeScreen() {
 
 
   const handleEditMeal = (mealPlan) => {
-    setSelectedMealPlan(mealPlan);
-    setEditModalVisible(true);
+    const meal = getMealById(mealPlan.mealId);
+    navigation.navigate('Plan Meal', {
+      editingMealPlan: mealPlan,
+      preselectedMealId: mealPlan.mealId
+    });
   };
 
   const handleCloseModal = () => {
@@ -116,6 +119,25 @@ export default function HomeScreen() {
 
   const renderEatenMeal = ({ item: mealPlan }) => {
     const meal = getMealById(mealPlan.mealId);
+    
+    // Generate display name for snacks (Snack 1, Snack 2, etc.)
+    const getDisplayName = () => {
+      if (meal?.name === 'Snack') {
+        // Get all today's snacks in chronological order
+        const todaysSnacks = todaysMealPlans
+          .filter(plan => {
+            const planMeal = getMealById(plan.mealId);
+            return planMeal?.name === 'Snack';
+          })
+          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        
+        // Find the index of current snack
+        const snackIndex = todaysSnacks.findIndex(snack => snack.id === mealPlan.id);
+        return `Snack ${snackIndex + 1}`;
+      }
+      return meal?.name || 'Unknown Meal';
+    };
+    
     const foodSummary = mealPlan.selectedFoods
       .slice(0, 3) // Show only first 3 foods
       .map(selectedFood => {
@@ -165,7 +187,7 @@ export default function HomeScreen() {
           end={{ x: 1, y: 1 }}
         >
           <View style={styles.eatenMealHeader}>
-            <Text style={styles.eatenMealName}>{meal?.name || 'Unknown Meal'}</Text>
+            <Text style={styles.eatenMealName}>{getDisplayName()}</Text>
             <Text style={styles.eatenMealTime}>
               {new Date(mealPlan.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </Text>

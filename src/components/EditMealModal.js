@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, FlatList, Alert, Modal, Pressable, Keyboard } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
 import { useFood } from '../context/FoodContext';
@@ -267,12 +267,12 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
                 maxLength={6}
               />
             ) : (
-              <TouchableOpacity onPress={() => {
+              <Pressable onPressIn={() => Keyboard.dismiss()} onPress={() => {
                 setEditingPortion(food.id);
                 setTempPortionValue(item.portionGrams.toString());
               }}>
                 <Text style={styles.portionLabel}>{item.portionGrams}g</Text>
-              </TouchableOpacity>
+              </Pressable>
             )}
           </View>
           
@@ -287,9 +287,9 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
             minLimitValue={getMinLimit(food.id)}
           />
           
-          <TouchableOpacity onPress={() => removeFood(food.id)} style={styles.removeButton}>
+          <Pressable onPressIn={() => Keyboard.dismiss()} onPress={() => removeFood(food.id)} style={styles.removeButton}>
             <Text style={styles.removeButtonText}>×</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         <View style={styles.sliderContainer}>
@@ -323,7 +323,7 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
   };
 
   const renderAvailableFood = ({ item }) => (
-    <TouchableOpacity style={styles.availableFood} onPress={() => addFood(item)}>
+    <Pressable style={styles.availableFood} onPressIn={() => Keyboard.dismiss()} onPress={() => addFood(item)}>
       <LinearGradient
         colors={['#1A1A1A', '#2A2A2A']}
         style={styles.availableFoodGradient}
@@ -333,7 +333,7 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
         <Text style={styles.availableFoodName}>{item.name}</Text>
         <Text style={styles.availableFoodCategory}>{item.category}</Text>
       </LinearGradient>
-    </TouchableOpacity>
+    </Pressable>
   );
 
   const getSegmentsForMacro = (macroType, currentMacros) => {
@@ -384,13 +384,13 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
       <LinearGradient colors={['#0A0A0A', '#1A1A1A']} style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+          <Pressable style={styles.cancelButton} onPressIn={() => Keyboard.dismiss()} onPress={handleCancel}>
             <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
+          </Pressable>
           <Text style={styles.title}>Edit {selectedMeal.name}</Text>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Pressable style={styles.saveButton} onPressIn={() => Keyboard.dismiss()} onPress={handleSave}>
             <Text style={styles.saveButtonText}>Update</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* Progress Section */}
@@ -454,7 +454,8 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
         <ScrollView 
           style={styles.content} 
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
+          keyboardShouldPersistTaps="always"
+          keyboardDismissMode="none"
         >
           {showFoodList && (
             <View style={styles.foodListContainer}>

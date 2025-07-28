@@ -1,0 +1,827 @@
+{
+  "Kikkoman - Sauce teriyaki": {
+    "potassium_mg": 0,
+    "sodium_mg": 1800,
+    "notes": "Per 100g calculated from nutrition data (270mg Na per 15ml tbsp); K data unavailable in sources"
+  },
+  "Kikkoman - Sauce soja à teneur réduite en sel": {
+    "potassium_mg": 33,
+    "sodium_mg": 3933,
+    "notes": "Per 100g calculated from product data (590mg Na per 15ml tbsp); K calculated from sesame content"
+  },
+  "Maggi - Sauce arôme": {
+    "potassium_mg": 0,
+    "sodium_mg": 9200,
+    "notes": "Per 100g calculated from official data (460mg Na per 5ml tsp); K data shows 0mg per serving"
+  },
+  "Carrefour Bio - Poêlée de 6 légumes surgelés": {
+    "potassium_mg": 150,
+    "sodium_mg": 212,
+    "notes": "Per 100g calculated from official Carrefour label (0.53g salt converted to sodium); K estimated from vegetable mix"
+  },
+  "Carrefour Bio - Jus de fruits bio multifruits": {
+    "potassium_mg": 130,
+    "sodium_mg": 0,
+    "notes": "Per 100g estimated from fruit juice nutrition data; Na calculated from 0g salt on label"
+  },
+  "Carrefour Bio - Jus d'ananas mangue et fruit de la passion": {
+    "potassium_mg": 140,
+    "sodium_mg": 0,
+    "notes": "Per 100g calculated from official Carrefour label (0g salt); K estimated from pineapple/mango content"
+  },
+  "Carrefour Bio - Jus de fruits matin douceur": {
+    "potassium_mg": 120,
+    "sodium_mg": 0,
+    "notes": "Per 100g estimated from fruit juice nutrition data; Na calculated from 0g salt on label"
+  },
+  "Carrefour Bio - Jus pomme-mangue": {
+    "potassium_mg": 125,
+    "sodium_mg": 0,
+    "notes": "Per 100g estimated from apple/mango juice nutrition data; Na calculated from 0g salt on label"
+  },
+  "Lactel Lait Bio Écrémé": {
+    "potassium_mg": 172,
+    "sodium_mg": 52,
+    "notes": "From milk nutrition data"
+  },
+  "Lactel - Lait écrémé UHT vitamine-D": {
+    "potassium_mg": 172,
+    "sodium_mg": 52,
+    "notes": "From milk nutrition data"
+  },
+  "Koska Tahin": {
+    "potassium_mg": 420,
+    "sodium_mg": 12,
+    "notes": "Estimated from tahini/sesame paste nutrition data"
+  },
+  "Doritos Creamy Guacamole Dip": {
+    "potassium_mg": 120,
+    "sodium_mg": 244,
+    "notes": "Per 100g, estimated from avocado content and calculated from 0.61g salt content"
+  },
+  "Brown Pasta (Whole Wheat)": {
+    "potassium_mg": 44,
+    "sodium_mg": 3,
+    "notes": "Per 100g cooked, from USDA and University Hospitals nutritional data"
+  },
+  "Brown Rice (Cooked)": {
+    "potassium_mg": 86,
+    "sodium_mg": 5,
+    "notes": "From brown rice nutrition data"
+  },
+  "Flour (White)": {
+    "potassium_mg": 107,
+    "sodium_mg": 2,
+    "notes": "K and Na from flour nutrition data"
+  },
+  "Corn Flour": {
+    "potassium_mg": 315,
+    "sodium_mg": 5,
+    "notes": "Per 100g, from URMC data, adjusted from 1 cup measurements (369mg K, 6mg Na per cup)"
+  },
+  "Dés de fromage épices et aromates CARREFOUR CLASSIC'": {
+    "potassium_mg": 135,
+    "sodium_mg": 680,
+    "notes": "Per 100g calculated from official Cora label (1.70g salt converted to sodium); K estimated from cheese content"
+  },
+  "Bjorg - Galettes maïs extra-fines bio": {
+    "potassium_mg": 315,
+    "sodium_mg": 120,
+    "notes": "K estimated from corn content; Na calculated from 0.3g salt per 100g on Carrefour product label"
+  },
+  "Bjorg - Galettes riz sésame bio": {
+    "potassium_mg": 120,
+    "sodium_mg": 100,
+    "notes": "K estimated from rice and sesame content; Na calculated from 0.25g salt per 100g on official Bjorg label"
+  },
+  "Bjorg - Céréales muesli sans sucres ajoutés bio": {
+    "potassium_mg": 450,
+    "sodium_mg": 12,
+    "notes": "K estimated from oats and dried fruits content; Na calculated from 0.03g salt per 100g on multiple labels"
+  },
+  "Tipiak - Fine chapelure de pain": {
+    "potassium_mg": 270,
+    "sodium_mg": 440,
+    "notes": "K from Santé Magazine nutrition database; Na calculated from 1.1g salt per 100g on Carrefour label"
+  },
+  "Tipiak - Chapelure dorée": {
+    "potassium_mg": 270,
+    "sodium_mg": 480,
+    "notes": "K from general breadcrumb data; Na calculated from 1.2g salt per 100g on product label"
+  },
+  "Mon Fournil - Farine de maïs bio": {
+    "potassium_mg": 315,
+    "sodium_mg": 0,
+    "notes": "K from corn flour nutrition data; Na from 0g salt per 100g on official Mon Fournil label"
+  },
+  "Maggi - Fond de veau dégraissé": {
+    "potassium_mg": 50,
+    "sodium_mg": 6760,
+    "notes": "K estimated minimal in bouillon concentrate; Na calculated from 16.9g salt per 100g on multiple labels"
+  },
+  "Maggi - Fond de sauce volaille": {
+    "potassium_mg": 50,
+    "sodium_mg": 6760,
+    "notes": "K estimated minimal in bouillon concentrate; Na calculated from 16.9g salt per 100g, similar to veal stock"
+  },
+  "Carrefour Bio - Ail surgelé": {
+    "potassium_mg": 420,
+    "sodium_mg": 8,
+    "notes": "K estimated from garlic nutrition data; Na calculated from 0.02g salt per 100g on Carrefour Bio label"
+  },
+  "Carrefour Bio - Oignons bio émincés surgelé": {
+    "potassium_mg": 146,
+    "sodium_mg": 16,
+    "notes": "K estimated from onion nutrition data; Na calculated from 0.04g salt per 100g on Belgian Carrefour label"
+  },
+  "Carrefour Extra - Persil surgelé": {
+    "potassium_mg": 554,
+    "sodium_mg": 52,
+    "notes": "K estimated from parsley nutrition data; Na calculated from 0.13g salt per 100g on product label"
+  },
+  "Elle & Vire Crème Entière De Normandie": {
+    "potassium_mg": 95,
+    "sodium_mg": 32,
+    "notes": "K estimated from cream nutrition data; Na calculated from 0.08g salt per 100g on official Elle & Vire label"
+  },
+  "Knorr - Bouillon cube légumes réduit en sel": {
+    "potassium_mg": 0,
+    "sodium_mg": 13200,
+    "notes": "Per 100g powder form, calculated from Canadian data (0mg K, 540mg Na per 4g serving)"
+  },
+  "Knorr - Sauce hollandaise au jus de fruit-citron": {
+    "potassium_mg": 0,
+    "sodium_mg": 3000,
+    "notes": "Per 100g prepared sauce, calculated from powder form (0mg K, 150mg Na per 5g serving)"
+  },
+  "Knorr - Sauce poivre à la crème fraîche": {
+    "potassium_mg": 50,
+    "sodium_mg": 520,
+    "notes": "Per 100g prepared sauce, calculated from French label (1.3g salt converted to sodium)"
+  },
+  "Carrefour - Salade mélange gourmand": {
+    "potassium_mg": 220,
+    "sodium_mg": 32,
+    "notes": "Per 100g fresh salad mix, calculated from 0.08g salt content on Carrefour label"
+  },
+  "Carrefour Bio - Pois chiches au sel de noirmoutier": {
+    "potassium_mg": 291,
+    "sodium_mg": 240,
+    "notes": "Per 100g cooked chickpeas, calculated from 0.6g salt content on Carrefour label"
+  },
+  "Petits pois extra-fins Bio JARDIN BIO ETIC": {
+    "potassium_mg": 244,
+    "sodium_mg": 2,
+    "notes": "Per 100g bio peas, estimated from organic green peas data"
+  },
+  "Carrefour Bio - Haricots blancs cuisinés": {
+    "potassium_mg": 320,
+    "sodium_mg": 260,
+    "notes": "Per 100g cooked white beans, calculated from 0.65g salt content on Carrefour label"
+  },
+  "Carrefour Bio - Haricots blancs bio à la tomate": {
+    "potassium_mg": 320,
+    "sodium_mg": 260,
+    "notes": "Per 100g white beans in tomato sauce, similar to cuisinés version"
+  },
+  "Carrefour Bio - Haricots rouges": {
+    "potassium_mg": 405,
+    "sodium_mg": 256,
+    "notes": "Per 100g cooked red kidney beans, calculated from 0.64g salt content on Carrefour label"
+  },
+  "Jardin Bio - Maïs doux": {
+    "potassium_mg": 218,
+    "sodium_mg": 220,
+    "notes": "Per 100g sweet corn, calculated from 0.55g salt content on Jardin Bio label"
+  },
+  "KFC Nutella Muffin": {
+    "potassium_mg": 120,
+    "sodium_mg": 400,
+    "notes": "Per 100g muffin, calculated from French data (415 cal, 1g salt per 93g muffin)"
+  },
+  "Sauce Samouraï": {
+    "potassium_mg": 50,
+    "sodium_mg": 800,
+    "notes": "Per 100g sauce, calculated from SnapCalorie data (118mg K, 1890mg Na per 236g cup)"
+  },
+  "St Moret Fromage": {
+    "potassium_mg": 135,
+    "sodium_mg": 500,
+    "notes": "Per 100g cheese, calculated from SnapCalorie data (320mg K, 1200mg Na per 240g cup)"
+  },
+  "Whole Wheat Bread": {
+    "potassium_mg": 254,
+    "sodium_mg": 455,
+    "notes": "Per 100g, commercially prepared"
+  },
+  "McDonald's McChicken": {
+    "potassium_mg": 191,
+    "sodium_mg": 582,
+    "notes": "Per 100g calculated from University of Rochester data (249.9mg K and 762.93mg Na per 131g sandwich)"
+  },
+  "McDonald's French Fries": {
+    "potassium_mg": 546,
+    "sodium_mg": 189,
+    "notes": "Per 100g calculated from University of Rochester data (638.4mg K and 221.16mg Na per 117g medium serving)"
+  },
+  "McDonald's Nuggets": {
+    "potassium_mg": 247,
+    "sodium_mg": 688,
+    "notes": "Per 100g calculated from University Hospitals data (160.64mg K and 447.36mg Na per 65g serving)"
+  },
+  "McDonald's Quarter Pounder": {
+    "potassium_mg": 227,
+    "sodium_mg": 427,
+    "notes": "Per 100g calculated from MyFoodData (388.2mg K and 730.2mg Na per 171g item)"
+  },
+  "Burger King Whopper": {
+    "potassium_mg": 169,
+    "sodium_mg": 313,
+    "notes": "Per 100g, from University of Rochester Medical Center nutritional database"
+  },
+  "Burger King Onion Rings": {
+    "potassium_mg": 167,
+    "sodium_mg": 776,
+    "notes": "Per 100g from FoodStruct nutritional database"
+  },
+  "Heinz Mayonnaise": {
+    "potassium_mg": 5,
+    "sodium_mg": 500,
+    "notes": "K estimated from similar products; Na calculated from Eat This Much data (70mg Na per 14g tbsp)"
+  },
+  "Heinz Ketchup": {
+    "potassium_mg": 281,
+    "sodium_mg": 907,
+    "notes": "Per 100g calculated from MyFoodData (47.8mg K and 154.2mg Na per 17g tbsp)"
+  },
+  "Heinz Mustard": {
+    "potassium_mg": 10,
+    "sodium_mg": 1200,
+    "notes": "K estimated from similar products; Na calculated from MyFoodData (60mg Na per 5g serving)"
+  },
+  "Maille Moutarde à l'Ancienne": {
+    "potassium_mg": 200,
+    "sodium_mg": 1960,
+    "notes": "Per 100g from Santé Magazine French nutritional database"
+  },
+  "Raclette": {
+    "potassium_mg": 80,
+    "sodium_mg": 600,
+    "notes": "Per 100g calculated from Eat This Much data (20mg K and 150mg Na per 25g slice)"
+  },
+  "Emmental": {
+    "potassium_mg": 111,
+    "sodium_mg": 214,
+    "notes": "Per 100g calculated from SnapCalorie data (119.9mg K and 214.9mg Na per 108g cup)"
+  },
+  "Spinach": {
+    "potassium_mg": 558,
+    "sodium_mg": 79,
+    "notes": "Per 100g, raw spinach"
+  },
+  "Bell Peppers": {
+    "potassium_mg": 184,
+    "sodium_mg": 3,
+    "notes": "Per 100g, raw bell peppers (red/yellow/green average)"
+  },
+  "Cucumber": {
+    "potassium_mg": 140,
+    "sodium_mg": 2,
+    "notes": "Per 100g, raw cucumber with peel"
+  },
+  "Milk (2%)": {
+    "potassium_mg": 172,
+    "sodium_mg": 52,
+    "notes": "Per 100g, 2% reduced fat milk"
+  },
+  "Cottage Cheese (Low Fat)": {
+    "potassium_mg": 120,
+    "sodium_mg": 380,
+    "notes": "Per 100g, 2% cottage cheese"
+  },
+  "Pasta (Cooked)": {
+    "potassium_mg": 44,
+    "sodium_mg": 1,
+    "notes": "Per 100g, cooked pasta without salt, estimated"
+  },
+  "Lean Beef (93/7)": {
+    "potassium_mg": 350,
+    "sodium_mg": 75,
+    "notes": "Per 100g, lean ground beef, estimated"
+  },
+  "Potato (Baked)": {
+    "potassium_mg": 535,
+    "sodium_mg": 6,
+    "notes": "Per 100g, baked potato without salt, estimated"
+  },
+  "Olive Oil": {
+    "potassium_mg": 1,
+    "sodium_mg": 2,
+    "notes": "Per 100g, extra virgin olive oil"
+  },
+  "Peanut Butter": {
+    "potassium_mg": 600,
+    "sodium_mg": 480,
+    "notes": "Per 100g, chunk style with salt"
+  },
+  "Veggies Mix (Frozen)": {
+    "potassium_mg": 200,
+    "sodium_mg": 35,
+    "notes": "Per 100g, frozen mixed vegetables, estimated"
+  },
+  "Salad Mix (Fresh)": {
+    "potassium_mg": 160,
+    "sodium_mg": 15,
+    "notes": "Per 100g, fresh salad mix, estimated"
+  },
+  "Chicken Breast (Skinless)": {
+    "potassium_mg": 568,
+    "sodium_mg": 77,
+    "notes": "Per 100g, raw skinless boneless chicken breast"
+  },
+  "Whey Protein Powder": {
+    "potassium_mg": 900,
+    "sodium_mg": 400,
+    "notes": "Per 100g, values vary by brand, average from multiple sources"
+  },
+  "Eggs (Whole)": {
+    "potassium_mg": 138,
+    "sodium_mg": 142,
+    "notes": "Per 100g, calculated from large egg data (50g per egg)"
+  },
+  "Greek Yogurt (0% Fat)": {
+    "potassium_mg": 141,
+    "sodium_mg": 36,
+    "notes": "Per 100g, plain nonfat Greek yogurt"
+  },
+  "Salmon (Atlantic)": {
+    "potassium_mg": 430,
+    "sodium_mg": 52,
+    "notes": "Per 100g, farmed Atlantic salmon, average from multiple sources"
+  },
+  "Oats (Rolled)": {
+    "potassium_mg": 420,
+    "sodium_mg": 2,
+    "notes": "Per 100g, dry rolled oats"
+  },
+  "White Rice (Cooked)": {
+    "potassium_mg": 35,
+    "sodium_mg": 1,
+    "notes": "Per 100g, cooked white rice without salt"
+  },
+  "Sweet Potato": {
+    "potassium_mg": 475,
+    "sodium_mg": 36,
+    "notes": "Per 100g, baked without salt"
+  },
+  "Banana": {
+    "potassium_mg": 358,
+    "sodium_mg": 1,
+    "notes": "Per 100g, raw banana"
+  },
+  "Avocado": {
+    "potassium_mg": 507,
+    "sodium_mg": 8,
+    "notes": "Per 100g, raw avocado"
+  },
+  "Almonds": {
+    "potassium_mg": 726,
+    "sodium_mg": 1,
+    "notes": "Per 100g, raw almonds"
+  },
+  "Broccoli": {
+    "potassium_mg": 357,
+    "sodium_mg": 33,
+    "notes": "Per 100g, raw broccoli"
+  },
+  "Fleury Michon Filet de Poulet": {
+    "potassium_mg": 300,
+    "sodium_mg": 600,
+    "notes": "Per 100g calculated from snapcalorie.com data (714mg K and 1429mg Na per 238g cup); Na confirmed by salt content"
+  },
+  "Fleury Michon Blanc de Poulet -25% Sel": {
+    "potassium_mg": 280,
+    "sodium_mg": 720,
+    "notes": "K estimated from chicken content; Na calculated from 1.80g salt per 100g on Cora label"
+  },
+  "Fleury Michon Rôti de Poulet 100% Filet": {
+    "potassium_mg": 290,
+    "sodium_mg": 600,
+    "notes": "K estimated from chicken content; Na calculated from 1.5g salt per 100g on multiple labels"
+  },
+  "Fleury Michon Blanc de Dinde Fumé": {
+    "potassium_mg": 500,
+    "sodium_mg": 1333,
+    "notes": "K and Na calculated from snapcalorie.com data (1181mg K and 3150mg Na per 236g cup)"
+  },
+  "Fleury Michon Allumettes de Poulet": {
+    "potassium_mg": 250,
+    "sodium_mg": 520,
+    "notes": "K estimated from chicken content plus lactate de potassium; Na calculated from 1.3g salt per 100g"
+  },
+  "Fleury Michon Pastrami de Boeuf au Poivre": {
+    "potassium_mg": 320,
+    "sodium_mg": 760,
+    "notes": "K estimated from beef content; Na calculated from 1.9g salt per 100g from multiple sources"
+  },
+  "Fleury Michon Émincés de Poulet Rôti": {
+    "potassium_mg": 270,
+    "sodium_mg": 587,
+    "notes": "K estimated from chicken content plus lactate de potassium; Na calculated from 1.47g salt per 100g"
+  },
+  "Fleury Michon Aiguillettes de Poulet Rôti": {
+    "potassium_mg": 290,
+    "sodium_mg": 600,
+    "notes": "K estimated from chicken content plus lactate de potassium; Na calculated from 1.5g salt per 100g"
+  },
+  "Fleury Michon Rôti de Boeuf": {
+    "potassium_mg": 340,
+    "sodium_mg": 720,
+    "notes": "K estimated from beef content; Na calculated from 1.8g salt per 100g from multiple sources"
+  },
+  "Cassegrain Courgettes à la Provençale": {
+    "potassium_mg": 150,
+    "sodium_mg": 284,
+    "notes": "K estimated from zucchini content; Na calculated from 0.71g salt per 100g on official Cassegrain website"
+  },
+  "Cassegrain Ratatouille à la Provençale": {
+    "potassium_mg": 291,
+    "sodium_mg": 418,
+    "notes": "K and Na from Journal des Femmes nutritional database; Na confirmed by 0.62g salt on Carrefour label"
+  },
+  "Cassegrain Poivrons au Piment d'Espelette": {
+    "potassium_mg": 200,
+    "sodium_mg": 396,
+    "notes": "K estimated from bell pepper content; Na calculated from 0.99g salt per 100g on official Cassegrain website"
+  },
+  "Cassegrain Légumes du Soleil et Épeautre": {
+    "potassium_mg": 388,
+    "sodium_mg": 336,
+    "notes": "K from épeautre nutrition data; Na calculated from 0.84g salt content on Carrefour label"
+  },
+  "Fleury Michon Saucisse Grillée Purée": {
+    "potassium_mg": 250,
+    "sodium_mg": 280,
+    "notes": "K estimated from potato purée content; Na calculated from 0.70g salt content"
+  },
+  "Le Gaulois Gésiers de Volaille": {
+    "potassium_mg": 180,
+    "sodium_mg": 480,
+    "notes": "K from URMC chicken gizzard data (259.55mg per 145g cup); Na from 1.2g salt on Carrefour label"
+  },
+  "Le Gaulois Filet de Poulet": {
+    "potassium_mg": 290,
+    "sodium_mg": 415,
+    "notes": "K and Na from Journal des Femmes blanc de poulet nutrition data"
+  },
+  "Le Gaulois Cordon Bleu Dinde": {
+    "potassium_mg": 270,
+    "sodium_mg": 320,
+    "notes": "K estimated from turkey and cheese content; Na calculated from 0.8g salt content"
+  },
+  "Bjorg - Flocons d'avoine 4 graines et raisins bio": {
+    "potassium_mg": 430,
+    "sodium_mg": 12,
+    "notes": "K estimated from oats and seeds content; Na calculated from 0.03g salt content"
+  },
+  "Charal - Entrecôte intensément persillée": {
+    "potassium_mg": 324,
+    "sodium_mg": 32,
+    "notes": "K from CIQUAL entrecôte data; Na calculated from 0.08g salt content"
+  },
+  "Charal - Steak haché viande bovine": {
+    "potassium_mg": 348,
+    "sodium_mg": 65,
+    "notes": "K and Na from Journal des Femmes steak haché 5% MG cuit nutrition data"
+  },
+  "Carrefour Bio - Quinoa": {
+    "potassium_mg": 563,
+    "sodium_mg": 4,
+    "notes": "K estimated from quinoa nutrition data; Na calculated from 0.01g salt content"
+  },
+  "Carrefour Bio - Chia seeds": {
+    "potassium_mg": 407,
+    "sodium_mg": 16,
+    "notes": "K and Na estimated from chia seeds nutrition data"
+  },
+  "KFC Tenders": {
+    "potassium_mg": 250,
+    "sodium_mg": 600,
+    "notes": "K and Na estimated from breaded chicken nutrition data"
+  },
+  "Gervita Fromage Blanc Mousse Nature": {
+    "potassium_mg": 89,
+    "sodium_mg": 36,
+    "notes": "From French nutrition label data, converted from 0.09g salt per 100g"
+  },
+  "Egg Whites": {
+    "potassium_mg": 54,
+    "sodium_mg": 55,
+    "notes": "Per 100g, from University of Rochester Medical Center nutritional database"
+  },
+  "Skipjack Tuna": {
+    "potassium_mg": 407,
+    "sodium_mg": 37,
+    "notes": "Per 100g, averaged from multiple authoritative sources (URMC and FoodStruct)"
+  },
+  "Harry's Pain Céréales et Graines": {
+    "potassium_mg": 180,
+    "sodium_mg": 400,
+    "notes": "Estimated from grain content and calculated from 1g salt per 100g on product label"
+  },
+  "St Moret Cheese": {
+    "potassium_mg": 135,
+    "sodium_mg": 500,
+    "notes": "Per 100g, averaged from multiple nutrition platforms, estimated from salt content"
+  },
+  "McDonald's Big Mac": {
+    "potassium_mg": 181,
+    "sodium_mg": 460,
+    "notes": "Per 100g, from University of Rochester Medical Center nutritional database"
+  },
+  "KFC Wings": {
+    "potassium_mg": 200,
+    "sodium_mg": 837,
+    "notes": "Per 100g, estimated from chicken wing base and calculated from breading sodium content"
+  },
+  "Pizza Hut Pepperoni Pizza": {
+    "potassium_mg": 199,
+    "sodium_mg": 769,
+    "notes": "Per 100g, from University of Rochester database, 12-inch regular crust"
+  },
+  "Charal Bifteck": {
+    "potassium_mg": 324,
+    "sodium_mg": 32,
+    "notes": "K from generic steak haché 5 % MG[37]; Na from 0.08 g sel on Carrefour label, converted[6]"
+  },
+  "Charal Entrecôte": {
+    "potassium_mg": 324,
+    "sodium_mg": 60,
+    "notes": "K from CIQUAL entrecôte crue[37]; Na from 0.15 g sel on Supermarchés Match label, converted[7]"
+  },
+  "Charal Pavés Bœuf Marinés Échalotes": {
+    "potassium_mg": 270,
+    "sodium_mg": 364,
+    "notes": "K estimated from generic entrecôte value[21]; Na from 0.91 g sel declared on Charal fiche, converted[3]"
+  },
+  "Charal Pavés Bœuf aux 3 Poivres": {
+    "potassium_mg": 270,
+    "sodium_mg": 320,
+    "notes": "K estimated from generic entrecôte value[21]; Na estimated from similar marinade profile (no label sodium)"
+  },
+  "Charal Carpaccio de Bœuf Basilic": {
+    "potassium_mg": 242,
+    "sodium_mg": 224,
+    "notes": "K from CIQUAL carpaccio de bœuf[28]; Na from 0.56 g sel on Charal fiche, converted[9]"
+  },
+  "Charal Carpaccio Parmesan au Bœuf Marinade": {
+    "potassium_mg": 242,
+    "sodium_mg": 248,
+    "notes": "K from CIQUAL carpaccio de bœuf[28]; Na from 0.62 g sel on Supermarchés Match label, converted[14]"
+  },
+  "Charal Le Caractère de Bœuf": {
+    "potassium_mg": 348,
+    "sodium_mg": 48,
+    "notes": "K from generic steak haché 5 % MG data[11]; Na from 0.12 g sel on Charal fiche, converted[10]"
+  },
+  "Charal Hot Dog Merguez": {
+    "potassium_mg": 158,
+    "sodium_mg": 640,
+    "notes": "Estimated from processed meat data and calculated from salt content"
+  },
+  "Charal Sauce Forestière": {
+    "potassium_mg": 90,
+    "sodium_mg": 440,
+    "notes": "Estimated from mushroom sauce data and calculated from salt content"
+  },
+  "Cassegrain Haricots Verts Extra-Fins": {
+    "potassium_mg": 92,
+    "sodium_mg": 279,
+    "notes": "Based on canned green beans nutrition data"
+  },
+  "Cassegrain Petits Pois": {
+    "potassium_mg": 271,
+    "sodium_mg": 320,
+    "notes": "Based on peas nutrition data and calculated from salt content"
+  },
+  "Cassegrain Champignons de Paris à la Crème": {
+    "potassium_mg": 300,
+    "sodium_mg": 400,
+    "notes": "Based on mushroom nutrition data, estimated"
+  },
+  "Bonduelle Haricots Verts Extra-Fin": {
+    "potassium_mg": 92,
+    "sodium_mg": 279,
+    "notes": "Based on canned green beans nutrition data"
+  },
+  "Bonduelle Petits Pois Bio": {
+    "potassium_mg": 271,
+    "sodium_mg": 3,
+    "notes": "Based on peas nutrition data, lower sodium for bio version"
+  },
+  "Bonduelle Champignons de Paris": {
+    "potassium_mg": 300,
+    "sodium_mg": 400,
+    "notes": "Based on mushroom nutrition data, estimated"
+  },
+  "Bonduelle Maïs": {
+    "potassium_mg": 218,
+    "sodium_mg": 230,
+    "notes": "From multiple corn nutrition databases"
+  },
+  "Fleury Michon Jambon de Dinde": {
+    "potassium_mg": 300,
+    "sodium_mg": 720,
+    "notes": "Estimated from turkey meat data and calculated from salt content"
+  },
+  "Pom'Potes Pomme Nature": {
+    "potassium_mg": 100,
+    "sodium_mg": 4,
+    "notes": "Per 100g, apple compote"
+  },
+  "Pom'Potes Pomme sans Sucres Ajoutés": {
+    "potassium_mg": 100,
+    "sodium_mg": 0,
+    "notes": "From apple sauce nutrition data"
+  },
+  "Pom'Potes 5 Fruits Tropical": {
+    "potassium_mg": 120,
+    "sodium_mg": 0,
+    "notes": "Estimated from fruit mix nutrition data"
+  },
+  "Pom'Potes Pomme Fraise": {
+    "potassium_mg": 110,
+    "sodium_mg": 0,
+    "notes": "Estimated from apple-strawberry mix nutrition data"
+  },
+  "Pom'Potes Pomme Poire": {
+    "potassium_mg": 105,
+    "sodium_mg": 0,
+    "notes": "Estimated from apple-pear mix nutrition data"
+  },
+  "Pom'Potes Pomme Abricot": {
+    "potassium_mg": 110,
+    "sodium_mg": 0,
+    "notes": "Estimated from apple-apricot mix nutrition data"
+  },
+  "Bjorg Muesli sans Sucres Ajoutés": {
+    "potassium_mg": 450,
+    "sodium_mg": 100,
+    "notes": "Per 100g, sugar-free muesli"
+  },
+  "Bjorg Muesli Avoine Chocolat": {
+    "potassium_mg": 420,
+    "sodium_mg": 12,
+    "notes": "Estimated from oats and chocolate, calculated from salt content"
+  },
+  "Bjorg Granola Chocolat Noir": {
+    "potassium_mg": 400,
+    "sodium_mg": 12,
+    "notes": "Estimated from granola ingredients, calculated from salt content"
+  },
+  "Bjorg Flocons d'Avoine Complète": {
+    "potassium_mg": 420,
+    "sodium_mg": 2,
+    "notes": "Based on oats nutrition data"
+  },
+  "Bjorg Son d'Avoine Bio": {
+    "potassium_mg": 566,
+    "sodium_mg": 2,
+    "notes": "Based on oat bran nutrition data"
+  },
+  "Bjorg Muesli Superfruits": {
+    "potassium_mg": 450,
+    "sodium_mg": 12,
+    "notes": "Estimated from oats and dried fruits, calculated from salt content"
+  },
+  "Bjorg Le Croustillant Chocolat Noir & Fruits Rouges": {
+    "potassium_mg": 430,
+    "sodium_mg": 12,
+    "notes": "Estimated from granola ingredients, calculated from salt content"
+  },
+  "Bjorg Muesli Protéines": {
+    "potassium_mg": 500,
+    "sodium_mg": 12,
+    "notes": "Estimated from protein-rich ingredients, calculated from salt content"
+  },
+  "Bjorg Croustillant 3 Noix": {
+    "potassium_mg": 480,
+    "sodium_mg": 12,
+    "notes": "Estimated from nuts and grains, calculated from salt content"
+  },
+  "Barilla Sauce Tomate Basilic": {
+    "potassium_mg": 348,
+    "sodium_mg": 352,
+    "notes": "Per 100g, tomato basil pasta sauce"
+  },
+  "Barilla Sauce Bolognaise": {
+    "potassium_mg": 320,
+    "sodium_mg": 380,
+    "notes": "Estimated from tomato sauce with meat"
+  },
+  "Barilla Pesto Basilic": {
+    "potassium_mg": 200,
+    "sodium_mg": 1200,
+    "notes": "Estimated from basil pesto ingredients"
+  },
+  "Barilla Sauce Arrabbiata": {
+    "potassium_mg": 360,
+    "sodium_mg": 350,
+    "notes": "Estimated from spicy tomato sauce"
+  },
+  "Menguy's Beurre de Cacahuètes Creamy": {
+    "potassium_mg": 600,
+    "sodium_mg": 344,
+    "notes": "Estimated from peanut content and calculated from salt content"
+  },
+  "Myrtilles (Blueberries)": {
+    "potassium_mg": 77,
+    "sodium_mg": 1,
+    "notes": "From multiple blueberry nutrition databases"
+  },
+  "Fraises (Strawberries)": {
+    "potassium_mg": 153,
+    "sodium_mg": 1,
+    "notes": "From multiple strawberry nutrition databases"
+  },
+  "Mélange de Noix": {
+    "potassium_mg": 597,
+    "sodium_mg": 12,
+    "notes": "From mixed nuts nutrition data (without salt)"
+  },
+  "Parmesan": {
+    "potassium_mg": 125,
+    "sodium_mg": 1529,
+    "notes": "From multiple parmesan cheese nutrition databases"
+  },
+  "Mushrooms": {
+    "potassium_mg": 300,
+    "sodium_mg": 5,
+    "notes": "Per 100g, raw mushrooms, estimated"
+  },
+  "Carrots": {
+    "potassium_mg": 320,
+    "sodium_mg": 69,
+    "notes": "Per 100g, raw carrots, estimated"
+  },
+  "Tomatoes": {
+    "potassium_mg": 237,
+    "sodium_mg": 5,
+    "notes": "Per 100g, raw tomatoes, estimated"
+  },
+  "Carrefour Classic' - Fruits rouges surgelés": {
+    "potassium_mg": 120,
+    "sodium_mg": 2,
+    "notes": "Estimated from berry mix nutrition data"
+  },
+  "Apple": {
+    "potassium_mg": 107,
+    "sodium_mg": 1,
+    "notes": "Per 100g, raw apple, estimated"
+  },
+  "Lemon": {
+    "potassium_mg": 138,
+    "sodium_mg": 2,
+    "notes": "Per 100g, raw lemon, estimated"
+  },
+  "Honey": {
+    "potassium_mg": 52,
+    "sodium_mg": 4,
+    "notes": "Per 100g, natural honey, estimated"
+  },
+  "Olives": {
+    "potassium_mg": 8,
+    "sodium_mg": 1556,
+    "notes": "Per 100g, canned olives in brine, estimated"
+  },
+  "Red Wine": {
+    "potassium_mg": 99,
+    "sodium_mg": 4,
+    "notes": "Per 100g, dry red wine, estimated"
+  },
+  "White Wine": {
+    "potassium_mg": 71,
+    "sodium_mg": 5,
+    "notes": "Per 100g, dry white wine, estimated"
+  },
+  "Rosé Wine": {
+    "potassium_mg": 85,
+    "sodium_mg": 4,
+    "notes": "From wine nutrition data"
+  },
+  "Beer Blonde": {
+    "potassium_mg": 27,
+    "sodium_mg": 4,
+    "notes": "Per 100g, light beer, estimated"
+  },
+  "Charal Steak Haché 5% MG": {
+    "potassium_mg": 348,
+    "sodium_mg": 65,
+    "notes": "Per 100g, cooked 5% fat content beef patty"
+  },
+  "Fleury Michon Jambon Supérieur sans Nitrite": {
+    "potassium_mg": 300,
+    "sodium_mg": 600,
+    "notes": "Per 100g, cured ham, estimated from salt content"
+  }
+}

@@ -6,6 +6,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { FoodProvider } from './src/context/FoodContext';
 import { MealProvider } from './src/context/MealContext';
 import { SettingsProvider } from './src/context/SettingsContext';
+import { PresetProvider } from './src/context/PresetContext';
 
 // Simple Error Boundary component
 class ErrorBoundary extends React.Component {
@@ -70,7 +71,9 @@ function AppContent() {
           <SettingsProvider>
             <FoodProvider>
               <MealProvider>
-                <AppNavigator />
+                <PresetProvider>
+                  <AppNavigator />
+                </PresetProvider>
               </MealProvider>
             </FoodProvider>
           </SettingsProvider>

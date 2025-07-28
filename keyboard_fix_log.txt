@@ -74,3 +74,81 @@ PREVIOUS ATTEMPTS MENTIONED:
 - User mentioned this issue was "tried to fix it twice before but nothing worked"
 - This systematic approach addresses the root cause rather than symptom fixes
 - Focuses on React Native's built-in keyboard handling rather than manual intervention
+
+---
+
+## 🔄 **METHOD 2: NEW ADVANCED APPROACH (2025-01-22)**
+
+### ❌ **RESULT: METHOD 1 FAILED - User reported issue persists**
+
+**NEW RESEARCH CONDUCTED:**
+- Used brave-search MCP for advanced keyboard handling solutions  
+- Discovered keyboardShouldPersistTaps="handled" was insufficient
+- Found keyboardShouldPersistTaps="always" might be more effective
+- Identified keyboardDismissMode="none" as additional solution
+- Research indicated Pressable with onPressIn pattern works better than TouchableOpacity
+
+**NEW SOLUTION IMPLEMENTED:**
+
+### **Core Changes Applied:**
+1. **Changed keyboardShouldPersistTaps from "handled" to "always"**
+   - "always" ensures children always receive taps regardless of keyboard state
+   - Prevents ScrollView from intercepting touches when keyboard is open
+
+2. **Added keyboardDismissMode="none" to ScrollViews**
+   - Prevents accidental keyboard dismissal from scrolling gestures
+   - Ensures manual control over keyboard dismissal
+
+3. **Converted TouchableOpacity to Pressable with onPressIn pattern**
+   - onPressIn={() => Keyboard.dismiss()} - dismiss keyboard before action
+   - onPress={() => actualAction()} - perform actual button action
+   - Pressable has better keyboard interaction handling than TouchableOpacity
+
+4. **Added Keyboard import for manual dismissal**
+   - import { Pressable, Keyboard } from 'react-native'
+   - Removed TouchableOpacity from imports where not needed
+
+### **Files Modified (Method 2):**
+
+1. **src/screens/MealPlanning/MealPlanningScreen.js**
+   - ScrollView: keyboardShouldPersistTaps="always", keyboardDismissMode="none"
+   - Converted ALL TouchableOpacity to Pressable with onPressIn pattern:
+     * Edit portion button, Remove food button (×), Available food buttons
+     * Meal selection chips, Add Foods button, Reset button
+     * Close food list button (✕), Cancel/Update/Mark as Eaten buttons
+   - Cleaned up imports: removed TouchableOpacity, added Pressable & Keyboard
+
+2. **src/screens/FoodManagement/FoodManagementScreen.js**
+   - FlatList: keyboardShouldPersistTaps="always", keyboardDismissMode="none"
+   - Converted critical TouchableOpacity to Pressable:
+     * Add Food button, Add Dish button, Edit food button, Delete food button (×)
+   - Updated imports: removed TouchableOpacity, added Pressable & Keyboard
+
+3. **src/components/EditMealModal.js**  
+   - ScrollView: keyboardShouldPersistTaps="always", keyboardDismissMode="none"
+   - Updated imports: prepared for future Pressable conversion
+   
+4. **src/screens/DishCreator/DishCreatorScreen.js**
+   - ScrollView: keyboardShouldPersistTaps="always", keyboardDismissMode="none"  
+   - Updated imports: prepared for future Pressable conversion
+
+### **Technical Theory - Method 2:**
+- **keyboardShouldPersistTaps="always"**: Forces touch events to propagate to children even when keyboard is open
+- **keyboardDismissMode="none"**: Prevents ScrollView from dismissing keyboard, giving full control to button handlers
+- **Pressable + onPressIn**: Dismisses keyboard BEFORE onPress fires, ensuring single-tap behavior
+- **Manual Keyboard.dismiss()**: Explicit control rather than relying on React Native's automatic behavior
+
+### **Expected Behavior:**
+1. User taps button while keyboard is open
+2. onPressIn fires → Keyboard.dismiss() called immediately
+3. onPress fires → Button action executes  
+4. Single tap performs both keyboard dismissal AND button action
+
+### **Testing Status:** Ready for APK testing
+
+### **Fallback Strategy if Method 2 Fails:**
+1. Try KeyboardAvoidingView wrapper instead of ScrollView changes
+2. Investigate react-native-keyboard-manager library
+3. Try onPressOut pattern instead of onPressIn
+4. Consider platform-specific solutions (iOS vs Android)
+5. Research if this is a React Native version-specific issue

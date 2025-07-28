@@ -6,11 +6,14 @@ import Slider from '@react-native-community/slider';
 import { useFood } from '../../context/FoodContext';
 import { useMeal } from '../../context/MealContext';
 import { useSettings } from '../../context/SettingsContext';
+import { usePreset } from '../../context/PresetContext';
 import { CalculationService } from '../../services/calculationService';
 import LockButton from '../../components/LockButton';
 import LockControls from '../../components/LockControls';
 import SegmentedProgressBar from '../../components/SegmentedProgressBar';
 import AddFoodsModal from '../../components/AddFoodsModal';
+import SavePresetModal from '../../components/SavePresetModal';
+import LoadPresetModal from '../../components/LoadPresetModal';
 
 const { width } = Dimensions.get('window');
 
@@ -18,6 +21,7 @@ export default function MealPlanningScreen({ route, navigation }) {
   const { foods } = useFood();
   const { meals, createMealPlan, updateMealPlan, getTodaysMealPlans } = useMeal();
   const { selectedQuickFoods, appPreferences } = useSettings();
+  const { presets, createPreset, deletePreset, updateLastUsed } = usePreset();
   
   // Check if we're editing an existing meal plan
   const editingMealPlan = route?.params?.editingMealPlan;
@@ -25,6 +29,8 @@ export default function MealPlanningScreen({ route, navigation }) {
   const [selectedMealId, setSelectedMealId] = useState(editingMealPlan?.mealId || '1');
   const [selectedFoods, setSelectedFoods] = useState([]);
   const [showAddFoodsModal, setShowAddFoodsModal] = useState(false);
+  const [showSavePresetModal, setShowSavePresetModal] = useState(false);
+  const [showLoadPresetModal, setShowLoadPresetModal] = useState(false);
   const [lockedFoods, setLockedFoods] = useState(new Set()); // Track locked food IDs
   const [maxLimitFoods, setMaxLimitFoods] = useState(new Map()); // Track max limits: foodId -> maxValue
   const [minLimitFoods, setMinLimitFoods] = useState(new Map()); // Track min limits: foodId -> minValue
@@ -157,6 +163,30 @@ export default function MealPlanningScreen({ route, navigation }) {
         setConfirmationVisible(false);
       });
     }, 2500);
+  };
+
+  // Preset functions
+  const handleSavePreset = (presetName) => {
+    const preset = createPreset(presetName, selectedFoods, foods);
+    showConfirmation(`Preset "${presetName}" saved!`);
+  };
+
+  const handleLoadPreset = (preset) => {
+    // Load the preset's foods and portions
+    setSelectedFoods(preset.foods.map(food => ({
+      ...food,
+      id: `${food.foodId}_${Date.now()}_${Math.random()}` // Generate unique ID for React keys
+    })));
+    
+    // Update last used timestamp
+    updateLastUsed(preset.id);
+    
+    showConfirmation(`Loaded preset "${preset.name}"!`);
+  };
+
+  const handleDeletePreset = (presetId) => {
+    deletePreset(presetId);
+    showConfirmation('Preset deleted!');
   };
 
   // Always get the current meal data (updates when meals context changes)
@@ -737,6 +767,29 @@ export default function MealPlanningScreen({ route, navigation }) {
               )}
             </View>
 
+            {/* Preset Buttons Row */}
+            <View style={styles.presetButtonsRow}>
+              {selectedFoods.length > 0 && (
+                <Pressable 
+                  style={styles.presetButton}
+                  onPressIn={() => Keyboard.dismiss()}
+                  onPress={() => setShowSavePresetModal(true)}
+                >
+                  <Text style={styles.presetButtonText}>💾 Save Preset</Text>
+                </Pressable>
+              )}
+              
+              {presets.length > 0 && (
+                <Pressable 
+                  style={[styles.presetButton, selectedFoods.length === 0 && styles.presetButtonFull]}
+                  onPressIn={() => Keyboard.dismiss()}
+                  onPress={() => setShowLoadPresetModal(true)}
+                >
+                  <Text style={styles.presetButtonText}>📋 Load Preset</Text>
+                </Pressable>
+              )}
+            </View>
+
           </View>
         </LinearGradient>
 
@@ -817,6 +870,24 @@ export default function MealPlanningScreen({ route, navigation }) {
         onClose={() => setShowAddFoodsModal(false)}
         onAddFood={addFood}
         selectedMeal={selectedMeal}
+      />
+
+      {/* Save Preset Modal */}
+      <SavePresetModal
+        visible={showSavePresetModal}
+        onClose={() => setShowSavePresetModal(false)}
+        onSave={handleSavePreset}
+        selectedFoods={selectedFoods}
+        currentMacros={currentMacros}
+      />
+
+      {/* Load Preset Modal */}
+      <LoadPresetModal
+        visible={showLoadPresetModal}
+        onClose={() => setShowLoadPresetModal(false)}
+        onLoadPreset={handleLoadPreset}
+        presets={presets}
+        onDeletePreset={handleDeletePreset}
       />
 
       {/* Confirmation Toast */}
@@ -1717,6 +1788,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#00D084',
+  },
+
+  // Preset Buttons Row
+  presetButtonsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 8,
+  },
+  presetButton: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  presetButtonFull: {
+    flex: 0,
+    minWidth: 120,
+  },
+  presetButtonText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '600',
   },
 
   // Confirmation Toast Styles

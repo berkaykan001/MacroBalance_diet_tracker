@@ -77,9 +77,7 @@ export function PresetProvider({ children }) {
 
   // Save presets to AsyncStorage whenever state changes
   useEffect(() => {
-    if (state.presets.length > 0) {
-      savePresetsToStorage();
-    }
+    savePresetsToStorage();
   }, [state.presets]);
 
   const loadPresets = async () => {

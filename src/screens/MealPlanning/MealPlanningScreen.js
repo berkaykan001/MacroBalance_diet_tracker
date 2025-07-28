@@ -27,15 +27,11 @@ export default function MealPlanningScreen({ route, navigation }) {
   const editingMealPlan = route?.params?.editingMealPlan;
   
   const [selectedMealId, setSelectedMealId] = useState(editingMealPlan?.mealId || '1');
-  const [selectedFoods, setSelectedFoods] = useState([]);
+  // Meal-specific state - each meal type maintains its own independent state
+  const [mealSpecificState, setMealSpecificState] = useState({});
   const [showAddFoodsModal, setShowAddFoodsModal] = useState(false);
   const [showSavePresetModal, setShowSavePresetModal] = useState(false);
   const [showLoadPresetModal, setShowLoadPresetModal] = useState(false);
-  const [lockedFoods, setLockedFoods] = useState(new Set()); // Track locked food IDs
-  const [maxLimitFoods, setMaxLimitFoods] = useState(new Map()); // Track max limits: foodId -> maxValue
-  const [minLimitFoods, setMinLimitFoods] = useState(new Map()); // Track min limits: foodId -> minValue
-  const [editingPortion, setEditingPortion] = useState(null); // Track which food portion is being manually edited
-  const [tempPortionValue, setTempPortionValue] = useState(''); // Temporary value during manual input
   const [currentEditingMealPlan, setCurrentEditingMealPlan] = useState(editingMealPlan); // Track current meal plan being edited
   
   // Toast notification state
@@ -49,6 +45,34 @@ export default function MealPlanningScreen({ route, navigation }) {
     return todaysPlans.find(plan => plan.mealId === mealId);
   };
 
+  // Helper functions for meal-specific state management
+  const getMealState = (mealId) => {
+    return mealSpecificState[mealId] || {
+      selectedFoods: [],
+      lockedFoods: new Set(),
+      maxLimitFoods: new Map(),
+      minLimitFoods: new Map(),
+      editingPortion: null,
+      tempPortionValue: ''
+    };
+  };
+
+  const updateMealState = (mealId, newState) => {
+    setMealSpecificState(prev => ({
+      ...prev,
+      [mealId]: { ...getMealState(mealId), ...newState }
+    }));
+  };
+
+  // Get current meal's state
+  const currentMealState = getMealState(selectedMealId);
+  const selectedFoods = currentMealState.selectedFoods;
+  const lockedFoods = currentMealState.lockedFoods;
+  const maxLimitFoods = currentMealState.maxLimitFoods;
+  const minLimitFoods = currentMealState.minLimitFoods;
+  const editingPortion = currentMealState.editingPortion;
+  const tempPortionValue = currentMealState.tempPortionValue;
+
   // Enhanced meal selection that loads existing meal plans
   const handleMealSelection = (mealId) => {
     const selectedMeal = meals.find(meal => meal.id === mealId);
@@ -57,32 +81,35 @@ export default function MealPlanningScreen({ route, navigation }) {
     if (selectedMeal && selectedMeal.name === 'Snack') {
       setCurrentEditingMealPlan(null);
       setSelectedMealId(mealId);
-      setSelectedFoods([]);
-      setLockedFoods(new Set());
-      setMaxLimitFoods(new Map());
-      setMinLimitFoods(new Map());
-      setEditingPortion(null);
-      setTempPortionValue('');
+      updateMealState(mealId, {
+        selectedFoods: [],
+        lockedFoods: new Set(),
+        maxLimitFoods: new Map(),
+        minLimitFoods: new Map(),
+        editingPortion: null,
+        tempPortionValue: ''
+      });
       return;
     }
     
-    // Regular meals: Load existing if available
+    // Regular meals: Check if existing meal plan should override current state
     const existingPlan = findTodaysMealPlan(mealId);
     
     if (existingPlan) {
       // Load existing meal plan for editing
       setCurrentEditingMealPlan(existingPlan);
-      setSelectedMealId(existingPlan.mealId);
-      setSelectedFoods(existingPlan.selectedFoods.map(food => ({
-        ...food,
-        id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
-      })));
+      setSelectedMealId(mealId);
+      updateMealState(mealId, {
+        selectedFoods: existingPlan.selectedFoods.map(food => ({
+          ...food,
+          id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
+        }))
+      });
     } else {
-      // Just switch meal target - preserve current selected foods
+      // Just switch meal type - meal-specific state is automatically preserved
       setCurrentEditingMealPlan(null);
       setSelectedMealId(mealId);
-      // Keep selectedFoods, lockedFoods, limits, and editing state intact
-      // Only reset if user explicitly wants to (via Reset button)
+      // Each meal type maintains its own independent state via mealSpecificState
     }
   };
 
@@ -119,14 +146,16 @@ export default function MealPlanningScreen({ route, navigation }) {
 
   // Manual reset function for when user wants to start fresh
   const resetMealPlan = () => {
-    setSelectedMealId('1');
-    setSelectedFoods([]);
+    // Reset current meal's state
+    updateMealState(selectedMealId, {
+      selectedFoods: [],
+      lockedFoods: new Set(),
+      maxLimitFoods: new Map(),
+      minLimitFoods: new Map(),
+      editingPortion: null,
+      tempPortionValue: ''
+    });
     setShowAddFoodsModal(false);
-    setLockedFoods(new Set());
-    setMaxLimitFoods(new Map());
-    setMinLimitFoods(new Map());
-    setEditingPortion(null);
-    setTempPortionValue('');
     setCurrentEditingMealPlan(null);
   };
 
@@ -168,11 +197,13 @@ export default function MealPlanningScreen({ route, navigation }) {
   };
 
   const handleLoadPreset = (preset) => {
-    // Load the preset's foods and portions
-    setSelectedFoods(preset.foods.map(food => ({
-      ...food,
-      id: `${food.foodId}_${Date.now()}_${Math.random()}` // Generate unique ID for React keys
-    })));
+    // Load the preset's foods and portions into current meal
+    updateMealState(selectedMealId, {
+      selectedFoods: preset.foods.map(food => ({
+        ...food,
+        id: `${food.foodId}_${Date.now()}_${Math.random()}` // Generate unique ID for React keys
+      }))
+    });
     
     // Update last used timestamp
     updateLastUsed(preset.id);
@@ -192,41 +223,38 @@ export default function MealPlanningScreen({ route, navigation }) {
   const addFood = (food) => {
     const exists = selectedFoods.find(sf => sf.foodId === food.id);
     if (!exists) {
-      setSelectedFoods([...selectedFoods, { foodId: food.id, portionGrams: 100 }]);
+      updateMealState(selectedMealId, {
+        selectedFoods: [...selectedFoods, { foodId: food.id, portionGrams: 100 }]
+      });
     }
     // Don't close the food list anymore - let user add multiple foods
   };
 
   const removeFood = (foodId) => {
-    setSelectedFoods(selectedFoods.filter(sf => sf.foodId !== foodId));
-    // Also remove from all lock types if it was locked
-    setLockedFoods(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(foodId);
-      return newSet;
-    });
-    setMaxLimitFoods(prev => {
-      const newMap = new Map(prev);
-      newMap.delete(foodId);
-      return newMap;
-    });
-    setMinLimitFoods(prev => {
-      const newMap = new Map(prev);
-      newMap.delete(foodId);
-      return newMap;
+    const newSelectedFoods = selectedFoods.filter(sf => sf.foodId !== foodId);
+    const newLockedFoods = new Set(lockedFoods);
+    newLockedFoods.delete(foodId);
+    const newMaxLimitFoods = new Map(maxLimitFoods);
+    newMaxLimitFoods.delete(foodId);
+    const newMinLimitFoods = new Map(minLimitFoods);
+    newMinLimitFoods.delete(foodId);
+    
+    updateMealState(selectedMealId, {
+      selectedFoods: newSelectedFoods,
+      lockedFoods: newLockedFoods,
+      maxLimitFoods: newMaxLimitFoods,
+      minLimitFoods: newMinLimitFoods
     });
   };
 
   const toggleFoodLock = (foodId) => {
-    setLockedFoods(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(foodId)) {
-        newSet.delete(foodId);
-      } else {
-        newSet.add(foodId);
-      }
-      return newSet;
-    });
+    const newLockedFoods = new Set(lockedFoods);
+    if (newLockedFoods.has(foodId)) {
+      newLockedFoods.delete(foodId);
+    } else {
+      newLockedFoods.add(foodId);
+    }
+    updateMealState(selectedMealId, { lockedFoods: newLockedFoods });
   };
 
   const isLocked = (foodId) => {
@@ -237,30 +265,26 @@ export default function MealPlanningScreen({ route, navigation }) {
     const currentFood = selectedFoods.find(sf => sf.foodId === foodId);
     if (!currentFood) return;
 
-    setMaxLimitFoods(prev => {
-      const newMap = new Map(prev);
-      if (newMap.has(foodId)) {
-        newMap.delete(foodId);
-      } else {
-        newMap.set(foodId, currentFood.portionGrams);
-      }
-      return newMap;
-    });
+    const newMaxLimitFoods = new Map(maxLimitFoods);
+    if (newMaxLimitFoods.has(foodId)) {
+      newMaxLimitFoods.delete(foodId);
+    } else {
+      newMaxLimitFoods.set(foodId, currentFood.portionGrams);
+    }
+    updateMealState(selectedMealId, { maxLimitFoods: newMaxLimitFoods });
   };
 
   const toggleMinLimit = (foodId) => {
     const currentFood = selectedFoods.find(sf => sf.foodId === foodId);
     if (!currentFood) return;
 
-    setMinLimitFoods(prev => {
-      const newMap = new Map(prev);
-      if (newMap.has(foodId)) {
-        newMap.delete(foodId);
-      } else {
-        newMap.set(foodId, currentFood.portionGrams);
-      }
-      return newMap;
-    });
+    const newMinLimitFoods = new Map(minLimitFoods);
+    if (newMinLimitFoods.has(foodId)) {
+      newMinLimitFoods.delete(foodId);
+    } else {
+      newMinLimitFoods.set(foodId, currentFood.portionGrams);
+    }
+    updateMealState(selectedMealId, { minLimitFoods: newMinLimitFoods });
   };
 
   const hasMaxLimit = (foodId) => {
@@ -323,7 +347,7 @@ export default function MealPlanningScreen({ route, navigation }) {
         return { ...food, portionGrams: constrainedGrams };
       });
       
-      setSelectedFoods(constrainedOptimized);
+      updateMealState(selectedMealId, { selectedFoods: constrainedOptimized });
     } else {
       // Just update the single food without optimization
       const updatedFoods = selectedFoods.map(food => 
@@ -331,7 +355,7 @@ export default function MealPlanningScreen({ route, navigation }) {
           ? { ...food, portionGrams: clampedPortion }
           : food
       );
-      setSelectedFoods(updatedFoods);
+      updateMealState(selectedMealId, { selectedFoods: updatedFoods });
     }
   };
 
@@ -462,22 +486,20 @@ export default function MealPlanningScreen({ route, navigation }) {
               <TextInput
                 style={styles.ultraCompactPortionInput}
                 value={tempPortionValue}
-                onChangeText={setTempPortionValue}
+                onChangeText={(value) => updateMealState(selectedMealId, { tempPortionValue: value })}
                 onBlur={() => {
                   const numValue = parseFloat(tempPortionValue);
                   if (!isNaN(numValue) && numValue >= 0 && numValue <= 500) {
                     updatePortion(food.id, numValue);
                   }
-                  setEditingPortion(null);
-                  setTempPortionValue('');
+                  updateMealState(selectedMealId, { editingPortion: null, tempPortionValue: '' });
                 }}
                 onSubmitEditing={() => {
                   const numValue = parseFloat(tempPortionValue);
                   if (!isNaN(numValue) && numValue >= 0 && numValue <= 500) {
                     updatePortion(food.id, numValue);
                   }
-                  setEditingPortion(null);
-                  setTempPortionValue('');
+                  updateMealState(selectedMealId, { editingPortion: null, tempPortionValue: '' });
                 }}
                 keyboardType="numeric"
                 selectTextOnFocus
@@ -488,8 +510,10 @@ export default function MealPlanningScreen({ route, navigation }) {
               <Pressable 
                 onPressIn={() => Keyboard.dismiss()}
                 onPress={() => {
-                  setEditingPortion(food.id);
-                  setTempPortionValue(item.portionGrams.toString());
+                  updateMealState(selectedMealId, { 
+                    editingPortion: food.id, 
+                    tempPortionValue: item.portionGrams.toString() 
+                  });
                 }}
               >
                 <Text style={styles.ultraCompactPortionLabel}>{item.portionGrams}g</Text>

@@ -119,10 +119,12 @@ export default function MealPlanningScreen({ route, navigation }) {
       // Editing specific meal plan (including snacks from dashboard)
       setCurrentEditingMealPlan(editingMealPlan);
       setSelectedMealId(editingMealPlan.mealId);
-      setSelectedFoods(editingMealPlan.selectedFoods.map(food => ({
-        ...food,
-        id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
-      })));
+      updateMealState(editingMealPlan.mealId, {
+        selectedFoods: editingMealPlan.selectedFoods.map(food => ({
+          ...food,
+          id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
+        }))
+      });
     } else {
       // Check if there's an existing meal plan for the default selected meal
       const defaultMealId = selectedMealId;
@@ -136,10 +138,12 @@ export default function MealPlanningScreen({ route, navigation }) {
       const existingPlan = findTodaysMealPlan(defaultMealId);
       if (existingPlan) {
         setCurrentEditingMealPlan(existingPlan);
-        setSelectedFoods(existingPlan.selectedFoods.map(food => ({
-          ...food,
-          id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
-        })));
+        updateMealState(defaultMealId, {
+          selectedFoods: existingPlan.selectedFoods.map(food => ({
+            ...food,
+            id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
+          }))
+        });
       }
     }
   }, [editingMealPlan]);
@@ -408,12 +412,14 @@ export default function MealPlanningScreen({ route, navigation }) {
       // Special handling for snacks: Reset to empty after editing
       if (selectedMeal.name === 'Snack') {
         setCurrentEditingMealPlan(null);
-        setSelectedFoods([]);
-        setLockedFoods(new Set());
-        setMaxLimitFoods(new Map());
-        setMinLimitFoods(new Map());
-        setEditingPortion(null);
-        setTempPortionValue('');
+        updateMealState(selectedMealId, {
+          selectedFoods: [],
+          lockedFoods: new Set(),
+          maxLimitFoods: new Map(),
+          minLimitFoods: new Map(),
+          editingPortion: null,
+          tempPortionValue: ''
+        });
       } else {
         // Update the current editing plan to reflect changes for regular meals
         const updatedPlan = { ...existingPlan, ...mealPlan };
@@ -428,12 +434,14 @@ export default function MealPlanningScreen({ route, navigation }) {
       // Special handling for snacks: Reset to empty after saving
       if (selectedMeal.name === 'Snack') {
         setCurrentEditingMealPlan(null);
-        setSelectedFoods([]);
-        setLockedFoods(new Set());
-        setMaxLimitFoods(new Map());
-        setMinLimitFoods(new Map());
-        setEditingPortion(null);
-        setTempPortionValue('');
+        updateMealState(selectedMealId, {
+          selectedFoods: [],
+          lockedFoods: new Set(),
+          maxLimitFoods: new Map(),
+          minLimitFoods: new Map(),
+          editingPortion: null,
+          tempPortionValue: ''
+        });
       } else {
         // After creating, treat it as an existing meal plan for future edits
         const newPlan = { ...mealPlan, id: Date.now().toString(), createdAt: new Date().toISOString() };

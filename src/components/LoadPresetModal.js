@@ -56,12 +56,7 @@ export default function LoadPresetModal({
       : foodSummary;
 
     return (
-      <Pressable 
-        style={styles.presetItem}
-        onPressIn={() => Keyboard.dismiss()}
-        onPress={() => handleLoadPreset(preset)}
-        onLongPress={() => handleDeletePreset(preset)}
-      >
+      <View style={styles.presetItem}>
         <LinearGradient
           colors={['#1A1A1A', '#2A2A2A']}
           style={styles.presetGradient}
@@ -69,7 +64,11 @@ export default function LoadPresetModal({
           end={{ x: 1, y: 1 }}
         >
           <View style={styles.presetHeader}>
-            <View style={styles.presetNameSection}>
+            <Pressable 
+              style={styles.presetNameSection}
+              onPressIn={() => Keyboard.dismiss()}
+              onPress={() => handleLoadPreset(preset)}
+            >
               <Text style={styles.presetName}>{preset.name}</Text>
               <View style={styles.presetMeta}>
                 <Text style={styles.presetCalories}>{preset.totalCalories} cal</Text>
@@ -77,24 +76,25 @@ export default function LoadPresetModal({
                   {new Date(preset.lastUsed).toLocaleDateString()}
                 </Text>
               </View>
-            </View>
+            </Pressable>
             <Pressable 
               style={styles.deleteButton}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleDeletePreset(preset);
-              }}
+              onPress={() => handleDeletePreset(preset)}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <Text style={styles.deleteButtonText}>×</Text>
             </Pressable>
           </View>
           
-          <Text style={styles.presetFoods} numberOfLines={2}>
-            {displayText}
-          </Text>
-          
-          <View style={styles.presetStats}>
+          <Pressable 
+            onPressIn={() => Keyboard.dismiss()}
+            onPress={() => handleLoadPreset(preset)}
+          >
+            <Text style={styles.presetFoods} numberOfLines={2}>
+              {displayText}
+            </Text>
+            
+            <View style={styles.presetStats}>
             <View style={styles.presetStat}>
               <Text style={styles.presetStatValue}>{preset.foods.length}</Text>
               <Text style={styles.presetStatLabel}>foods</Text>
@@ -112,8 +112,9 @@ export default function LoadPresetModal({
               <Text style={styles.presetStatLabel}>fat</Text>
             </View>
           </View>
+          </Pressable>
         </LinearGradient>
-      </Pressable>
+      </View>
     );
   };
 

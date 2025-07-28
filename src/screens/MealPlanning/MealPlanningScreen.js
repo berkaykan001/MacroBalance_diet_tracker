@@ -77,18 +77,12 @@ export default function MealPlanningScreen({ route, navigation }) {
   const handleMealSelection = (mealId) => {
     const selectedMeal = meals.find(meal => meal.id === mealId);
     
-    // Special snack logic: Always start fresh for snacks (allow multiple per day)
+    // Special snack logic: Preserve foods during navigation, clear only after eating
     if (selectedMeal && selectedMeal.name === 'Snack') {
       setCurrentEditingMealPlan(null);
       setSelectedMealId(mealId);
-      updateMealState(mealId, {
-        selectedFoods: [],
-        lockedFoods: new Set(),
-        maxLimitFoods: new Map(),
-        minLimitFoods: new Map(),
-        editingPortion: null,
-        tempPortionValue: ''
-      });
+      // Don't clear snack foods on navigation - let them persist until "Mark as Eaten"
+      // The clearing happens in saveMealPlan after successfully creating a snack
       return;
     }
     

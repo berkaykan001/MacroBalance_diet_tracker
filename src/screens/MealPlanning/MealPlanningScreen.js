@@ -78,15 +78,11 @@ export default function MealPlanningScreen({ route, navigation }) {
         id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
       })));
     } else {
-      // Start fresh meal plan
+      // Just switch meal target - preserve current selected foods
       setCurrentEditingMealPlan(null);
       setSelectedMealId(mealId);
-      setSelectedFoods([]);
-      setLockedFoods(new Set());
-      setMaxLimitFoods(new Map());
-      setMinLimitFoods(new Map());
-      setEditingPortion(null);
-      setTempPortionValue('');
+      // Keep selectedFoods, lockedFoods, limits, and editing state intact
+      // Only reset if user explicitly wants to (via Reset button)
     }
   };
 

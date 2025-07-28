@@ -75,25 +75,35 @@ export default function HomeScreen() {
   };
 
 
-  const renderSubMacroBar = (label, current, target, color, isMax = false, unit = 'g') => {
+  const getProgressColor = (percentage, isMax = false) => {
+    if (isMax) {
+      // For max limits (lower is better): sodium, trans fat, etc.
+      if (percentage <= 70) return ['#00D084', '#00A86B']; // Green - good
+      if (percentage <= 90) return ['#F1C40F', '#E67E22']; // Yellow - warning  
+      return ['#FF453A', '#FF6B6B']; // Red - over limit
+    } else {
+      // For minimum targets (higher is better): vitamins, minerals, etc.
+      if (percentage >= 90) return ['#00D084', '#00A86B']; // Green - complete
+      if (percentage >= 60) return ['#F1C40F', '#E67E22']; // Yellow - partial
+      return ['#FF453A', '#FF6B6B']; // Red - insufficient
+    }
+  };
+
+  const renderSubMacroBar = (label, current, target, isMax = false, unit = 'g') => {
     const percentage = target > 0 ? Math.min(100, (current / target) * 100) : 0;
-    const isComplete = isMax ? percentage <= 100 : percentage >= 95;
-    const isOverLimit = isMax && percentage > 100;
+    const progressColor = getProgressColor(percentage, isMax);
     
     return (
       <View style={styles.subMacroItem}>
         <View style={styles.subMacroHeader}>
           <Text style={styles.subMacroLabel}>{label}</Text>
-          <Text style={[
-            styles.subMacroValue, 
-            { color: isOverLimit ? '#FF453A' : isComplete ? '#00D084' : '#FFFFFF' }
-          ]}>
+          <Text style={styles.subMacroValue}>
             {Math.round(current * 10) / 10}{isMax ? `/${target}` : `/${target}`}{unit}
           </Text>
         </View>
         <View style={styles.subMacroTrack}>
           <LinearGradient
-            colors={isOverLimit ? ['#FF453A', '#FF6B6B'] : color}
+            colors={progressColor}
             style={[styles.subMacroFill, { width: `${Math.min(100, percentage)}%` }]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
@@ -240,14 +250,14 @@ export default function HomeScreen() {
           <View style={styles.subMacroSection}>
             <Text style={styles.subMacroSectionTitle}>Nutritional Breakdown</Text>
             <View style={styles.subMacroGrid}>
-              {renderSubMacroBar('Omega-3', dailyProgress.consumed.omega3, dailyProgress.subMacroTargets.omega3, ['#00D084', '#00A86B'])}
-              {renderSubMacroBar('Monounsaturated', dailyProgress.consumed.monounsaturatedFat, dailyProgress.subMacroTargets.monounsaturatedFat, ['#00D084', '#00A86B'])}
-              {renderSubMacroBar('Polyunsaturated', dailyProgress.consumed.polyunsaturatedFat, dailyProgress.subMacroTargets.polyunsaturatedFat, ['#00D084', '#00A86B'])}
-              {renderSubMacroBar('Fiber', dailyProgress.consumed.fiber, dailyProgress.subMacroTargets.minFiber, ['#00D084', '#00A86B'])}
-              {renderSubMacroBar('Saturated Fat', dailyProgress.consumed.saturatedFat, dailyProgress.subMacroTargets.maxSaturatedFat, ['#FF9500', '#FFB84D'], true)}
-              {renderSubMacroBar('Trans Fat', dailyProgress.consumed.transFat, dailyProgress.subMacroTargets.maxTransFat, ['#FF453A', '#FF6B6B'], true)}
-              {renderSubMacroBar('Added Sugars', dailyProgress.consumed.addedSugars, dailyProgress.subMacroTargets.maxAddedSugars, ['#FF9500', '#FFB84D'], true)}
-              {renderSubMacroBar('Natural Sugars', dailyProgress.consumed.naturalSugars, dailyProgress.subMacroTargets.maxNaturalSugars, ['#F1C40F', '#F39C12'], true)}
+              {renderSubMacroBar('Omega-3', dailyProgress.consumed.omega3, dailyProgress.subMacroTargets.omega3, false)}
+              {renderSubMacroBar('Monounsaturated', dailyProgress.consumed.monounsaturatedFat, dailyProgress.subMacroTargets.monounsaturatedFat, false)}
+              {renderSubMacroBar('Polyunsaturated', dailyProgress.consumed.polyunsaturatedFat, dailyProgress.subMacroTargets.polyunsaturatedFat, false)}
+              {renderSubMacroBar('Fiber', dailyProgress.consumed.fiber, dailyProgress.subMacroTargets.minFiber, false)}
+              {renderSubMacroBar('Saturated Fat', dailyProgress.consumed.saturatedFat, dailyProgress.subMacroTargets.maxSaturatedFat, true)}
+              {renderSubMacroBar('Trans Fat', dailyProgress.consumed.transFat, dailyProgress.subMacroTargets.maxTransFat, true)}
+              {renderSubMacroBar('Added Sugars', dailyProgress.consumed.addedSugars, dailyProgress.subMacroTargets.maxAddedSugars, true)}
+              {renderSubMacroBar('Natural Sugars', dailyProgress.consumed.naturalSugars, dailyProgress.subMacroTargets.maxNaturalSugars, true)}
             </View>
           </View>
 
@@ -255,16 +265,16 @@ export default function HomeScreen() {
           <View style={styles.micronutrientSection}>
             <Text style={styles.micronutrientSectionTitle}>Essential Vitamins & Minerals</Text>
             <View style={styles.micronutrientGrid}>
-              {renderSubMacroBar('Iron', dailyProgress.consumed.iron, dailyProgress.micronutrientTargets.iron, ['#E74C3C', '#C0392B'], false, 'mg')}
-              {renderSubMacroBar('Calcium', dailyProgress.consumed.calcium, dailyProgress.micronutrientTargets.calcium, ['#F39C12', '#E67E22'], false, 'mg')}
-              {renderSubMacroBar('Zinc', dailyProgress.consumed.zinc, dailyProgress.micronutrientTargets.zinc, ['#3498DB', '#2980B9'], false, 'mg')}
-              {renderSubMacroBar('Magnesium', dailyProgress.consumed.magnesium, dailyProgress.micronutrientTargets.magnesium, ['#27AE60', '#229954'], false, 'mg')}
-              {renderSubMacroBar('Sodium', dailyProgress.consumed.sodium, dailyProgress.micronutrientTargets.sodium, ['#FF9500', '#FFB84D'], true, 'mg')}
-              {renderSubMacroBar('Potassium', dailyProgress.consumed.potassium, dailyProgress.micronutrientTargets.potassium, ['#8E44AD', '#9B59B6'], false, 'mg')}
-              {renderSubMacroBar('Vitamin B6', dailyProgress.consumed.vitaminB6, dailyProgress.micronutrientTargets.vitaminB6, ['#9B59B6', '#8E44AD'], false, 'mg')}
-              {renderSubMacroBar('Vitamin B12', dailyProgress.consumed.vitaminB12, dailyProgress.micronutrientTargets.vitaminB12, ['#1ABC9C', '#16A085'], false, 'μg')}
-              {renderSubMacroBar('Vitamin C', dailyProgress.consumed.vitaminC, dailyProgress.micronutrientTargets.vitaminC, ['#F1C40F', '#F39C12'], false, 'mg')}
-              {renderSubMacroBar('Vitamin D', dailyProgress.consumed.vitaminD, dailyProgress.micronutrientTargets.vitaminD, ['#FF6B35', '#FF8C42'], false, 'μg')}
+              {renderSubMacroBar('Iron', dailyProgress.consumed.iron, dailyProgress.micronutrientTargets.iron, false, 'mg')}
+              {renderSubMacroBar('Calcium', dailyProgress.consumed.calcium, dailyProgress.micronutrientTargets.calcium, false, 'mg')}
+              {renderSubMacroBar('Zinc', dailyProgress.consumed.zinc, dailyProgress.micronutrientTargets.zinc, false, 'mg')}
+              {renderSubMacroBar('Magnesium', dailyProgress.consumed.magnesium, dailyProgress.micronutrientTargets.magnesium, false, 'mg')}
+              {renderSubMacroBar('Sodium', dailyProgress.consumed.sodium, dailyProgress.micronutrientTargets.sodium, true, 'mg')}
+              {renderSubMacroBar('Potassium', dailyProgress.consumed.potassium, dailyProgress.micronutrientTargets.potassium, false, 'mg')}
+              {renderSubMacroBar('Vitamin B6', dailyProgress.consumed.vitaminB6, dailyProgress.micronutrientTargets.vitaminB6, false, 'mg')}
+              {renderSubMacroBar('Vitamin B12', dailyProgress.consumed.vitaminB12, dailyProgress.micronutrientTargets.vitaminB12, false, 'μg')}
+              {renderSubMacroBar('Vitamin C', dailyProgress.consumed.vitaminC, dailyProgress.micronutrientTargets.vitaminC, false, 'mg')}
+              {renderSubMacroBar('Vitamin D', dailyProgress.consumed.vitaminD, dailyProgress.micronutrientTargets.vitaminD, false, 'μg')}
             </View>
           </View>
 
@@ -469,6 +479,7 @@ const styles = StyleSheet.create({
   subMacroValue: {
     fontSize: 10,
     fontWeight: '600',
+    color: '#FFFFFF',
   },
   subMacroTrack: {
     height: 3,

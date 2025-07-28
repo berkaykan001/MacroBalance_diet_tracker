@@ -69,13 +69,25 @@ export default function LoadPresetModal({
           end={{ x: 1, y: 1 }}
         >
           <View style={styles.presetHeader}>
-            <Text style={styles.presetName}>{preset.name}</Text>
-            <View style={styles.presetMeta}>
-              <Text style={styles.presetCalories}>{preset.totalCalories} cal</Text>
-              <Text style={styles.presetDate}>
-                {new Date(preset.lastUsed).toLocaleDateString()}
-              </Text>
+            <View style={styles.presetNameSection}>
+              <Text style={styles.presetName}>{preset.name}</Text>
+              <View style={styles.presetMeta}>
+                <Text style={styles.presetCalories}>{preset.totalCalories} cal</Text>
+                <Text style={styles.presetDate}>
+                  {new Date(preset.lastUsed).toLocaleDateString()}
+                </Text>
+              </View>
             </View>
+            <Pressable 
+              style={styles.deleteButton}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleDeletePreset(preset);
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Text style={styles.deleteButtonText}>×</Text>
+            </Pressable>
           </View>
           
           <Text style={styles.presetFoods} numberOfLines={2}>
@@ -157,7 +169,7 @@ export default function LoadPresetModal({
             </Text>
             {!searchQuery.trim() && presets.length > 0 && (
               <Text style={styles.listHeaderSubtext}>
-                Sorted by recently used • Long press to delete
+                Sorted by recently used • Tap × to delete
               </Text>
             )}
           </View>
@@ -286,6 +298,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 8,
   },
+  presetNameSection: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginRight: 12,
+  },
   presetName: {
     fontSize: 16,
     fontWeight: '700',
@@ -295,6 +314,22 @@ const styles = StyleSheet.create({
   },
   presetMeta: {
     alignItems: 'flex-end',
+  },
+  deleteButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 69, 58, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 69, 58, 0.4)',
+  },
+  deleteButtonText: {
+    color: '#FF453A',
+    fontSize: 18,
+    fontWeight: '600',
+    lineHeight: 18,
   },
   presetCalories: {
     fontSize: 14,

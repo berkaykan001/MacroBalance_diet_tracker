@@ -155,15 +155,32 @@ export default function MealPlanningScreen({ route, navigation }) {
 
   // Manual reset function for when user wants to start fresh
   const resetMealPlan = () => {
-    // Reset current meal's state
-    updateMealState(selectedMealId, {
-      selectedFoods: [],
-      lockedFoods: new Set(),
-      maxLimitFoods: new Map(),
-      minLimitFoods: new Map(),
-      editingPortion: null,
-      tempPortionValue: ''
-    });
+    if (hasSavedMeal && savedMealPlan) {
+      // Revert to saved meal plan state
+      updateMealState(selectedMealId, {
+        selectedFoods: savedMealPlan.selectedFoods.map(food => ({
+          ...food,
+          id: `${food.foodId}_${Date.now()}` // Generate unique ID for React keys
+        })),
+        lockedFoods: new Set(),
+        maxLimitFoods: new Map(),
+        minLimitFoods: new Map(),
+        editingPortion: null,
+        tempPortionValue: ''
+      });
+      showConfirmation(`Reverted to saved ${selectedMeal.name} meal!`);
+    } else {
+      // Reset to empty state (original behavior)
+      updateMealState(selectedMealId, {
+        selectedFoods: [],
+        lockedFoods: new Set(),
+        maxLimitFoods: new Map(),
+        minLimitFoods: new Map(),
+        editingPortion: null,
+        tempPortionValue: ''
+      });
+      showConfirmation(`${selectedMeal.name} meal reset!`);
+    }
     setShowAddFoodsModal(false);
     setCurrentEditingMealPlan(null);
   };
@@ -379,6 +396,10 @@ export default function MealPlanningScreen({ route, navigation }) {
   const progress = selectedMeal 
     ? CalculationService.calculateMacroProgress(currentMacros, selectedMeal.macroTargets)
     : null;
+
+  // Check if there's a saved meal plan for today to determine Reset vs Revert behavior
+  const savedMealPlan = findTodaysMealPlan(selectedMealId);
+  const hasSavedMeal = savedMealPlan !== undefined;
 
   const saveMealPlan = () => {
     if (!selectedMeal || selectedFoods.length === 0) {
@@ -799,7 +820,9 @@ export default function MealPlanningScreen({ route, navigation }) {
                   onPressIn={() => Keyboard.dismiss()}
                   onPress={resetMealPlan}
                 >
-                  <Text style={styles.resetButtonText}>↺ Reset</Text>
+                  <Text style={styles.resetButtonText}>
+                    {hasSavedMeal ? '⟲ Revert' : '↺ Reset'}
+                  </Text>
                 </Pressable>
               )}
             </View>

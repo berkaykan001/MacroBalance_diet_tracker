@@ -457,12 +457,6 @@ export default function SettingsScreen() {
             </Text>
             
             <View style={styles.preferencesContainer}>
-              {renderPreferenceItem(
-                'Auto-Optimize',
-                'Automatically optimize portions when adding foods',
-                appPreferences.autoOptimize,
-                (value) => updateAppPreferences({ autoOptimize: value })
-              )}
               
               <View style={styles.preferenceItem}>
                 <View style={styles.preferenceInfo}>

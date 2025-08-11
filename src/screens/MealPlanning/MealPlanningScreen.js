@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { View, Text, StyleSheet, ScrollView, FlatList, Dimensions, TextInput, Alert, Pressable, Keyboard, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, FlatList, Dimensions, TextInput, Alert, Pressable, Keyboard, Animated, Switch } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Slider from '@react-native-community/slider';
 import { useFood } from '../../context/FoodContext';
@@ -20,7 +20,7 @@ const { width } = Dimensions.get('window');
 export default function MealPlanningScreen({ route, navigation }) {
   const { foods } = useFood();
   const { meals, createMealPlan, updateMealPlan, getTodaysMealPlans } = useMeal();
-  const { selectedQuickFoods, appPreferences } = useSettings();
+  const { selectedQuickFoods, appPreferences, updateAppPreferences } = useSettings();
   const { presets, createPreset, deletePreset, updateLastUsed } = usePreset();
   
   // Check if we're editing an existing meal plan
@@ -866,6 +866,21 @@ export default function MealPlanningScreen({ route, navigation }) {
                 </Pressable>
               </LinearGradient>
               
+              {/* Auto-optimize Switch - Hidden for Extra meals */}
+              {selectedMeal && selectedMeal.name !== 'Extra' && (
+                <View style={styles.autoOptimizeContainer}>
+                  <Text style={styles.autoOptimizeLabel}>🎯 Auto</Text>
+                  <Switch
+                    value={appPreferences.autoOptimize}
+                    onValueChange={(value) => updateAppPreferences({ autoOptimize: value })}
+                    trackColor={{ false: '#3A3A3C', true: '#007AFF' }}
+                    thumbColor={appPreferences.autoOptimize ? '#FFFFFF' : '#F4F3F4'}
+                    ios_backgroundColor="#3A3A3C"
+                    style={styles.autoOptimizeSwitch}
+                  />
+                </View>
+              )}
+              
               {selectedFoods.length > 0 && (
                 <Pressable 
                   style={styles.resetButton}
@@ -1648,17 +1663,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 8,
+    justifyContent: 'space-between',
   },
 
   // Compact Add Food Button
   addFoodButtonCompact: {
     borderRadius: 8,
     flex: 1,
+    marginRight: 12,
     shadowColor: '#007AFF',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+
+  // Auto-optimize Switch Container
+  autoOptimizeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+
+  autoOptimizeLabel: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    marginRight: 6,
+  },
+
+  autoOptimizeSwitch: {
+    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
   },
 
   // Reset Button

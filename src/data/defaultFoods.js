@@ -6105,5 +6105,70 @@ export const defaultFoods = [
     userAdded: false,
     createdAt: new Date().toISOString(),
     lastUsed: new Date().toISOString()
+  },{
+    id: '185',
+    name: 'Azinc Vitalité (1 gélule)',
+    category: 'supplements',
+    nutritionPer100g: {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fiber: 0,
+      sugar: 0,
+      naturalSugars: 0,
+      addedSugars: 0,
+      fat: 0,
+      saturatedFat: 0,
+      monounsaturatedFat: 0,
+      polyunsaturatedFat: 0,
+      transFat: 0,
+      omega3: 0,
+      vitaminD: 2.5, // 2.5 µg per 1 capsule (half of 5 µg)
+      magnesium: 0,
+      iron: 4, // 4 mg per 1 capsule (half of 8 mg)
+      calcium: 60, // 60 mg per 1 capsule (half of 120 mg)
+      zinc: 7.5, // 7.5 mg per 1 capsule (half of 15 mg)
+      vitaminB6: 1, // 1 mg per 1 capsule (half of 2 mg)
+      vitaminB12: 0.0005, // 0.5 µg converted to mg (half of 1 µg)
+      vitaminC: 60, // 60 mg per 1 capsule (half of 120 mg)
+      sodium: 0,
+      potassium: 0
+    },
+    userAdded: false,
+    createdAt: new Date().toISOString(),
+    lastUsed: new Date().toISOString()
+  },
+  {
+    id: '186',
+    name: 'BiotechUSA Omega-3 (1 capsule)',
+    category: 'supplements',
+    nutritionPer100g: {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fiber: 0,
+      sugar: 0,
+      naturalSugars: 0,
+      addedSugars: 0,
+      fat: 0.55, // 0.55g per 1 capsule (half of 1.1g)
+      saturatedFat: 0.1, // Half of 0.2g
+      monounsaturatedFat: 0.15, // Half of 0.3g
+      polyunsaturatedFat: 0.3, // Half of 0.6g
+      transFat: 0,
+      omega3: 350, // EPA (200mg) + DHA (150mg) = 350mg total omega-3 per capsule
+      vitaminD: 0,
+      magnesium: 0,
+      iron: 0,
+      calcium: 0,
+      zinc: 0,
+      vitaminB6: 0,
+      vitaminB12: 0,
+      vitaminC: 0,
+      sodium: 0,
+      potassium: 0
+    },
+    userAdded: false,
+    createdAt: new Date().toISOString(),
+    lastUsed: new Date().toISOString()
   }
 ];

@@ -29,7 +29,7 @@ export default function HomeScreen() {
   const [selectedMealPlan, setSelectedMealPlan] = useState(null);
 
   const dailyProgress = getDailyProgress();
-  const mealsToday = getMealsCompletedToday().filter(meal => meal.name !== 'Snack');
+  const mealsToday = getMealsCompletedToday().filter(meal => meal.name !== 'Extra');
   const todaysMealPlans = getTodaysMealPlans();
 
   // Note: getNextMeal logic postponed for now
@@ -130,20 +130,20 @@ export default function HomeScreen() {
   const renderEatenMeal = ({ item: mealPlan }) => {
     const meal = getMealById(mealPlan.mealId);
     
-    // Generate display name for snacks (Snack 1, Snack 2, etc.)
+    // Generate display name for extras (Extra 1, Extra 2, etc.)
     const getDisplayName = () => {
-      if (meal?.name === 'Snack') {
-        // Get all today's snacks in chronological order
-        const todaysSnacks = todaysMealPlans
+      if (meal?.name === 'Extra') {
+        // Get all today's extras in chronological order
+        const todaysExtras = todaysMealPlans
           .filter(plan => {
             const planMeal = getMealById(plan.mealId);
-            return planMeal?.name === 'Snack';
+            return planMeal?.name === 'Extra';
           })
           .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         
-        // Find the index of current snack
-        const snackIndex = todaysSnacks.findIndex(snack => snack.id === mealPlan.id);
-        return `Snack ${snackIndex + 1}`;
+        // Find the index of current extra
+        const extraIndex = todaysExtras.findIndex(extra => extra.id === mealPlan.id);
+        return `Extra ${extraIndex + 1}`;
       }
       return meal?.name || 'Unknown Meal';
     };

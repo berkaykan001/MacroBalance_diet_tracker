@@ -72,7 +72,7 @@ const defaultMeals = [
   },
   {
     id: '5',
-    name: 'Snack',
+    name: 'Extra',
     macroTargets: {
       protein: 0,
       carbs: 0,

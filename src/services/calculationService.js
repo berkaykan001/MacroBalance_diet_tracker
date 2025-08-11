@@ -9,7 +9,9 @@ export class CalculationService {
   }
 
   static calculateMacrosForPortion(food, portionGrams) {
-    const multiplier = portionGrams / 100;
+    // For supplements: portionGrams represents number of pills, nutritionPer100g represents per pill
+    // For regular foods: portionGrams is grams, nutritionPer100g represents per 100g
+    const multiplier = food.category === 'supplements' ? portionGrams : portionGrams / 100;
     const nutrition = food.nutritionPer100g;
     
     return {
@@ -200,11 +202,15 @@ export class CalculationService {
         if (!food) return selection;
 
         const currentPortion = selection.portionGrams;
-        const step = 5;
+        const isSupplementFood = food.category === 'supplements';
+        const step = isSupplementFood ? 1 : 5;
+        const minRange = isSupplementFood ? 1 : Math.max(10, currentPortion - 20);
+        const maxRange = isSupplementFood ? 10 : currentPortion + 20;
+        
         let bestPortion = currentPortion;
         let bestScore = this.calculateOptimizationScore(selection, food, foods, currentSelections, targets);
 
-        for (let testPortion = Math.max(10, currentPortion - 20); testPortion <= currentPortion + 20; testPortion += step) {
+        for (let testPortion = minRange; testPortion <= maxRange; testPortion += step) {
           const testSelection = { ...selection, portionGrams: testPortion };
           const testSelections = currentSelections.map(s => 
             s.foodId === selection.foodId ? testSelection : s
@@ -218,7 +224,9 @@ export class CalculationService {
           }
         }
 
-        return { ...selection, portionGrams: bestPortion };
+        // Ensure supplements always use whole numbers (pills/capsules)
+        const finalPortion = isSupplementFood ? Math.round(bestPortion) : bestPortion;
+        return { ...selection, portionGrams: finalPortion };
       });
     }
 

@@ -268,7 +268,7 @@ export default function SettingsScreen() {
             </Text>
             
             <FlatList
-              data={meals.filter(meal => meal.name !== 'Snack')}
+              data={meals.filter(meal => meal.name !== 'Extra')}
               renderItem={renderMealTargetItem}
               keyExtractor={(item) => item.id}
               showsVerticalScrollIndicator={false}

@@ -88,12 +88,12 @@ export default function MealPlanningScreen({ route, navigation }) {
   const handleMealSelection = (mealId) => {
     const selectedMeal = meals.find(meal => meal.id === mealId);
     
-    // Special snack logic: Preserve foods during navigation, clear only after eating
-    if (selectedMeal && selectedMeal.name === 'Snack') {
+    // Special extra logic: Preserve foods during navigation, clear only after eating
+    if (selectedMeal && selectedMeal.name === 'Extra') {
       setCurrentEditingMealPlan(null);
       setSelectedMealId(mealId);
-      // Don't clear snack foods on navigation - let them persist until "Mark as Eaten"
-      // The clearing happens in saveMealPlan after successfully creating a snack
+      // Don't clear extra foods on navigation - let them persist until "Mark as Eaten"
+      // The clearing happens in saveMealPlan after successfully creating an extra
       return;
     }
     
@@ -121,7 +121,7 @@ export default function MealPlanningScreen({ route, navigation }) {
   // Initialize with existing meal plan data if editing, or load today's meal plan for default meal
   useEffect(() => {
     if (editingMealPlan) {
-      // Editing specific meal plan (including snacks from dashboard)
+      // Editing specific meal plan (including extras from dashboard)
       setCurrentEditingMealPlan(editingMealPlan);
       setSelectedMealId(editingMealPlan.mealId);
       updateMealState(editingMealPlan.mealId, {
@@ -135,9 +135,9 @@ export default function MealPlanningScreen({ route, navigation }) {
       const defaultMealId = selectedMealId;
       const selectedMeal = meals.find(meal => meal.id === defaultMealId);
       
-      // Don't auto-load existing plans for snacks (let them start fresh)
-      if (selectedMeal && selectedMeal.name === 'Snack') {
-        return; // Keep snack area empty
+      // Don't auto-load existing plans for extras (let them start fresh)
+      if (selectedMeal && selectedMeal.name === 'Extra') {
+        return; // Keep extra area empty
       }
       
       const existingPlan = findTodaysMealPlan(defaultMealId);
@@ -249,8 +249,10 @@ export default function MealPlanningScreen({ route, navigation }) {
   const addFood = (food) => {
     const exists = selectedFoods.find(sf => sf.foodId === food.id);
     if (!exists) {
+      // Default portion: 1 pill for supplements, 100g for regular foods
+      const defaultPortion = food.category === 'supplements' ? 1 : 100;
       updateMealState(selectedMealId, {
-        selectedFoods: [...selectedFoods, { foodId: food.id, portionGrams: 100 }]
+        selectedFoods: [...selectedFoods, { foodId: food.id, portionGrams: defaultPortion }]
       });
     }
     // Don't close the food list anymore - let user add multiple foods
@@ -274,6 +276,12 @@ export default function MealPlanningScreen({ route, navigation }) {
   };
 
   const toggleFoodLock = (foodId) => {
+    // Don't allow locking/unlocking supplements - they're handled differently
+    const food = foods.find(f => f.id === foodId);
+    if (food && food.category === 'supplements') {
+      return;
+    }
+    
     const newLockedFoods = new Set(lockedFoods);
     if (newLockedFoods.has(foodId)) {
       newLockedFoods.delete(foodId);
@@ -288,6 +296,12 @@ export default function MealPlanningScreen({ route, navigation }) {
   };
 
   const toggleMaxLimit = (foodId) => {
+    // Don't allow limits on supplements - they use discrete pill amounts
+    const food = foods.find(f => f.id === foodId);
+    if (food && food.category === 'supplements') {
+      return;
+    }
+    
     const currentFood = selectedFoods.find(sf => sf.foodId === foodId);
     if (!currentFood) return;
 
@@ -301,6 +315,12 @@ export default function MealPlanningScreen({ route, navigation }) {
   };
 
   const toggleMinLimit = (foodId) => {
+    // Don't allow limits on supplements - they use discrete pill amounts
+    const food = foods.find(f => f.id === foodId);
+    if (food && food.category === 'supplements') {
+      return;
+    }
+    
     const currentFood = selectedFoods.find(sf => sf.foodId === foodId);
     if (!currentFood) return;
 
@@ -332,14 +352,21 @@ export default function MealPlanningScreen({ route, navigation }) {
   const updatePortion = (foodId, newPortion) => {
     if (!selectedMeal) return;
     
-    // Don't update if fully locked
-    if (isLocked(foodId)) {
+    // Get food to check if it's a supplement
+    const food = foods.find(f => f.id === foodId);
+    const isSupplementFood = food && food.category === 'supplements';
+    
+    // Don't update if fully locked (but supplements are never locked from user adjustment)
+    if (!isSupplementFood && isLocked(foodId)) {
       console.log('Food is fully locked, ignoring update:', foodId);
       return;
     }
     
-    // Apply min/max limits if they exist, ensuring minimum is 0g
-    let clampedPortion = Math.max(0, Math.round(newPortion));
+    // Apply min/max limits based on food type
+    // Supplements: 1-10 pills, Regular foods: 0-500g
+    const minValue = isSupplementFood ? 1 : 0;
+    const maxValue = isSupplementFood ? 10 : 500;
+    let clampedPortion = Math.max(minValue, Math.min(maxValue, Math.round(newPortion)));
     if (hasMaxLimit(foodId)) {
       clampedPortion = Math.min(clampedPortion, getMaxLimit(foodId));
     }
@@ -347,16 +374,28 @@ export default function MealPlanningScreen({ route, navigation }) {
       clampedPortion = Math.max(clampedPortion, getMinLimit(foodId));
     }
     
-    if (appPreferences.autoOptimize) {
-      // Auto-optimize other portions when enabled, respecting only FULLY locked foods
+    if (appPreferences.autoOptimize && selectedMeal.name !== 'Extra') {
+      // Auto-optimize other portions when enabled, but NEVER for Extra meals
+      // Extra meals are for individual items that shouldn't be optimized together
+      // Also respecting FULLY locked foods AND supplements
       // Foods with limits can still be optimized within their bounds
+      // Supplements are always excluded from optimization (treated as locked)
+      const supplementFoodIds = selectedFoods
+        .filter(sf => {
+          const food = foods.find(f => f.id === sf.foodId);
+          return food && food.category === 'supplements';
+        })
+        .map(sf => sf.foodId);
+      
+      const allLockedFoods = [...Array.from(lockedFoods), ...supplementFoodIds];
+      
       const optimized = CalculationService.optimizePortions(
         selectedFoods, 
         foods, 
         selectedMeal.macroTargets, 
         foodId, 
         clampedPortion,
-        Array.from(lockedFoods)
+        allLockedFoods
       );
       
       // Apply limits to optimized values
@@ -414,11 +453,11 @@ export default function MealPlanningScreen({ route, navigation }) {
       calculatedMacros: currentMacros
     };
 
-    // Special logic for snacks: Only edit if we came from dashboard (editingMealPlan set)
-    // If we're on snack chip (no editingMealPlan), always create new
-    const isEditingSnack = selectedMeal.name === 'Snack' && editingMealPlan;
-    const isEditingRegularMeal = selectedMeal.name !== 'Snack' && (editingMealPlan || currentEditingMealPlan);
-    const isEditing = isEditingSnack || isEditingRegularMeal;
+    // Special logic for extras: Only edit if we came from dashboard (editingMealPlan set)
+    // If we're on extra chip (no editingMealPlan), always create new
+    const isEditingExtra = selectedMeal.name === 'Extra' && editingMealPlan;
+    const isEditingRegularMeal = selectedMeal.name !== 'Extra' && (editingMealPlan || currentEditingMealPlan);
+    const isEditing = isEditingExtra || isEditingRegularMeal;
     
     console.log('saveMealPlan - isEditing:', isEditing);
     console.log('saveMealPlan - meal:', selectedMeal.name);
@@ -435,8 +474,8 @@ export default function MealPlanningScreen({ route, navigation }) {
       });
       showConfirmation(`${selectedMeal.name} updated with ${Math.round(currentMacros.calories)} calories!`);
       
-      // Special handling for snacks: Reset to empty after editing
-      if (selectedMeal.name === 'Snack') {
+      // Special handling for extras: Reset to empty after editing
+      if (selectedMeal.name === 'Extra') {
         setCurrentEditingMealPlan(null);
         updateMealState(selectedMealId, {
           selectedFoods: [],
@@ -457,8 +496,8 @@ export default function MealPlanningScreen({ route, navigation }) {
       createMealPlan(mealPlan);
       showConfirmation(`${selectedMeal.name} marked as eaten with ${Math.round(currentMacros.calories)} calories!`);
       
-      // Special handling for snacks: Reset to empty after saving
-      if (selectedMeal.name === 'Snack') {
+      // Special handling for extras: Reset to empty after saving
+      if (selectedMeal.name === 'Extra') {
         setCurrentEditingMealPlan(null);
         updateMealState(selectedMealId, {
           selectedFoods: [],
@@ -525,7 +564,9 @@ export default function MealPlanningScreen({ route, navigation }) {
                   // Get the current temp value from the most recent state
                   const currentTempValue = getMealState(selectedMealId).tempPortionValue;
                   const numValue = parseFloat(currentTempValue);
-                  if (!isNaN(numValue) && numValue >= 0 && numValue <= 500) {
+                  const minValue = food.category === 'supplements' ? 1 : 0;
+                  const maxValue = food.category === 'supplements' ? 10 : 500;
+                  if (!isNaN(numValue) && numValue >= minValue && numValue <= maxValue) {
                     updatePortion(food.id, numValue);
                   }
                   updateMealState(selectedMealId, { editingPortion: null, tempPortionValue: '' });
@@ -534,7 +575,9 @@ export default function MealPlanningScreen({ route, navigation }) {
                   // Get the current temp value from the most recent state
                   const currentTempValue = getMealState(selectedMealId).tempPortionValue;
                   const numValue = parseFloat(currentTempValue);
-                  if (!isNaN(numValue) && numValue >= 0 && numValue <= 500) {
+                  const minValue = food.category === 'supplements' ? 1 : 0;
+                  const maxValue = food.category === 'supplements' ? 10 : 500;
+                  if (!isNaN(numValue) && numValue >= minValue && numValue <= maxValue) {
                     updatePortion(food.id, numValue);
                   }
                   updateMealState(selectedMealId, { editingPortion: null, tempPortionValue: '' });
@@ -554,21 +597,26 @@ export default function MealPlanningScreen({ route, navigation }) {
                   });
                 }}
               >
-                <Text style={styles.ultraCompactPortionLabel}>{item.portionGrams}g</Text>
+                <Text style={styles.ultraCompactPortionLabel}>
+                  {item.portionGrams}{food.category === 'supplements' ? ' pills' : 'g'}
+                </Text>
               </Pressable>
             )}
           </View>
           
-          <LockControls 
-            isLocked={isLocked(food.id)}
-            hasMaxLimit={hasMaxLimit(food.id)}
-            hasMinLimit={hasMinLimit(food.id)}
-            onToggleLock={() => toggleFoodLock(food.id)}
-            onToggleMaxLimit={() => toggleMaxLimit(food.id)}
-            onToggleMinLimit={() => toggleMinLimit(food.id)}
-            maxLimitValue={getMaxLimit(food.id)}
-            minLimitValue={getMinLimit(food.id)}
-          />
+          {/* Hide lock controls for supplements - they're always excluded from optimization */}
+          {food.category !== 'supplements' && (
+            <LockControls 
+              isLocked={isLocked(food.id)}
+              hasMaxLimit={hasMaxLimit(food.id)}
+              hasMinLimit={hasMinLimit(food.id)}
+              onToggleLock={() => toggleFoodLock(food.id)}
+              onToggleMaxLimit={() => toggleMaxLimit(food.id)}
+              onToggleMinLimit={() => toggleMinLimit(food.id)}
+              maxLimitValue={getMaxLimit(food.id)}
+              minLimitValue={getMinLimit(food.id)}
+            />
+          )}
           
           <Pressable 
             onPressIn={() => Keyboard.dismiss()}
@@ -584,13 +632,17 @@ export default function MealPlanningScreen({ route, navigation }) {
           <Slider
             style={[
               styles.ultraCompactSlider,
-              isLocked(food.id) && styles.lockedSlider
+              food.category !== 'supplements' && isLocked(food.id) && styles.lockedSlider
             ]}
-            minimumValue={0}
-            maximumValue={500}
-            value={Math.max(0, Math.min(500, item.portionGrams))}
+            minimumValue={food.category === 'supplements' ? 1 : 0}
+            maximumValue={food.category === 'supplements' ? 10 : 500}
+            value={Math.max(
+              food.category === 'supplements' ? 1 : 0, 
+              Math.min(food.category === 'supplements' ? 10 : 500, item.portionGrams)
+            )}
             onValueChange={(value) => updatePortion(food.id, value)}
             minimumTrackTintColor={
+              food.category === 'supplements' ? "#007AFF" :
               isLocked(food.id) ? "#666666" : 
               hasMaxLimit(food.id) || hasMinLimit(food.id) ? "#FF9500" : 
               "#007AFF"
@@ -598,12 +650,12 @@ export default function MealPlanningScreen({ route, navigation }) {
             maximumTrackTintColor="#3A3A3A"
             thumbStyle={[
               styles.ultraCompactSliderThumb,
-              isLocked(food.id) && styles.lockedSliderThumb,
-              (hasMaxLimit(food.id) || hasMinLimit(food.id)) && styles.limitedSliderThumb
+              food.category !== 'supplements' && isLocked(food.id) && styles.lockedSliderThumb,
+              food.category !== 'supplements' && (hasMaxLimit(food.id) || hasMinLimit(food.id)) && styles.limitedSliderThumb
             ]}
             trackStyle={styles.ultraCompactSliderTrack}
-            step={5}
-            disabled={isLocked(food.id)}
+            step={food.category === 'supplements' ? 1 : 5}
+            disabled={food.category !== 'supplements' && isLocked(food.id)}
           />
         </View>
       </LinearGradient>
@@ -730,8 +782,8 @@ export default function MealPlanningScreen({ route, navigation }) {
               </ScrollView>
             </View>
 
-            {/* Progress Bars - Hidden for Snack */}
-            {selectedMeal && selectedMeal.name !== 'Snack' && (
+            {/* Progress Bars - Hidden for Extra */}
+            {selectedMeal && selectedMeal.name !== 'Extra' && (
               <View style={styles.progressSeparator}>
                 <View style={styles.compactProgressSection}>
                   <SegmentedProgressBar
@@ -763,11 +815,11 @@ export default function MealPlanningScreen({ route, navigation }) {
               </View>
             )}
 
-            {/* Snack Calories - Only for Snack with Foods */}
-            {selectedMeal && selectedFoods.length > 0 && selectedMeal.name === 'Snack' && (
+            {/* Extra Calories - Only for Extra with Foods */}
+            {selectedMeal && selectedFoods.length > 0 && selectedMeal.name === 'Extra' && (
               <View style={styles.progressSeparator}>
                 <View style={styles.snackCaloriesSection}>
-                  <Text style={styles.snackCaloriesLabel}>Snack: </Text>
+                  <Text style={styles.snackCaloriesLabel}>Extra: </Text>
                   <Text style={styles.snackCaloriesValue}>
                     {currentMacros.calories} cal • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
                   </Text>
@@ -835,7 +887,7 @@ export default function MealPlanningScreen({ route, navigation }) {
                   onPressIn={() => Keyboard.dismiss()}
                   onPress={() => setShowSavePresetModal(true)}
                 >
-                  <Text style={styles.presetButtonText}>💾 Save Preset</Text>
+                  <Text style={styles.presetButtonText}>💾 Save as preset</Text>
                 </Pressable>
               )}
               
@@ -932,7 +984,7 @@ export default function MealPlanningScreen({ route, navigation }) {
         selectedMeal={selectedMeal}
       />
 
-      {/* Save Preset Modal */}
+      {/* Save as preset Modal */}
       <SavePresetModal
         visible={showSavePresetModal}
         onClose={() => setShowSavePresetModal(false)}
@@ -1828,7 +1880,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF9500',
   },
 
-  // Snack Calories
+  // Extra Calories
   snackCaloriesSection: {
     flexDirection: 'row',
     justifyContent: 'center',

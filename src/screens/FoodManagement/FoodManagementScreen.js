@@ -55,6 +55,7 @@ export default function FoodManagementScreen({ navigation }) {
     { id: 'grains', name: 'Grains', count: foods.filter(f => f.category === 'grains').length },
     { id: 'dairy', name: 'Dairy', count: foods.filter(f => f.category === 'dairy').length },
     { id: 'nuts', name: 'Nuts', count: foods.filter(f => f.category === 'nuts').length },
+    { id: 'supplements', name: 'Supplements', count: foods.filter(f => f.category === 'supplements').length },
     { id: 'other', name: 'Other', count: foods.filter(f => f.category === 'other').length },
   ];
 

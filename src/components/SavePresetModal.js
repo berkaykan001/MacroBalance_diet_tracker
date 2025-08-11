@@ -122,7 +122,7 @@ export default function SavePresetModal({
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                 >
-                  <Text style={styles.saveButtonText}>💾 Save Preset</Text>
+                  <Text style={styles.saveButtonText}>💾 Save as preset</Text>
                 </LinearGradient>
               </Pressable>
             </View>

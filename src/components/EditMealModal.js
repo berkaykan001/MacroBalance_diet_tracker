@@ -394,7 +394,7 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
         </View>
 
         {/* Progress Section */}
-        {selectedFoods.length > 0 && selectedMeal.name !== 'Snack' && (
+        {selectedFoods.length > 0 && selectedMeal.name !== 'Extra' && (
           <View style={styles.progressSection}>
             <SegmentedProgressBar
               label="Protein"
@@ -424,10 +424,10 @@ export default function EditMealModal({ visible, onClose, mealPlan, onUpdate }) 
           </View>
         )}
 
-        {/* Snack Calories Section */}
-        {selectedFoods.length > 0 && selectedMeal.name === 'Snack' && (
+        {/* Extra Calories Section */}
+        {selectedFoods.length > 0 && selectedMeal.name === 'Extra' && (
           <View style={styles.snackCalories}>
-            <Text style={styles.snackCaloriesLabel}>Snack: </Text>
+            <Text style={styles.snackCaloriesLabel}>Extra: </Text>
             <Text style={styles.snackCaloriesValue}>
               {currentMacros.calories} cal • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
             </Text>
@@ -596,7 +596,7 @@ const styles = StyleSheet.create({
     color: '#00D084',
   },
 
-  // Snack Calories
+  // Extra Calories
   snackCalories: {
     flexDirection: 'row',
     justifyContent: 'center',

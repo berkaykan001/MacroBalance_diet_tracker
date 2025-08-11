@@ -60,7 +60,18 @@ export default function MealPlanningScreen({ route, navigation }) {
   const updateMealState = (mealId, newState) => {
     setMealSpecificState(prev => ({
       ...prev,
-      [mealId]: { ...getMealState(mealId), ...newState }
+      [mealId]: { 
+        // Use the previous state directly instead of getMealState to avoid stale state
+        ...(prev[mealId] || {
+          selectedFoods: [],
+          lockedFoods: new Set(),
+          maxLimitFoods: new Map(),
+          minLimitFoods: new Map(),
+          editingPortion: null,
+          tempPortionValue: ''
+        }), 
+        ...newState 
+      }
     }));
   };
 
@@ -490,14 +501,18 @@ export default function MealPlanningScreen({ route, navigation }) {
                 value={tempPortionValue}
                 onChangeText={(value) => updateMealState(selectedMealId, { tempPortionValue: value })}
                 onBlur={() => {
-                  const numValue = parseFloat(tempPortionValue);
+                  // Get the current temp value from the most recent state
+                  const currentTempValue = getMealState(selectedMealId).tempPortionValue;
+                  const numValue = parseFloat(currentTempValue);
                   if (!isNaN(numValue) && numValue >= 0 && numValue <= 500) {
                     updatePortion(food.id, numValue);
                   }
                   updateMealState(selectedMealId, { editingPortion: null, tempPortionValue: '' });
                 }}
                 onSubmitEditing={() => {
-                  const numValue = parseFloat(tempPortionValue);
+                  // Get the current temp value from the most recent state
+                  const currentTempValue = getMealState(selectedMealId).tempPortionValue;
+                  const numValue = parseFloat(currentTempValue);
                   if (!isNaN(numValue) && numValue >= 0 && numValue <= 500) {
                     updatePortion(food.id, numValue);
                   }

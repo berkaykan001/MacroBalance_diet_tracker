@@ -152,3 +152,36 @@ PREVIOUS ATTEMPTS MENTIONED:
 3. Try onPressOut pattern instead of onPressIn
 4. Consider platform-specific solutions (iOS vs Android)
 5. Research if this is a React Native version-specific issue
+
+---
+
+## ✅ **FINAL RESULT: METHOD 2 SUCCESSFUL!**
+
+**Status:** RESOLVED ✅
+**Date:** 2025-01-28
+**Method Used:** Method 2 (keyboardShouldPersistTaps="always" + Pressable with onPressIn)
+
+### **Final Working Solution:**
+- **keyboardShouldPersistTaps="always"** on ScrollViews
+- **keyboardDismissMode="none"** to prevent accidental dismissal
+- **Pressable with onPressIn pattern** for immediate keyboard dismissal
+- **Manual Keyboard.dismiss()** calls for explicit control
+
+### **User Confirmation:**
+> "ok so, the keyboard issue is solved now"
+
+The double-tap keyboard issue has been completely resolved. Users can now:
+- Single-tap buttons while keyboard is open → keyboard dismisses AND action executes
+- No more double-tap requirement
+- Smooth, intuitive interaction flow
+
+### **Files Successfully Updated:**
+- ✅ `src/screens/MealPlanning/MealPlanningScreen.js`
+- ✅ `src/screens/FoodManagement/FoodManagementScreen.js`
+- ✅ `src/components/EditMealModal.js` (prepared)
+- ✅ `src/screens/DishCreator/DishCreatorScreen.js` (prepared)
+
+### **Key Learning:**
+The combination of `keyboardShouldPersistTaps="always"` with `Pressable + onPressIn` pattern provides the most reliable keyboard handling solution for React Native apps. This approach gives full control over keyboard behavior while maintaining responsive user interactions.
+
+**Status: CLOSED - Issue fully resolved** 🎉

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSettings } from './SettingsContext';
 
 const MealContext = createContext();
 
@@ -166,7 +167,7 @@ function mealReducer(state, action) {
       const newMealPlan = {
         ...action.payload,
         id: Date.now().toString(),
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString() // Keep actual timestamp for precision
       };
       return {
         ...state,
@@ -223,6 +224,7 @@ const initialState = {
 
 export function MealProvider({ children }) {
   const [state, dispatch] = useReducer(mealReducer, initialState);
+  const { appPreferences } = useSettings();
 
   useEffect(() => {
     loadMeals();
@@ -557,8 +559,7 @@ export function MealProvider({ children }) {
   };
 
   const getTodaysSummary = () => {
-    const today = new Date();
-    const todayKey = today.toDateString();
+    const todayKey = getMyTodayDate(); // Use custom day reset logic
     
     // Check if we already have a daily summary for today
     if (state.dailySummaries[todayKey]) {
@@ -568,11 +569,10 @@ export function MealProvider({ children }) {
       };
     }
     
-    // Get today's meal plans
-    const todaysMealPlans = state.mealPlans.filter(plan => {
-      const planDate = new Date(plan.createdAt);
-      return planDate.toDateString() === todayKey;
-    });
+    // Get today's meal plans using consistent logic
+    const todaysMealPlans = state.mealPlans.filter(plan => 
+      getMyTodayDate(new Date(plan.createdAt)) === todayKey
+    );
     
     if (todaysMealPlans.length === 0) {
       return null;
@@ -585,11 +585,12 @@ export function MealProvider({ children }) {
 
   const getDailySummariesForPeriod = (days = 7) => {
     const summaries = [];
-    const today = new Date();
+    const todayKey = getMyTodayDate(); // Use custom day reset logic
+    const todayDate = new Date(todayKey);
     
     for (let i = 0; i < days; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
+      const date = new Date(todayDate);
+      date.setDate(todayDate.getDate() - i);
       const dateKey = date.toDateString();
       
       if (i === 0) {
@@ -649,8 +650,7 @@ export function MealProvider({ children }) {
   // Data Lifecycle Management
   const processDataLifecycle = async (retentionDays = 90) => {
     // Use consistent date calculation with getMyTodayDate logic
-    const today = new Date();
-    const myToday = getMyTodayDate(today);
+    const myToday = getMyTodayDate(); // Use custom day reset logic
     const myTodayDate = new Date(myToday);
     
     const sevenDaysAgo = new Date(myTodayDate);
@@ -771,9 +771,10 @@ export function MealProvider({ children }) {
     );
   };
 
-  // Helper function to get "today" based on custom reset hour instead of midnight
-  const getMyTodayDate = (date = new Date(), dayResetHour = 4) => {
+  // Helper function to get "today" based on user's custom reset hour instead of midnight
+  const getMyTodayDate = (date = new Date()) => {
     const currentDate = new Date(date);
+    const dayResetHour = appPreferences?.dayResetHour || 4;
     // If it's before the reset hour, consider it as the previous day
     if (currentDate.getHours() < dayResetHour) {
       currentDate.setDate(currentDate.getDate() - 1);

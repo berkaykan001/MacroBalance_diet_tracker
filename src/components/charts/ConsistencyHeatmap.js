@@ -10,8 +10,6 @@ export default function ConsistencyHeatmap() {
   const { getFoodById } = useFood();
   const { appPreferences } = useSettings();
   
-  const dayResetHour = appPreferences?.dayResetHour || 4;
-  
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(null);
   
@@ -38,12 +36,12 @@ export default function ConsistencyHeatmap() {
     // Also add today's real-time summary if it exists
     const todaysSummary = getTodaysSummary();
     if (todaysSummary) {
-      const todayKey = getMyTodayDate(new Date(), dayResetHour);
+      const todayKey = getMyTodayDate(); // No need to pass parameters anymore
       map[todayKey] = todaysSummary;
     }
     
     return map;
-  }, [allSummaries, getTodaysSummary, dayResetHour]);
+  }, [allSummaries, getTodaysSummary, getMyTodayDate]);
   
   // Generate calendar grid for current month
   const calendarData = useMemo(() => {
@@ -69,7 +67,7 @@ export default function ConsistencyHeatmap() {
         const dateString = date.toDateString();
         const summary = summaryMap[dateString];
         // Use getMyTodayDate function for consistent custom reset hour logic
-        const myTodayString = getMyTodayDate(new Date(), dayResetHour);
+        const myTodayString = getMyTodayDate(); // No need to pass parameters anymore
         const isToday = dateString === myTodayString;
         const isFuture = date > new Date(myTodayString);
         const isCurrentMonth = date.getMonth() === month;
@@ -89,7 +87,7 @@ export default function ConsistencyHeatmap() {
     }
     
     return weeks;
-  }, [currentDate, summaryMap, dayResetHour]);
+  }, [currentDate, summaryMap, getMyTodayDate]);
   
   // Navigation functions
   const goToPreviousMonth = () => {

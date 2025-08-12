@@ -23,8 +23,8 @@ const defaultMeals = [
     id: '1',
     name: 'Breakfast',
     macroTargets: {
-      protein: 40,
-      carbs: 40,
+      protein: 45,
+      carbs: 45,
       minFiber: 7,
       maxSugar: 12,
       fat: 15
@@ -36,8 +36,8 @@ const defaultMeals = [
     id: '2',
     name: 'Lunch',
     macroTargets: {
-      protein: 40,
-      carbs: 50,
+      protein: 44,
+      carbs: 45,
       minFiber: 8,
       maxSugar: 12,
       fat: 15
@@ -49,11 +49,11 @@ const defaultMeals = [
     id: '3',
     name: 'Dinner (Pre-Workout)',
     macroTargets: {
-      protein: 40,
-      carbs: 70,
+      protein: 43,
+      carbs: 66,
       minFiber: 8,
       maxSugar: 15,
-      fat: 10
+      fat: 8
     },
     userCustom: false,
     createdAt: new Date().toISOString()
@@ -62,11 +62,11 @@ const defaultMeals = [
     id: '4',
     name: 'Late Night Meal',
     macroTargets: {
-      protein: 38,
-      carbs: 20,
+      protein: 40,
+      carbs: 10,
       minFiber: 5,
       maxSugar: 11,
-      fat: 10
+      fat: 12
     },
     userCustom: false,
     createdAt: new Date().toISOString()
@@ -89,37 +89,38 @@ const defaultMeals = [
 // Daily sub-macro targets (independent of meals)
 const defaultDailySubMacroTargets = {
   // Healthy fats (daily targets)
-  omega3: 0.4,            // 400mg (0.4g) EPA+DHA daily (middle of 250-500mg range)
-  monounsaturatedFat: 20, // ~40% of total fat (50g * 0.4 = 20g)
-  polyunsaturatedFat: 15, // ~30% of total fat (50g * 0.3 = 15g) 
-  maxSaturatedFat: 15,    // ~30% of total fat (50g * 0.3 = 15g max)
-  maxTransFat: 0,         // Zero trans fat daily
+  omega3: 1.5,            // 1.5g EPA+DHA daily (AI-calculated)
+  monounsaturatedFat: 20, // 20g monounsaturated fat daily (AI-calculated)
+  polyunsaturatedFat: 15, // 15g polyunsaturated fat daily (AI-calculated)
+  maxSaturatedFat: 20,    // Max 20g saturated fat daily (AI-calculated)
+  maxTransFat: 0,         // Zero trans fat daily (AI-calculated)
   
   // Sugar targets
-  maxAddedSugars: 50,     // Max 50g added sugars daily (as recommended)
-  maxNaturalSugars: 60,   // Reasonable limit for natural sugars from whole foods
-  minFiber: 29,           // 29g fiber daily (middle of 28-30g range)
+  maxAddedSugars: 25,     // Max 25g added sugars daily (AI-calculated)
+  maxNaturalSugars: 50,   // Max 50g natural sugars daily (AI-calculated)
+  maxSugar: 75,           // Max 75g total sugars daily (AI-calculated)
+  minFiber: 30,           // 30g fiber daily (AI-calculated)
   
-  // Additional targets you can customize later
-  maxSodium: 2300,        // Max 2300mg sodium daily (FDA limit)
-  minPotassium: 4700      // Min 4700mg potassium daily (FDA requirement)
+  // Additional targets
+  maxSodium: 2300,        // Max 2300mg sodium daily (AI-calculated)
+  minPotassium: 3400      // Min 3400mg potassium daily (AI-calculated)
 };
 
-// Daily micronutrient targets (Personalized for 30-year-old male, 72kg)
+// Daily micronutrient targets (Personalized for 31-year-old male, 70kg)
 const defaultDailyMicronutrientTargets = {
   // Minerals (mg)
-  iron: 8,               // 8mg daily for adult men
-  calcium: 1300,         // 1300mg daily (as recommended)
-  zinc: 11,              // 11mg daily for men
-  magnesium: 420,        // 420mg daily for men
-  sodium: 2300,          // Max 2300mg sodium daily (FDA limit)
-  potassium: 4700,       // Min 4700mg potassium daily (FDA requirement)
+  iron: 8,               // 8mg daily for adult men (AI-calculated)
+  calcium: 1000,         // 1000mg daily (AI-calculated)
+  zinc: 11,              // 11mg daily for men (AI-calculated)
+  magnesium: 420,        // 420mg daily for men (AI-calculated)
+  sodium: 2300,          // Max 2300mg sodium daily (AI-calculated)
+  potassium: 3400,       // Min 3400mg potassium daily (AI-calculated)
   
   // Vitamins
-  vitaminB6: 1.7,        // 1.7mg daily (as recommended)
-  vitaminB12: 2.4,       // 2.4μg daily for adults
-  vitaminC: 90,          // 90mg daily for men
-  vitaminD: 20,          // 20μg daily (as recommended)
+  vitaminB6: 1.7,        // 1.7mg daily (AI-calculated)
+  vitaminB12: 2.4,       // 2.4μg daily for adults (AI-calculated)
+  vitaminC: 100,         // 100mg daily for men (AI-calculated)
+  vitaminD: 25,          // 25μg daily (AI-calculated)
 };
 
 function mealReducer(state, action) {

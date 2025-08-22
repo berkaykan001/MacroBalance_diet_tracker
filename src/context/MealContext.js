@@ -295,8 +295,10 @@ export function MealProvider({ children }) {
       const storedMealPlans = await AsyncStorage.getItem('mealPlans');
       if (storedMealPlans) {
         const mealPlans = JSON.parse(storedMealPlans);
+        console.log('Loaded meal plans:', mealPlans.length, 'plans');
         dispatch({ type: ACTIONS.LOAD_MEAL_PLANS, payload: mealPlans });
       } else {
+        console.log('No stored meal plans found');
         dispatch({ type: ACTIONS.LOAD_MEAL_PLANS, payload: [] });
       }
     } catch (error) {
@@ -327,8 +329,10 @@ export function MealProvider({ children }) {
       const storedSummaries = await AsyncStorage.getItem('dailySummaries');
       if (storedSummaries) {
         const summaries = JSON.parse(storedSummaries);
+        console.log('Loaded daily summaries:', Object.keys(summaries).length, 'days');
         dispatch({ type: ACTIONS.LOAD_DAILY_SUMMARIES, payload: summaries });
       } else {
+        console.log('No stored daily summaries found');
         dispatch({ type: ACTIONS.LOAD_DAILY_SUMMARIES, payload: {} });
       }
     } catch (error) {
@@ -395,7 +399,7 @@ export function MealProvider({ children }) {
   };
 
   // Daily Summary Functions
-  const createDailySummary = (date, mealPlans) => {
+  const createDailySummary = (mealPlans) => {
     if (!mealPlans || mealPlans.length === 0) {
       return null;
     }
@@ -580,7 +584,7 @@ export function MealProvider({ children }) {
     }
     
     // Create real-time summary from today's meal plans
-    const summary = createDailySummary(todayKey, todaysMealPlans);
+    const summary = createDailySummary(todaysMealPlans);
     return summary ? { date: todayKey, ...summary } : null;
   };
 
@@ -601,12 +605,30 @@ export function MealProvider({ children }) {
           summaries.unshift(todaysSummary);
         }
       } else {
-        // For past days, use stored daily summaries
+        // For past days, check stored daily summaries first
         if (state.dailySummaries[dateKey]) {
           summaries.unshift({
             date: dateKey,
             ...state.dailySummaries[dateKey]
           });
+        } else {
+          // If no stored summary, try to create one from meal plans for that date
+          // This handles recent days that haven't been converted to summaries yet
+          const dayMealPlans = state.mealPlans.filter(plan => {
+            const planDateKey = getMyTodayDate(new Date(plan.createdAt));
+            return planDateKey === dateKey;
+          });
+          
+          if (dayMealPlans.length > 0) {
+            const summary = createDailySummary(dayMealPlans);
+            if (summary) {
+              console.log(`Created real-time summary for ${dateKey} from ${dayMealPlans.length} meal plans`);
+              summaries.unshift({
+                date: dateKey,
+                ...summary
+              });
+            }
+          }
         }
       }
     }
@@ -680,7 +702,7 @@ export function MealProvider({ children }) {
     const newSummaries = {};
     Object.entries(plansByDate).forEach(([dateKey, plans]) => {
       if (!state.dailySummaries[dateKey]) { // Don't overwrite existing summaries
-        const summary = createDailySummary(dateKey, plans);
+        const summary = createDailySummary(plans);
         if (summary) {
           newSummaries[dateKey] = summary;
         }

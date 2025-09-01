@@ -131,5 +131,117 @@ If user reports the issue persists, investigate:
 - Real-time performance: Creates summaries on-demand for recent days only
 
 ---
-**Status**: ✅ IMPLEMENTED AND DEPLOYED
-**Method Rating**: SUCCESSFUL - Addresses root cause with minimal architectural changes
+**Status**: ⚠️ PARTIALLY SUCCESSFUL
+**Method Rating**: PARTIALLY SUCCESSFUL - Fixed main issue but revealed date consistency bug
+
+## Method 1 Results Update (2025-09-01)
+**User Feedback**: Method 1 worked "weirdly" - tracked 3 days but not others
+**Analysis**: The enhanced retrieval logic worked for some days but not all, indicating a deeper date handling issue
+
+## Method 2: Date Consistency Fix - 🔄 NEW ATTEMPT
+
+### Root Cause Identified
+**Critical Bug Found**: Date inconsistency in `getDailySummariesForPeriod()` function
+
+**The Problem**:
+1. Line 614: `const dateKey = date.toDateString();` - Uses regular JavaScript date logic
+2. Line 633: `const planDateKey = getMyTodayDate(new Date(plan.createdAt));` - Uses custom day reset logic
+3. **Result**: Meal plans and date keys don't match due to different date calculation methods
+
+**Why Only 3 Days Worked**:
+- Days where meal plans were created after the day reset hour (4 AM) worked fine
+- Days where meal plans were created before 4 AM failed because:
+  - `dateKey` used the actual calendar date
+  - `planDateKey` used the previous day due to day reset hour logic
+  - The mismatch caused meal plans to be "invisible" to the retrieval function
+
+### Technical Deep Dive
+
+**Date Logic Conflict**:
+```javascript
+// BEFORE (Inconsistent):
+const dateKey = date.toDateString();  // "Mon Aug 26 2025"
+const planDateKey = getMyTodayDate(new Date(plan.createdAt)); // "Sun Aug 25 2025" (if created before 4 AM)
+// Result: planDateKey !== dateKey, so meal plans not found
+
+// AFTER (Consistent):
+const dateKey = getMyTodayDate(date);  // Both use same logic
+const planDateKey = getMyTodayDate(new Date(plan.createdAt)); // Both use same logic
+// Result: planDateKey === dateKey, meal plans found correctly
+```
+
+**Impact on Data Retrieval**:
+- Calendar requests historical data via `getDailySummariesForPeriod(365)`
+- Function iterates through past days and tries to match meal plans
+- Date inconsistency caused some meal plans to be unfindable
+- User experienced "random" missing days (actually meal plans created before 4 AM)
+
+### Implementation Details
+
+**File Modified**: `src/context/MealContext.js`
+**Functions Updated**:
+1. `getDailySummariesForPeriod()` - Fixed date consistency bug
+2. Reducer `CREATE_MEAL_PLAN` case - Added debugging logs
+
+**Key Changes**:
+1. **Consistent Date Calculation**: 
+   ```javascript
+   // OLD: const dateKey = date.toDateString();
+   // NEW: const dateKey = getMyTodayDate(date);
+   ```
+
+2. **Enhanced Debugging**: Added comprehensive logging to track:
+   - Date key calculations during retrieval
+   - Meal plan creation timestamps and date mappings
+   - Summary creation success/failure for each day
+
+3. **Logging for Diagnosis**:
+   - `getDailySummariesForPeriod`: Logs search process for each day
+   - `CREATE_MEAL_PLAN` reducer: Logs both regular and custom date keys
+   - Shows exact date mappings to identify future inconsistencies
+
+### Why This Method Should Work
+
+**Root Cause Addressed**: The date inconsistency bug was the actual cause of partial failure
+**Consistent Logic**: Now both meal plan storage and retrieval use the same date calculation method
+**Day Reset Hour Compatibility**: Properly handles user's custom day reset hour across all date operations
+**Debugging Enhanced**: Comprehensive logging to identify any remaining issues
+
+### Expected Results
+After this fix:
+- ✅ All days with meal plans should appear in calendar (not just 3)
+- ✅ Building Trends should show complete historical data
+- ✅ Day reset hour should work consistently across all features
+- ✅ No more "random" missing days
+
+### Debugging Information Added
+Console logs now show:
+- `getDailySummariesForPeriod: Requesting X days starting from [date]`
+- `getDailySummariesForPeriod: Found stored summary for [date]`
+- `getDailySummariesForPeriod: Created real-time summary for [date] from X meal plans`
+- `getDailySummariesForPeriod: No data found for [date]`
+- `REDUCER CREATE_MEAL_PLAN: Created at [timestamp]`
+- `REDUCER CREATE_MEAL_PLAN: Regular date key = [date]`
+- `REDUCER CREATE_MEAL_PLAN: Custom date key = [date]`
+
+### Alternative Issues Investigated
+**AsyncStorage**: Confirmed working correctly - data is being saved and loaded properly
+**Data Lifecycle**: No issues found - meal plans are converted to summaries as expected after 7 days
+**Timezone Logic**: `getMyTodayDate()` function works correctly with day reset hour
+**Component Integration**: Calendar and trends components call the correct updated functions
+
+### Testing Strategy
+1. **Test Meal Creation**: Create meals at different times (before/after 4 AM) and verify consistent date keys
+2. **Test Historical Retrieval**: Check that all days with data appear in calendar
+3. **Test Day Reset Hour**: Verify meal plans created around 4 AM are handled correctly
+4. **Monitor Debug Logs**: Use console output to verify date consistency
+
+### Commit Details (Pending)
+- Enhanced `getDailySummariesForPeriod()` with consistent date logic
+- Added comprehensive debugging logs
+- Fixed date calculation inconsistency bug
+
+---
+**Status**: 🔄 IMPLEMENTED - PENDING USER TESTING
+**Method Rating**: HIGH CONFIDENCE - Addresses the specific root cause of partial failure
+**Next Steps**: User testing with debug logs enabled to verify all days appear correctly

@@ -580,6 +580,38 @@ export default function MealPlanningScreen({ route, navigation }) {
   const savedMealPlan = findTodaysMealPlan(selectedMealId);
   const hasSavedMeal = savedMealPlan !== undefined;
 
+  // Confirm meal update with user
+  const confirmAndSaveMeal = (isUpdating = false) => {
+    if (isUpdating) {
+      // Use platform-specific alert handling like we do for cheat meal cancellation
+      if (typeof window !== 'undefined' && window.confirm) {
+        // Web environment - use window.confirm
+        const confirmed = window.confirm(
+          `Are you sure you want to update this ${selectedMeal?.name || 'meal'}? This will replace your previously saved meal with the current food selections.`
+        );
+        if (confirmed) {
+          saveMealPlan();
+        }
+      } else {
+        // Mobile environment - use Alert.alert
+        Alert.alert(
+          'Update Meal',
+          `Are you sure you want to update this ${selectedMeal?.name || 'meal'}? This will replace your previously saved meal with the current food selections.`,
+          [
+            { text: 'Keep Original', style: 'cancel' },
+            { 
+              text: 'Update Meal', 
+              onPress: () => saveMealPlan()
+            }
+          ]
+        );
+      }
+    } else {
+      // First time saving - no confirmation needed
+      saveMealPlan();
+    }
+  };
+
   const saveMealPlan = () => {
     if (!selectedMeal) {
       Alert.alert('No Meal Selected', 'Please select a meal first.');
@@ -1174,7 +1206,7 @@ export default function MealPlanningScreen({ route, navigation }) {
                   <Pressable 
                     style={styles.eatenButton}
                     onPressIn={() => Keyboard.dismiss()}
-                    onPress={saveMealPlan}
+                    onPress={() => confirmAndSaveMeal(false)}
                   >
                     <LinearGradient
                       colors={['#00D084', '#00A86B']}
@@ -1215,7 +1247,7 @@ export default function MealPlanningScreen({ route, navigation }) {
                       <Pressable 
                         style={styles.eatenButton}
                         onPressIn={() => Keyboard.dismiss()}
-                        onPress={saveMealPlan}
+                        onPress={() => confirmAndSaveMeal(true)}
                       >
                         <LinearGradient
                           colors={['#00D084', '#00A86B']}
@@ -1233,7 +1265,7 @@ export default function MealPlanningScreen({ route, navigation }) {
                       <Pressable 
                         style={styles.eatenButton}
                         onPressIn={() => Keyboard.dismiss()}
-                        onPress={saveMealPlan}
+                        onPress={() => confirmAndSaveMeal(false)}
                       >
                         <LinearGradient
                           colors={['#00D084', '#00A86B']}

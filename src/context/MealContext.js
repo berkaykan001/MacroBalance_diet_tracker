@@ -165,12 +165,30 @@ function mealReducer(state, action) {
       };
     
     case ACTIONS.CREATE_MEAL_PLAN:
+      const now = new Date();
       const newMealPlan = {
         ...action.payload,
         id: Date.now().toString(),
-        createdAt: new Date().toISOString(), // Keep actual timestamp for precision
+        createdAt: now.toISOString(), // Keep actual timestamp for precision
         isCheatMeal: action.payload.isCheatMeal || false // Default to false if not specified
       };
+      
+      // DEBUG: Log meal plan creation with date mapping info
+      // This helps us understand if dates are being mapped correctly
+      const createdDateKey = new Date(newMealPlan.createdAt).toDateString();
+      const myTodayKey = newMealPlan.createdAt ? (() => {
+        const currentDate = new Date(newMealPlan.createdAt);
+        const dayResetHour = 4; // Default since appPreferences might not be available in reducer
+        if (currentDate.getHours() < dayResetHour) {
+          currentDate.setDate(currentDate.getDate() - 1);
+        }
+        return currentDate.toDateString();
+      })() : null;
+      
+      console.log(`REDUCER CREATE_MEAL_PLAN: Created at ${newMealPlan.createdAt}`);
+      console.log(`REDUCER CREATE_MEAL_PLAN: Regular date key = ${createdDateKey}`);
+      console.log(`REDUCER CREATE_MEAL_PLAN: Custom date key = ${myTodayKey}`);
+      
       return {
         ...state,
         mealPlans: [...state.mealPlans, newMealPlan]
@@ -608,16 +626,23 @@ export function MealProvider({ children }) {
     const todayKey = getMyTodayDate(); // Use custom day reset logic
     const todayDate = new Date(todayKey);
     
+    console.log(`getDailySummariesForPeriod: Requesting ${days} days starting from ${todayKey}`);
+    
     for (let i = 0; i < days; i++) {
       const date = new Date(todayDate);
       date.setDate(todayDate.getDate() - i);
-      const dateKey = date.toDateString();
+      
+      // CRITICAL FIX: Use consistent date logic for both summary lookup and meal plan filtering
+      // Instead of using regular toDateString(), use the same getMyTodayDate logic
+      // This ensures meal plans and summaries use the same date keys
+      const dateKey = getMyTodayDate(date);
       
       if (i === 0) {
         // For today, get real-time summary
         const todaysSummary = getTodaysSummary();
         if (todaysSummary) {
           summaries.unshift(todaysSummary);
+          console.log(`getDailySummariesForPeriod: Added today's real-time summary`);
         }
       } else {
         // For past days, check stored daily summaries first
@@ -626,6 +651,7 @@ export function MealProvider({ children }) {
             date: dateKey,
             ...state.dailySummaries[dateKey]
           });
+          console.log(`getDailySummariesForPeriod: Found stored summary for ${dateKey}`);
         } else {
           // If no stored summary, try to create one from meal plans for that date
           // This handles recent days that haven't been converted to summaries yet
@@ -634,20 +660,25 @@ export function MealProvider({ children }) {
             return planDateKey === dateKey;
           });
           
+          console.log(`getDailySummariesForPeriod: Searching for meal plans on ${dateKey}, found ${dayMealPlans.length} plans`);
+          
           if (dayMealPlans.length > 0) {
             const summary = createDailySummary(dayMealPlans);
             if (summary) {
-              console.log(`Created real-time summary for ${dateKey} from ${dayMealPlans.length} meal plans`);
+              console.log(`getDailySummariesForPeriod: Created real-time summary for ${dateKey} from ${dayMealPlans.length} meal plans`);
               summaries.unshift({
                 date: dateKey,
                 ...summary
               });
             }
+          } else {
+            console.log(`getDailySummariesForPeriod: No data found for ${dateKey}`);
           }
         }
       }
     }
     
+    console.log(`getDailySummariesForPeriod: Returning ${summaries.length} summaries out of ${days} requested days`);
     return summaries;
   };
 

@@ -248,13 +248,21 @@ const initialState = {
 
 export function MealProvider({ children }) {
   const [state, dispatch] = useReducer(mealReducer, initialState);
-  const { appPreferences } = useSettings();
+  const { appPreferences, personalizedTargets, userProfile } = useSettings();
 
   useEffect(() => {
     loadMeals();
     loadMealPlans();
     loadDailySummaries();
   }, []);
+
+  // Reload meals when personalized targets change
+  useEffect(() => {
+    if (!state.loading && personalizedTargets) {
+      console.log('Personalized targets updated, reloading meals');
+      loadMeals();
+    }
+  }, [personalizedTargets, userProfile?.isProfileComplete]);
 
   useEffect(() => {
     if (!state.loading) {
@@ -297,13 +305,79 @@ export function MealProvider({ children }) {
     return () => clearInterval(interval);
   }, [state.loading, state.mealPlans.length]);
 
+  // Generate meals from personalized targets
+  const generatePersonalizedMeals = () => {
+    if (!personalizedTargets || !personalizedTargets.mealDistribution) {
+      return defaultMeals;
+    }
+
+    const personalizedMeals = personalizedTargets.mealDistribution.map((meal, index) => ({
+      id: (index + 1).toString(),
+      name: meal.name,
+      macroTargets: {
+        protein: meal.macroTargets.protein,
+        carbs: meal.macroTargets.carbs,
+        minFiber: meal.macroTargets.minFiber || Math.round(meal.macroTargets.fiber * 0.8),
+        maxSugar: meal.macroTargets.maxSugar || Math.round(meal.macroTargets.carbs * 0.3),
+        fat: meal.macroTargets.fat
+      },
+      userCustom: false,
+      personalizedGenerated: true,
+      createdAt: new Date().toISOString()
+    }));
+
+    // Always add the Extra meal
+    personalizedMeals.push({
+      id: (personalizedMeals.length + 1).toString(),
+      name: 'Extra',
+      macroTargets: {
+        protein: 0,
+        carbs: 0,
+        minFiber: 0,
+        maxSugar: 0,
+        fat: 0
+      },
+      userCustom: false,
+      personalizedGenerated: false,
+      createdAt: new Date().toISOString()
+    });
+
+    return personalizedMeals;
+  };
+
   const loadMeals = async () => {
     try {
+      // If we have personalized targets and user hasn't completed onboarding or wants to use personalized meals
+      const shouldUsePersonalizedMeals = personalizedTargets && 
+                                        personalizedTargets.mealDistribution &&
+                                        userProfile?.isProfileComplete;
+
+      if (shouldUsePersonalizedMeals) {
+        console.log('Loading personalized meals from targets');
+        const personalizedMeals = generatePersonalizedMeals();
+        dispatch({ type: ACTIONS.LOAD_MEALS, payload: personalizedMeals });
+        
+        // Save personalized meals to storage
+        await AsyncStorage.setItem('meals', JSON.stringify(personalizedMeals));
+        return;
+      }
+
+      // Otherwise, load from storage or use defaults
       const storedMeals = await AsyncStorage.getItem('meals');
       if (storedMeals) {
         const meals = JSON.parse(storedMeals);
-        dispatch({ type: ACTIONS.LOAD_MEALS, payload: meals });
+        // Check if stored meals are outdated personalized meals - if so, regenerate
+        const hasPersonalizedMeals = meals.some(meal => meal.personalizedGenerated);
+        if (hasPersonalizedMeals && shouldUsePersonalizedMeals) {
+          console.log('Updating outdated personalized meals');
+          const updatedMeals = generatePersonalizedMeals();
+          dispatch({ type: ACTIONS.LOAD_MEALS, payload: updatedMeals });
+          await AsyncStorage.setItem('meals', JSON.stringify(updatedMeals));
+        } else {
+          dispatch({ type: ACTIONS.LOAD_MEALS, payload: meals });
+        }
       } else {
+        console.log('No stored meals found, using defaults');
         dispatch({ type: ACTIONS.LOAD_MEALS, payload: defaultMeals });
         await AsyncStorage.setItem('meals', JSON.stringify(defaultMeals));
       }
@@ -419,6 +493,25 @@ export function MealProvider({ children }) {
     await loadMeals();
     await loadMealPlans();
     await loadDailySummaries();
+  };
+
+  const regeneratePersonalizedMeals = async () => {
+    console.log('Regenerating personalized meals...');
+    if (personalizedTargets && personalizedTargets.mealDistribution) {
+      const personalizedMeals = generatePersonalizedMeals();
+      dispatch({ type: ACTIONS.LOAD_MEALS, payload: personalizedMeals });
+      await AsyncStorage.setItem('meals', JSON.stringify(personalizedMeals));
+      console.log('Personalized meals regenerated successfully');
+    } else {
+      console.warn('Cannot regenerate personalized meals: no personalized targets available');
+    }
+  };
+
+  const switchToDefaultMeals = async () => {
+    console.log('Switching to default meals...');
+    dispatch({ type: ACTIONS.LOAD_MEALS, payload: defaultMeals });
+    await AsyncStorage.setItem('meals', JSON.stringify(defaultMeals));
+    console.log('Switched to default meals successfully');
   };
 
   // Daily Summary Functions
@@ -1088,6 +1181,8 @@ export function MealProvider({ children }) {
     getMealPlansByMeal,
     getRecentMealPlans,
     reloadMeals,
+    regeneratePersonalizedMeals,
+    switchToDefaultMeals,
     // Dashboard functions
     getDailyTargets,
     getTodaysMealPlans,

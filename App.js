@@ -1,12 +1,15 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, Alert } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppNavigator from './src/navigation/AppNavigator';
 import { FoodProvider } from './src/context/FoodContext';
 import { MealProvider } from './src/context/MealContext';
 import { SettingsProvider } from './src/context/SettingsContext';
 import { PresetProvider } from './src/context/PresetContext';
+import { WeightProvider } from './src/context/WeightContext';
+import MacroAdjustmentDialog from './src/components/MacroAdjustmentDialog';
+import { useMacroAdjustments } from './src/hooks/useWeightTrackingIntegration';
 
 // Simple Error Boundary component
 class ErrorBoundary extends React.Component {
@@ -61,6 +64,53 @@ const styles = StyleSheet.create({
   },
 });
 
+// Component to handle macro adjustment dialog
+function MacroAdjustmentManager() {
+  const {
+    showAdjustmentDialog,
+    currentRecommendation,
+    isApplyingAdjustment,
+    acceptMacroAdjustment,
+    customizeMacroAdjustment,
+    dismissAdjustmentDialog
+  } = useMacroAdjustments();
+
+  const handleAccept = async (recommendation) => {
+    try {
+      const result = await acceptMacroAdjustment(recommendation);
+      if (result.success) {
+        Alert.alert('Success!', result.message || 'Your macro targets have been updated based on your progress.');
+      } else {
+        Alert.alert('Error', result.error || 'Failed to apply macro adjustment. Please try again.');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred while updating your targets.');
+    }
+  };
+
+  const handleCustomize = (recommendation) => {
+    const result = customizeMacroAdjustment(recommendation);
+    if (result.action === 'navigate_to_settings') {
+      Alert.alert(
+        'Manual Adjustment',
+        'You can manually adjust your macro targets in the Settings screen.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
+  return (
+    <MacroAdjustmentDialog
+      visible={showAdjustmentDialog}
+      recommendation={currentRecommendation}
+      onAccept={handleAccept}
+      onCustomize={handleCustomize}
+      onDismiss={dismissAdjustmentDialog}
+      isLoading={isApplyingAdjustment}
+    />
+  );
+}
+
 function AppContent() {
   const insets = useSafeAreaInsets();
   
@@ -71,9 +121,12 @@ function AppContent() {
           <SettingsProvider>
             <FoodProvider>
               <MealProvider>
-                <PresetProvider>
-                  <AppNavigator />
-                </PresetProvider>
+                <WeightProvider>
+                  <PresetProvider>
+                    <AppNavigator />
+                    <MacroAdjustmentManager />
+                  </PresetProvider>
+                </WeightProvider>
               </MealProvider>
             </FoodProvider>
           </SettingsProvider>

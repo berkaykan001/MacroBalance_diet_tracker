@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMeal } from '../../context/MealContext';
 import { useFood } from '../../context/FoodContext';
 import { useSettings } from '../../context/SettingsContext';
 
 export default function ConsistencyHeatmap() {
-  const { getDailySummariesForPeriod, getTodaysSummary, getMyTodayDate } = useMeal();
+  const { getDailySummariesForPeriod, getTodaysSummary, getMyTodayDate, toggleCheatDay, canUseCheatDay, getCheatStats } = useMeal();
   const { getFoodById } = useFood();
   const { appPreferences } = useSettings();
   
@@ -80,7 +80,8 @@ export default function ConsistencyHeatmap() {
           isFuture,
           isCurrentMonth,
           dayNumber: date.getDate(),
-          consistency: summary?.consistencyScore || 0
+          consistency: summary?.consistencyScore || 0,
+          isCheatDay: summary?.isCheatDay || false
         });
       }
       weeks.push(weekData);
@@ -125,6 +126,81 @@ export default function ConsistencyHeatmap() {
   const goToToday = () => {
     setCurrentDate(new Date());
     setSelectedDay(null); // Clear any selected day when navigating to today
+  };
+
+  // Handle cheat day toggle
+  const handleCheatDayToggle = (day) => {
+    if (day.isFuture) {
+      Alert.alert('Invalid Date', 'Cannot set cheat days for future dates.');
+      return;
+    }
+
+    // If turning OFF cheat day
+    if (day.isCheatDay) {
+      // Use platform-specific alert handling
+      if (typeof window !== 'undefined' && window.confirm) {
+        const confirmed = window.confirm(
+          `Remove cheat day status for ${day.dateObj.toLocaleDateString()}?`
+        );
+        if (confirmed) {
+          toggleCheatDay(day.date);
+        }
+      } else {
+        Alert.alert(
+          'Remove Cheat Day',
+          `Remove cheat day status for ${day.dateObj.toLocaleDateString()}?`,
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Remove', 
+              style: 'destructive',
+              onPress: () => {
+                toggleCheatDay(day.date);
+              }
+            }
+          ]
+        );
+      }
+      return;
+    }
+
+    // If turning ON cheat day
+    if (!canUseCheatDay(appPreferences)) {
+      const stats = getCheatStats(appPreferences);
+      Alert.alert(
+        'Cheat Day Limit Reached',
+        `You've already used ${stats.cheatDays.used}/${stats.cheatDays.limit} cheat days this ${stats.periodType === 'weekly' ? 'week' : 'month'}.`
+      );
+      return;
+    }
+
+    // Use platform-specific alert handling
+    if (typeof window !== 'undefined' && window.confirm) {
+      // Web environment - use window.confirm
+      const confirmed = window.confirm(
+        `Mark ${day.dateObj.toLocaleDateString()} as a cheat day? This will exclude it from statistics and show it as perfectly achieved.`
+      );
+      if (confirmed) {
+        console.log('Adding cheat day for:', day.date);
+        toggleCheatDay(day.date);
+      }
+    } else {
+      // Mobile environment - use Alert.alert
+      Alert.alert(
+        'Mark as Cheat Day',
+        `Mark ${day.dateObj.toLocaleDateString()} as a cheat day? This will exclude it from statistics and show it as perfectly achieved.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Mark as Cheat Day', 
+            onPress: () => {
+              console.log('Adding cheat day for:', day.date);
+              toggleCheatDay(day.date);
+            }
+          }
+        ]
+      );
+    }
   };
   
   // Get color based on consistency score
@@ -184,11 +260,32 @@ export default function ConsistencyHeatmap() {
       day: 'numeric'
     });
     
+    // Show cheat day information
+    if (selectedDay.isCheatDay) {
+      return (
+        <View style={styles.dayDetail}>
+          <Text style={styles.dayDetailDate}>{date}</Text>
+          <View style={styles.cheatDayDetailBanner}>
+            <Text style={styles.cheatDayDetailIcon}>🎉</Text>
+            <Text style={styles.cheatDayDetailText}>
+              Cheat Day - Excluded from statistics and counted as perfectly achieved!
+            </Text>
+          </View>
+          <Text style={styles.cheatDayDetailNote}>
+            Long press this day in the calendar to remove cheat day status.
+          </Text>
+        </View>
+      );
+    }
+    
     if (!selectedDay.summary) {
       return (
         <View style={styles.dayDetail}>
           <Text style={styles.dayDetailDate}>{date}</Text>
           <Text style={styles.noDataText}>No meal data recorded for this day</Text>
+          <Text style={styles.cheatDayHint}>
+            Long press this day to mark it as a cheat day.
+          </Text>
         </View>
       );
     }
@@ -312,23 +409,35 @@ export default function ConsistencyHeatmap() {
                   style={[
                     day.isToday ? styles.todayDay : styles.day,
                     {
-                      backgroundColor: getConsistencyColor(day.consistency),
+                      backgroundColor: day.isCheatDay 
+                        ? 'rgba(255, 159, 0, 0.6)' // Orange for cheat days
+                        : getConsistencyColor(day.consistency),
                       borderColor: day.isToday ? '#FFFFFF' : 'transparent',
                       borderWidth: day.isToday ? 2 : 0,
-                      opacity: day.isCurrentMonth ? 1 : 0.3,
-                    }
+                      opacity: day.isCurrentMonth ? (day.isCheatDay ? 0.8 : 1) : 0.3,
+                    },
+                    day.isCheatDay && styles.cheatDay
                   ]}
                   onPress={() => handleDayPress(day)}
+                  onLongPress={() => handleCheatDayToggle(day)}
                 >
-                  <Text style={[
-                    styles.dayText,
-                    { 
-                      color: day.isCurrentMonth ? '#FFFFFF' : '#8E8E93',
-                      fontWeight: day.isToday ? 'bold' : 'normal'
-                    }
-                  ]}>
-                    {day.dayNumber}
-                  </Text>
+                  <View style={styles.dayContent}>
+                    <Text style={[
+                      styles.dayText,
+                      { 
+                        color: day.isCurrentMonth ? '#FFFFFF' : '#8E8E93',
+                        fontWeight: day.isToday ? 'bold' : 'normal'
+                      }
+                    ]}>
+                      {day.dayNumber}
+                    </Text>
+                    {day.isCheatDay && (
+                      <View style={styles.cheatDayIndicator}>
+                        <Text style={styles.cheatDayText}>🎉</Text>
+                      </View>
+                    )}
+                  </View>
+                  {day.isCheatDay && <View style={styles.cheatDayOverlay} />}
                 </TouchableOpacity>
               ))}
             </View>
@@ -338,7 +447,7 @@ export default function ConsistencyHeatmap() {
       
       {/* Legend */}
       <View style={styles.legend}>
-        <Text style={styles.legendTitle}>Consistency Levels</Text>
+        <Text style={styles.legendTitle}>Calendar Legend</Text>
         <View style={styles.legendItems}>
           <View style={styles.legendItem}>
             <View style={[styles.legendColor, { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
@@ -364,7 +473,12 @@ export default function ConsistencyHeatmap() {
             <View style={[styles.legendColor, { backgroundColor: '#00D084' }]} />
             <Text style={styles.legendText}>Excellent</Text>
           </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendColor, { backgroundColor: 'rgba(255, 159, 0, 0.6)' }]} />
+            <Text style={styles.legendText}>🎉 Cheat Day</Text>
+          </View>
         </View>
+        <Text style={styles.legendNote}>Long press any day to toggle cheat day status</Text>
       </View>
       
       {/* Day detail */}
@@ -597,5 +711,72 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#8E8E93',
     fontStyle: 'italic',
+  },
+  
+  // Cheat Day Styles
+  cheatDay: {
+    position: 'relative',
+  },
+  dayContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  cheatDayIndicator: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+  },
+  cheatDayText: {
+    fontSize: 8,
+  },
+  cheatDayOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 159, 0, 0.2)',
+    borderRadius: 6,
+  },
+  legendNote: {
+    fontSize: 9,
+    color: '#8E8E93',
+    marginTop: 8,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  
+  // Cheat Day Detail Styles
+  cheatDayDetailBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 159, 0, 0.2)',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+  },
+  cheatDayDetailIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  cheatDayDetailText: {
+    fontSize: 12,
+    color: '#FF9F00',
+    fontWeight: '600',
+    flex: 1,
+  },
+  cheatDayDetailNote: {
+    fontSize: 10,
+    color: '#8E8E93',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  cheatDayHint: {
+    fontSize: 10,
+    color: '#8E8E93',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginTop: 8,
   },
 });

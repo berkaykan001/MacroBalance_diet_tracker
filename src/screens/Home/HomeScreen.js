@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensi
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMeal } from '../../context/MealContext';
 import { useFood } from '../../context/FoodContext';
+import { useSettings } from '../../context/SettingsContext';
 import { useNavigation } from '@react-navigation/native';
 import EditMealModal from '../../components/EditMealModal';
 import MacroTrendsSection from '../../components/charts/MacroTrendsSection';
@@ -20,9 +21,11 @@ export default function HomeScreen() {
     getTodaysMealPlans,
     getMealById,
     deleteMealPlan,
-    updateMealPlan
+    updateMealPlan,
+    getCheatStats
   } = useMeal();
   const { foods } = useFood();
+  const { appPreferences } = useSettings();
 
   // Modal state
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -132,6 +135,7 @@ export default function HomeScreen() {
     
     // Generate display name for extras (Extra 1, Extra 2, etc.)
     const getDisplayName = () => {
+      let baseName;
       if (meal?.name === 'Extra') {
         // Get all today's extras in chronological order
         const todaysExtras = todaysMealPlans
@@ -143,9 +147,13 @@ export default function HomeScreen() {
         
         // Find the index of current extra
         const extraIndex = todaysExtras.findIndex(extra => extra.id === mealPlan.id);
-        return `Extra ${extraIndex + 1}`;
+        baseName = `Extra ${extraIndex + 1}`;
+      } else {
+        baseName = meal?.name || 'Unknown Meal';
       }
-      return meal?.name || 'Unknown Meal';
+      
+      // Add cheat meal indication
+      return mealPlan.isCheatMeal ? `${baseName} (cheat meal)` : baseName;
     };
     
     const foodSummary = mealPlan.selectedFoods
@@ -290,6 +298,88 @@ export default function HomeScreen() {
               contentContainerStyle={styles.mealStatusList}
             />
           </View>
+        </LinearGradient>
+
+        {/* Cheat Usage Statistics Card */}
+        <LinearGradient
+          colors={['#1A1A1A', '#2A2A2A']}
+          style={styles.card}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>🎉 Cheat Usage</Text>
+            <Text style={styles.cardSubtitle}>
+              {appPreferences.cheatPeriodType === 'weekly' ? 'This Week' : 'This Month'}
+            </Text>
+          </View>
+          
+          {(() => {
+            const stats = getCheatStats(appPreferences);
+            
+            const renderCheatProgressBar = (type, used, limit, color) => {
+              const percentage = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
+              const remaining = Math.max(0, limit - used);
+              
+              return (
+                <View style={styles.cheatProgressContainer}>
+                  <View style={styles.cheatProgressHeader}>
+                    <Text style={styles.cheatProgressLabel}>{type}</Text>
+                    <Text style={styles.cheatProgressValue}>
+                      {used}/{limit} ({remaining} remaining)
+                    </Text>
+                  </View>
+                  <View style={styles.cheatProgressTrack}>
+                    <LinearGradient
+                      colors={percentage >= 100 ? ['#FF453A', '#FF6B6B'] : [color, color + '80']}
+                      style={[styles.cheatProgressFill, { width: `${Math.min(100, percentage)}%` }]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                    />
+                  </View>
+                  <View style={styles.cheatProgressStatus}>
+                    {percentage >= 100 ? (
+                      <Text style={styles.cheatProgressStatusText}>🚫 Limit reached</Text>
+                    ) : percentage >= 80 ? (
+                      <Text style={styles.cheatProgressStatusText}>⚠️ Almost at limit</Text>
+                    ) : (
+                      <Text style={styles.cheatProgressStatusText}>✅ Available</Text>
+                    )}
+                  </View>
+                </View>
+              );
+            };
+            
+            return (
+              <View style={styles.cheatStatsContainer}>
+                {renderCheatProgressBar('Cheat Meals', stats.cheatMeals.used, stats.cheatMeals.limit, '#FF9F00')}
+                {renderCheatProgressBar('Cheat Days', stats.cheatDays.used, stats.cheatDays.limit, '#FF9F00')}
+                
+                {/* Reset Information */}
+                <View style={styles.cheatResetInfo}>
+                  <Text style={styles.cheatResetText}>
+                    Limits reset {stats.periodType === 'weekly' ? `weekly on Sunday at ${appPreferences.dayResetHour || 4}:00` : `monthly on the 1st at ${appPreferences.dayResetHour || 4}:00`}
+                  </Text>
+                </View>
+                
+                {/* Quick Stats Summary */}
+                <View style={styles.cheatQuickStats}>
+                  <View style={styles.cheatQuickStatItem}>
+                    <Text style={styles.cheatQuickStatValue}>
+                      {stats.cheatMeals.remaining + stats.cheatDays.remaining}
+                    </Text>
+                    <Text style={styles.cheatQuickStatLabel}>Total Remaining</Text>
+                  </View>
+                  <View style={styles.cheatQuickStatItem}>
+                    <Text style={styles.cheatQuickStatValue}>
+                      {Math.round(((stats.cheatMeals.used + stats.cheatDays.used) / (stats.cheatMeals.limit + stats.cheatDays.limit)) * 100)}%
+                    </Text>
+                    <Text style={styles.cheatQuickStatLabel}>Usage Rate</Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })()}
         </LinearGradient>
 
         {/* Today's Meals Card */}
@@ -551,5 +641,85 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     color: '#00D084',
+  },
+
+  // Cheat Statistics Styles
+  cheatStatsContainer: {
+    // Container for all cheat stats
+  },
+  cheatProgressContainer: {
+    marginBottom: 12,
+  },
+  cheatProgressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  cheatProgressLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  cheatProgressValue: {
+    fontSize: 11,
+    color: '#8E8E93',
+    fontWeight: '500',
+  },
+  cheatProgressTrack: {
+    height: 6,
+    backgroundColor: '#2A2A2A',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  cheatProgressFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  cheatProgressStatus: {
+    alignItems: 'flex-end',
+  },
+  cheatProgressStatusText: {
+    fontSize: 10,
+    color: '#8E8E93',
+    fontWeight: '500',
+  },
+  cheatResetInfo: {
+    backgroundColor: 'rgba(255, 159, 0, 0.1)',
+    borderRadius: 6,
+    padding: 8,
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  cheatResetText: {
+    fontSize: 10,
+    color: '#FF9F00',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  cheatQuickStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  cheatQuickStatItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  cheatQuickStatValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FF9F00',
+    marginBottom: 2,
+  },
+  cheatQuickStatLabel: {
+    fontSize: 10,
+    color: '#8E8E93',
+    textAlign: 'center',
+    fontWeight: '500',
   },
 });

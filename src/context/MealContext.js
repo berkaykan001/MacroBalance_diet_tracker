@@ -168,7 +168,8 @@ function mealReducer(state, action) {
       const newMealPlan = {
         ...action.payload,
         id: Date.now().toString(),
-        createdAt: new Date().toISOString() // Keep actual timestamp for precision
+        createdAt: new Date().toISOString(), // Keep actual timestamp for precision
+        isCheatMeal: action.payload.isCheatMeal || false // Default to false if not specified
       };
       return {
         ...state,
@@ -179,7 +180,11 @@ function mealReducer(state, action) {
       return {
         ...state,
         mealPlans: state.mealPlans.map(plan => 
-          plan.id === action.payload.id ? { ...plan, ...action.payload } : plan
+          plan.id === action.payload.id ? { 
+            ...plan, 
+            ...action.payload,
+            isCheatMeal: action.payload.isCheatMeal !== undefined ? action.payload.isCheatMeal : plan.isCheatMeal
+          } : plan
         )
       };
     
@@ -405,38 +410,47 @@ export function MealProvider({ children }) {
     }
 
     // Calculate total macros for the day
-    const macros = mealPlans.reduce((total, plan) => ({
-      protein: total.protein + (plan.calculatedMacros?.protein || 0),
-      carbs: total.carbs + (plan.calculatedMacros?.carbs || 0),
-      fat: total.fat + (plan.calculatedMacros?.fat || 0),
-      calories: total.calories + (plan.calculatedMacros?.calories || 0)
-    }), { protein: 0, carbs: 0, fat: 0, calories: 0 });
+    const macros = mealPlans.reduce((total, plan) => {
+      const effectiveMacros = getEffectiveMacros(plan);
+      return {
+        protein: total.protein + (effectiveMacros?.protein || 0),
+        carbs: total.carbs + (effectiveMacros?.carbs || 0),
+        fat: total.fat + (effectiveMacros?.fat || 0),
+        calories: total.calories + (effectiveMacros?.calories || 0)
+      };
+    }, { protein: 0, carbs: 0, fat: 0, calories: 0 });
 
     // Calculate sub-macros
-    const subMacros = mealPlans.reduce((total, plan) => ({
-      fiber: total.fiber + (plan.calculatedMacros?.fiber || 0),
-      omega3: total.omega3 + (plan.calculatedMacros?.omega3 || 0),
-      saturatedFat: total.saturatedFat + (plan.calculatedMacros?.saturatedFat || 0),
-      monounsaturatedFat: total.monounsaturatedFat + (plan.calculatedMacros?.monounsaturatedFat || 0),
-      polyunsaturatedFat: total.polyunsaturatedFat + (plan.calculatedMacros?.polyunsaturatedFat || 0),
-      transFat: total.transFat + (plan.calculatedMacros?.transFat || 0),
-      addedSugars: total.addedSugars + (plan.calculatedMacros?.addedSugars || 0),
-      naturalSugars: total.naturalSugars + (plan.calculatedMacros?.naturalSugars || 0)
-    }), { fiber: 0, omega3: 0, saturatedFat: 0, monounsaturatedFat: 0, polyunsaturatedFat: 0, transFat: 0, addedSugars: 0, naturalSugars: 0 });
+    const subMacros = mealPlans.reduce((total, plan) => {
+      const effectiveMacros = getEffectiveMacros(plan);
+      return {
+        fiber: total.fiber + (effectiveMacros?.fiber || 0),
+        omega3: total.omega3 + (effectiveMacros?.omega3 || 0),
+        saturatedFat: total.saturatedFat + (effectiveMacros?.saturatedFat || 0),
+        monounsaturatedFat: total.monounsaturatedFat + (effectiveMacros?.monounsaturatedFat || 0),
+        polyunsaturatedFat: total.polyunsaturatedFat + (effectiveMacros?.polyunsaturatedFat || 0),
+        transFat: total.transFat + (effectiveMacros?.transFat || 0),
+        addedSugars: total.addedSugars + (effectiveMacros?.addedSugars || 0),
+        naturalSugars: total.naturalSugars + (effectiveMacros?.naturalSugars || 0)
+      };
+    }, { fiber: 0, omega3: 0, saturatedFat: 0, monounsaturatedFat: 0, polyunsaturatedFat: 0, transFat: 0, addedSugars: 0, naturalSugars: 0 });
 
     // Calculate micronutrients
-    const micronutrients = mealPlans.reduce((total, plan) => ({
-      iron: total.iron + (plan.calculatedMacros?.iron || 0),
-      calcium: total.calcium + (plan.calculatedMacros?.calcium || 0),
-      zinc: total.zinc + (plan.calculatedMacros?.zinc || 0),
-      magnesium: total.magnesium + (plan.calculatedMacros?.magnesium || 0),
-      sodium: total.sodium + (plan.calculatedMacros?.sodium || 0),
-      potassium: total.potassium + (plan.calculatedMacros?.potassium || 0),
-      vitaminB6: total.vitaminB6 + (plan.calculatedMacros?.vitaminB6 || 0),
-      vitaminB12: total.vitaminB12 + (plan.calculatedMacros?.vitaminB12 || 0),
-      vitaminC: total.vitaminC + (plan.calculatedMacros?.vitaminC || 0),
-      vitaminD: total.vitaminD + (plan.calculatedMacros?.vitaminD || 0)
-    }), { iron: 0, calcium: 0, zinc: 0, magnesium: 0, sodium: 0, potassium: 0, vitaminB6: 0, vitaminB12: 0, vitaminC: 0, vitaminD: 0 });
+    const micronutrients = mealPlans.reduce((total, plan) => {
+      const effectiveMacros = getEffectiveMacros(plan);
+      return {
+        iron: total.iron + (effectiveMacros?.iron || 0),
+        calcium: total.calcium + (effectiveMacros?.calcium || 0),
+        zinc: total.zinc + (effectiveMacros?.zinc || 0),
+        magnesium: total.magnesium + (effectiveMacros?.magnesium || 0),
+        sodium: total.sodium + (effectiveMacros?.sodium || 0),
+        potassium: total.potassium + (effectiveMacros?.potassium || 0),
+        vitaminB6: total.vitaminB6 + (effectiveMacros?.vitaminB6 || 0),
+        vitaminB12: total.vitaminB12 + (effectiveMacros?.vitaminB12 || 0),
+        vitaminC: total.vitaminC + (effectiveMacros?.vitaminC || 0),
+        vitaminD: total.vitaminD + (effectiveMacros?.vitaminD || 0)
+      };
+    }, { iron: 0, calcium: 0, zinc: 0, magnesium: 0, sodium: 0, potassium: 0, vitaminB6: 0, vitaminB12: 0, vitaminC: 0, vitaminD: 0 });
 
     // Calculate targets achieved
     const targets = getDailyTargets();
@@ -552,6 +566,7 @@ export function MealProvider({ children }) {
       macroResults,
       nutrientResults,
       topFoods,
+      isCheatDay: false, // Default to false, can be toggled by user
       createdAt: new Date().toISOString()
     };
   };
@@ -643,12 +658,16 @@ export function MealProvider({ children }) {
     const calculateAverage = (summaries) => {
       if (summaries.length === 0) return { protein: 0, carbs: 0, fat: 0, calories: 0 };
       
-      return summaries.reduce((total, summary) => ({
-        protein: total.protein + summary.macros.protein,
-        carbs: total.carbs + summary.macros.carbs,
-        fat: total.fat + summary.macros.fat,
-        calories: total.calories + summary.macros.calories
-      }), { protein: 0, carbs: 0, fat: 0, calories: 0 });
+      return summaries.reduce((total, summary) => {
+        // Handle cases where summary.macros might be undefined (like cheat days with no meal data)
+        const macros = summary.macros || { protein: 0, carbs: 0, fat: 0, calories: 0 };
+        return {
+          protein: total.protein + macros.protein,
+          carbs: total.carbs + macros.carbs,
+          fat: total.fat + macros.fat,
+          calories: total.calories + macros.calories
+        };
+      }, { protein: 0, carbs: 0, fat: 0, calories: 0 });
     };
     
     const thisWeek = calculateAverage(thisWeekSummaries);
@@ -809,32 +828,35 @@ export function MealProvider({ children }) {
     const todaysPlans = getTodaysMealPlans();
     const targets = getDailyTargets();
     
-    const consumed = todaysPlans.reduce((total, plan) => ({
-      protein: total.protein + (plan.calculatedMacros?.protein || 0),
-      carbs: total.carbs + (plan.calculatedMacros?.carbs || 0),
-      fat: total.fat + (plan.calculatedMacros?.fat || 0),
-      calories: total.calories + (plan.calculatedMacros?.calories || 0),
-      // Sub-macros
-      omega3: total.omega3 + (plan.calculatedMacros?.omega3 || 0),
-      monounsaturatedFat: total.monounsaturatedFat + (plan.calculatedMacros?.monounsaturatedFat || 0),
-      polyunsaturatedFat: total.polyunsaturatedFat + (plan.calculatedMacros?.polyunsaturatedFat || 0),
-      saturatedFat: total.saturatedFat + (plan.calculatedMacros?.saturatedFat || 0),
-      transFat: total.transFat + (plan.calculatedMacros?.transFat || 0),
-      addedSugars: total.addedSugars + (plan.calculatedMacros?.addedSugars || 0),
-      naturalSugars: total.naturalSugars + (plan.calculatedMacros?.naturalSugars || 0),
-      fiber: total.fiber + (plan.calculatedMacros?.fiber || 0),
-      // Micronutrients
-      iron: total.iron + (plan.calculatedMacros?.iron || 0),
-      calcium: total.calcium + (plan.calculatedMacros?.calcium || 0),
-      zinc: total.zinc + (plan.calculatedMacros?.zinc || 0),
-      magnesium: total.magnesium + (plan.calculatedMacros?.magnesium || 0),
-      sodium: total.sodium + (plan.calculatedMacros?.sodium || 0),
-      potassium: total.potassium + (plan.calculatedMacros?.potassium || 0),
-      vitaminB6: total.vitaminB6 + (plan.calculatedMacros?.vitaminB6 || 0),
-      vitaminB12: total.vitaminB12 + (plan.calculatedMacros?.vitaminB12 || 0),
-      vitaminC: total.vitaminC + (plan.calculatedMacros?.vitaminC || 0),
-      vitaminD: total.vitaminD + (plan.calculatedMacros?.vitaminD || 0)
-    }), { 
+    const consumed = todaysPlans.reduce((total, plan) => {
+      const effectiveMacros = getEffectiveMacros(plan);
+      return {
+        protein: total.protein + (effectiveMacros?.protein || 0),
+        carbs: total.carbs + (effectiveMacros?.carbs || 0),
+        fat: total.fat + (effectiveMacros?.fat || 0),
+        calories: total.calories + (effectiveMacros?.calories || 0),
+        // Sub-macros
+        omega3: total.omega3 + (effectiveMacros?.omega3 || 0),
+        monounsaturatedFat: total.monounsaturatedFat + (effectiveMacros?.monounsaturatedFat || 0),
+        polyunsaturatedFat: total.polyunsaturatedFat + (effectiveMacros?.polyunsaturatedFat || 0),
+        saturatedFat: total.saturatedFat + (effectiveMacros?.saturatedFat || 0),
+        transFat: total.transFat + (effectiveMacros?.transFat || 0),
+        addedSugars: total.addedSugars + (effectiveMacros?.addedSugars || 0),
+        naturalSugars: total.naturalSugars + (effectiveMacros?.naturalSugars || 0),
+        fiber: total.fiber + (effectiveMacros?.fiber || 0),
+        // Micronutrients
+        iron: total.iron + (effectiveMacros?.iron || 0),
+        calcium: total.calcium + (effectiveMacros?.calcium || 0),
+        zinc: total.zinc + (effectiveMacros?.zinc || 0),
+        magnesium: total.magnesium + (effectiveMacros?.magnesium || 0),
+        sodium: total.sodium + (effectiveMacros?.sodium || 0),
+        potassium: total.potassium + (effectiveMacros?.potassium || 0),
+        vitaminB6: total.vitaminB6 + (effectiveMacros?.vitaminB6 || 0),
+        vitaminB12: total.vitaminB12 + (effectiveMacros?.vitaminB12 || 0),
+        vitaminC: total.vitaminC + (effectiveMacros?.vitaminC || 0),
+        vitaminD: total.vitaminD + (effectiveMacros?.vitaminD || 0)
+      };
+    }, { 
       protein: 0, carbs: 0, fat: 0, calories: 0,
       omega3: 0, monounsaturatedFat: 0, polyunsaturatedFat: 0, saturatedFat: 0, transFat: 0,
       addedSugars: 0, naturalSugars: 0, fiber: 0,
@@ -887,6 +909,141 @@ export function MealProvider({ children }) {
     }));
   };
 
+  // Cheat Meal/Day Functions
+  const getEffectiveMacros = (mealPlan) => {
+    if (mealPlan.isCheatMeal) {
+      // For cheat meals, return the meal's targets as if they were perfectly achieved
+      const meal = getMealById(mealPlan.mealId);
+      if (meal) {
+        const targets = meal.macroTargets;
+        return {
+          // Main macros
+          protein: targets.protein,
+          carbs: targets.carbs,
+          fat: targets.fat,
+          calories: (targets.protein * 4) + (targets.carbs * 4) + (targets.fat * 9),
+          // Sub-macros - assume optimal values for cheat meals
+          fiber: targets.minFiber || 0,
+          sugar: Math.min(targets.maxSugar || 0, targets.carbs * 0.3), // Assume 30% of carbs as sugar
+          naturalSugars: Math.min(targets.maxSugar || 0, targets.carbs * 0.2) * 0.8, // 80% natural
+          addedSugars: Math.min(targets.maxSugar || 0, targets.carbs * 0.2) * 0.2, // 20% added
+          saturatedFat: targets.fat * 0.3, // Assume 30% saturated
+          monounsaturatedFat: targets.fat * 0.4, // Assume 40% monounsaturated  
+          polyunsaturatedFat: targets.fat * 0.3, // Assume 30% polyunsaturated
+          transFat: 0, // Assume no trans fat
+          omega3: targets.fat * 0.05, // Assume 5% omega-3
+          // Micronutrients - assume reasonable values
+          iron: 2, calcium: 50, zinc: 1, magnesium: 25,
+          sodium: 300, potassium: 200, vitaminB6: 0.1,
+          vitaminB12: 0.2, vitaminC: 5, vitaminD: 1
+        };
+      }
+    }
+    // For normal meals, return the actual calculated macros
+    return mealPlan.calculatedMacros || {};
+  };
+
+  const toggleCheatMeal = (mealPlanId) => {
+    const mealPlan = state.mealPlans.find(plan => plan.id === mealPlanId);
+    if (mealPlan) {
+      updateMealPlan({
+        ...mealPlan,
+        isCheatMeal: !mealPlan.isCheatMeal
+      });
+    }
+  };
+
+  const toggleCheatDay = (date) => {
+    const existingSummary = state.dailySummaries[date];
+    const updatedSummary = {
+      ...existingSummary,
+      isCheatDay: !existingSummary?.isCheatDay,
+      // Ensure we have default macro data for cheat days to prevent crashes
+      macros: existingSummary?.macros || { protein: 0, carbs: 0, fat: 0, calories: 0 },
+      consistencyScore: existingSummary?.consistencyScore || 0
+    };
+    updateDailySummary(date, updatedSummary);
+  };
+
+  const getCheatMealUsage = (periodType = 'weekly') => {
+    const myToday = getMyTodayDate(); // Use custom reset hour
+    const todayDate = new Date(myToday);
+    const startDate = new Date(todayDate);
+    
+    if (periodType === 'weekly') {
+      // Go back to the beginning of this week (Sunday at reset hour)
+      const daysToSubtract = todayDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      startDate.setDate(todayDate.getDate() - daysToSubtract);
+      startDate.setHours(appPreferences?.dayResetHour || 4, 0, 0, 0);
+    } else if (periodType === 'monthly') {
+      // Go to the 1st of current month at reset hour
+      startDate.setDate(1);
+      startDate.setHours(appPreferences?.dayResetHour || 4, 0, 0, 0);
+    }
+    
+    const usedCheatMeals = state.mealPlans.filter(plan => {
+      const planDate = new Date(plan.createdAt);
+      return plan.isCheatMeal && planDate >= startDate;
+    }).length;
+    
+    return usedCheatMeals;
+  };
+
+  const getCheatDayUsage = (periodType = 'weekly') => {
+    const myToday = getMyTodayDate(); // Use custom reset hour
+    const todayDate = new Date(myToday);
+    const startDate = new Date(todayDate);
+    
+    if (periodType === 'weekly') {
+      // Go back to the beginning of this week (Sunday at reset hour)
+      const daysToSubtract = todayDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      startDate.setDate(todayDate.getDate() - daysToSubtract);
+      startDate.setHours(appPreferences?.dayResetHour || 4, 0, 0, 0);
+    } else if (periodType === 'monthly') {
+      // Go to the 1st of current month at reset hour
+      startDate.setDate(1);
+      startDate.setHours(appPreferences?.dayResetHour || 4, 0, 0, 0);
+    }
+    
+    const usedCheatDays = Object.entries(state.dailySummaries).filter(([dateKey, summary]) => {
+      const summaryDate = new Date(dateKey);
+      return summary.isCheatDay && summaryDate >= startDate;
+    }).length;
+    
+    return usedCheatDays;
+  };
+
+  const canUseCheatMeal = (settings) => {
+    const used = getCheatMealUsage(settings?.cheatPeriodType);
+    const limit = settings?.cheatMealsPerPeriod || 2;
+    console.log('canUseCheatMeal - used:', used, 'limit:', limit, 'result:', used < limit);
+    return used < limit;
+  };
+
+  const canUseCheatDay = (settings) => {
+    const used = getCheatDayUsage(settings?.cheatPeriodType);
+    const limit = settings?.cheatDaysPerPeriod || 1;
+    console.log('canUseCheatDay - used:', used, 'limit:', limit, 'result:', used < limit);
+    return used < limit;
+  };
+
+  const getCheatStats = (settings) => {
+    const periodType = settings?.cheatPeriodType || 'weekly';
+    return {
+      cheatMeals: {
+        used: getCheatMealUsage(periodType),
+        limit: settings?.cheatMealsPerPeriod || 2,
+        remaining: Math.max(0, (settings?.cheatMealsPerPeriod || 2) - getCheatMealUsage(periodType))
+      },
+      cheatDays: {
+        used: getCheatDayUsage(periodType),
+        limit: settings?.cheatDaysPerPeriod || 1,
+        remaining: Math.max(0, (settings?.cheatDaysPerPeriod || 1) - getCheatDayUsage(periodType))
+      },
+      periodType
+    };
+  };
+
   const value = {
     ...state,
     addMeal,
@@ -915,6 +1072,15 @@ export function MealProvider({ children }) {
     processDataLifecycle,
     cleanupOldData,
     getDataStorageInfo,
+    // Cheat Meal/Day functions
+    getEffectiveMacros,
+    toggleCheatMeal,
+    toggleCheatDay,
+    getCheatMealUsage,
+    getCheatDayUsage,
+    canUseCheatMeal,
+    canUseCheatDay,
+    getCheatStats,
     // Helper functions
     getMyTodayDate
   };

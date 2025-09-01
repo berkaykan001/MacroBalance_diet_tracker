@@ -42,7 +42,11 @@ const defaultSettings = {
   selectedQuickFoods: ['1', '2', '3'], // Default to first 3 foods
   appPreferences: {
     autoOptimize: true,
-    dayResetHour: 4 // Hour when the day resets (default 4 AM)
+    dayResetHour: 4, // Hour when the day resets (default 4 AM)
+    // Cheat meal/day settings
+    cheatMealsPerPeriod: 2, // Number of cheat meals allowed per period
+    cheatDaysPerPeriod: 1, // Number of cheat days allowed per period  
+    cheatPeriodType: 'weekly' // 'weekly' or 'monthly'
   },
   isLoading: true
 };

@@ -489,6 +489,121 @@ export default function SettingsScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
+              
+              {/* Cheat Meal/Day Settings Section */}
+              <View style={styles.cheatSettingsSection}>
+                <Text style={styles.cheatSectionTitle}>🎉 Cheat Meal & Day Limits</Text>
+                <Text style={styles.cheatSectionDescription}>
+                  Configure how many cheat meals and cheat days you can use per period
+                </Text>
+                
+                {/* Period Type Selector */}
+                <View style={styles.preferenceItem}>
+                  <View style={styles.preferenceInfo}>
+                    <Text style={styles.preferenceTitle}>Reset Period</Text>
+                    <Text style={styles.preferenceDescription}>
+                      How often your cheat meal/day limits reset
+                    </Text>
+                  </View>
+                  <View style={styles.periodSelectorContainer}>
+                    <TouchableOpacity
+                      style={[
+                        styles.periodButton,
+                        appPreferences.cheatPeriodType === 'weekly' && styles.periodButtonActive
+                      ]}
+                      onPress={() => updateAppPreferences({ cheatPeriodType: 'weekly' })}
+                    >
+                      <Text style={[
+                        styles.periodButtonText,
+                        appPreferences.cheatPeriodType === 'weekly' && styles.periodButtonTextActive
+                      ]}>
+                        Weekly
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.periodButton,
+                        appPreferences.cheatPeriodType === 'monthly' && styles.periodButtonActive
+                      ]}
+                      onPress={() => updateAppPreferences({ cheatPeriodType: 'monthly' })}
+                    >
+                      <Text style={[
+                        styles.periodButtonText,
+                        appPreferences.cheatPeriodType === 'monthly' && styles.periodButtonTextActive
+                      ]}>
+                        Monthly
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                
+                {/* Cheat Meals Per Period */}
+                <View style={styles.preferenceItem}>
+                  <View style={styles.preferenceInfo}>
+                    <Text style={styles.preferenceTitle}>Cheat Meals</Text>
+                    <Text style={styles.preferenceDescription}>
+                      Number of cheat meals per {appPreferences.cheatPeriodType === 'weekly' ? 'week' : 'month'}
+                    </Text>
+                  </View>
+                  <View style={styles.numberPickerContainer}>
+                    <TouchableOpacity
+                      style={styles.numberButton}
+                      onPress={() => {
+                        const current = appPreferences.cheatMealsPerPeriod || 2;
+                        const newValue = Math.max(0, current - 1);
+                        updateAppPreferences({ cheatMealsPerPeriod: newValue });
+                      }}
+                    >
+                      <Text style={styles.numberButtonText}>-</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.numberText}>{appPreferences.cheatMealsPerPeriod || 2}</Text>
+                    <TouchableOpacity
+                      style={styles.numberButton}
+                      onPress={() => {
+                        const current = appPreferences.cheatMealsPerPeriod || 2;
+                        const newValue = Math.min(10, current + 1);
+                        updateAppPreferences({ cheatMealsPerPeriod: newValue });
+                      }}
+                    >
+                      <Text style={styles.numberButtonText}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                
+                {/* Cheat Days Per Period */}
+                <View style={styles.preferenceItem}>
+                  <View style={styles.preferenceInfo}>
+                    <Text style={styles.preferenceTitle}>Cheat Days</Text>
+                    <Text style={styles.preferenceDescription}>
+                      Number of cheat days per {appPreferences.cheatPeriodType === 'weekly' ? 'week' : 'month'}
+                    </Text>
+                  </View>
+                  <View style={styles.numberPickerContainer}>
+                    <TouchableOpacity
+                      style={styles.numberButton}
+                      onPress={() => {
+                        const current = appPreferences.cheatDaysPerPeriod || 1;
+                        const newValue = Math.max(0, current - 1);
+                        updateAppPreferences({ cheatDaysPerPeriod: newValue });
+                      }}
+                    >
+                      <Text style={styles.numberButtonText}>-</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.numberText}>{appPreferences.cheatDaysPerPeriod || 1}</Text>
+                    <TouchableOpacity
+                      style={styles.numberButton}
+                      onPress={() => {
+                        const current = appPreferences.cheatDaysPerPeriod || 1;
+                        const newValue = Math.min(7, current + 1);
+                        updateAppPreferences({ cheatDaysPerPeriod: newValue });
+                      }}
+                    >
+                      <Text style={styles.numberButtonText}>+</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+              
             </View>
 
             <View style={styles.resetSection}>
@@ -1052,6 +1167,80 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     minWidth: 50,
+    textAlign: 'center',
+  },
+
+  // Cheat Settings Styles
+  cheatSettingsSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  cheatSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FF9F00',
+    marginBottom: 4,
+  },
+  cheatSectionDescription: {
+    fontSize: 11,
+    color: '#8E8E93',
+    marginBottom: 12,
+    lineHeight: 16,
+  },
+  
+  // Period Selector
+  periodSelectorContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 6,
+    padding: 2,
+  },
+  periodButton: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 4,
+    alignItems: 'center',
+  },
+  periodButtonActive: {
+    backgroundColor: '#007AFF',
+  },
+  periodButtonText: {
+    fontSize: 12,
+    color: '#8E8E93',
+    fontWeight: '500',
+  },
+  periodButtonTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  
+  // Number Picker (similar to hour picker but for cheat counts)
+  numberPickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  numberButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 4,
+  },
+  numberButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  numberText: {
+    color: '#FF9F00',
+    fontSize: 16,
+    fontWeight: '600',
+    minWidth: 30,
     textAlign: 'center',
   },
 });

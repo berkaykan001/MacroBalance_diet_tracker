@@ -19,7 +19,7 @@ const { width } = Dimensions.get('window');
 
 export default function MealPlanningScreen({ route, navigation }) {
   const { foods } = useFood();
-  const { meals, createMealPlan, updateMealPlan, getTodaysMealPlans } = useMeal();
+  const { meals, createMealPlan, updateMealPlan, deleteMealPlan, getTodaysMealPlans, toggleCheatMeal, getCheatStats, canUseCheatMeal } = useMeal();
   const { selectedQuickFoods, appPreferences, updateAppPreferences } = useSettings();
   const { presets, createPreset, deletePreset, updateLastUsed } = usePreset();
   
@@ -33,6 +33,7 @@ export default function MealPlanningScreen({ route, navigation }) {
   const [showSavePresetModal, setShowSavePresetModal] = useState(false);
   const [showLoadPresetModal, setShowLoadPresetModal] = useState(false);
   const [currentEditingMealPlan, setCurrentEditingMealPlan] = useState(editingMealPlan); // Track current meal plan being edited
+  const [isCheatMealActive, setIsCheatMealActive] = useState(false); // Local state for cheat meal status
   
   // Toast notification state
   const [confirmationVisible, setConfirmationVisible] = useState(false);
@@ -153,10 +154,25 @@ export default function MealPlanningScreen({ route, navigation }) {
     }
   }, [editingMealPlan]);
 
+  // Sync cheat meal status with actual meal plan data and meal state
+  useEffect(() => {
+    const currentPlan = currentEditingMealPlan || findTodaysMealPlan(selectedMealId);
+    const mealStateCheatStatus = getMealState(selectedMealId).isCheatMealActive;
+    
+    // Use meal plan status first, then fall back to meal state
+    const cheatStatus = currentPlan?.isCheatMeal || mealStateCheatStatus || false;
+    setIsCheatMealActive(cheatStatus);
+    
+    // Update meal state to match
+    if (mealStateCheatStatus !== cheatStatus) {
+      updateMealState(selectedMealId, { isCheatMealActive: cheatStatus });
+    }
+  }, [currentEditingMealPlan, selectedMealId]);
+
   // Manual reset function for when user wants to start fresh
   const resetMealPlan = () => {
     if (hasSavedMeal && savedMealPlan) {
-      // Revert to saved meal plan state
+      // Revert to saved meal plan state including cheat meal status
       updateMealState(selectedMealId, {
         selectedFoods: savedMealPlan.selectedFoods.map(food => ({
           ...food,
@@ -166,8 +182,10 @@ export default function MealPlanningScreen({ route, navigation }) {
         maxLimitFoods: new Map(),
         minLimitFoods: new Map(),
         editingPortion: null,
-        tempPortionValue: ''
+        tempPortionValue: '',
+        isCheatMealActive: savedMealPlan.isCheatMeal || false
       });
+      setIsCheatMealActive(savedMealPlan.isCheatMeal || false);
       showConfirmation(`Reverted to saved ${selectedMeal.name} meal!`);
     } else {
       // Reset to empty state (original behavior)
@@ -177,12 +195,109 @@ export default function MealPlanningScreen({ route, navigation }) {
         maxLimitFoods: new Map(),
         minLimitFoods: new Map(),
         editingPortion: null,
-        tempPortionValue: ''
+        tempPortionValue: '',
+        isCheatMealActive: false
       });
+      setIsCheatMealActive(false);
       showConfirmation(`${selectedMeal.name} meal reset!`);
     }
     setShowAddFoodsModal(false);
     setCurrentEditingMealPlan(null);
+    setIsCheatMealActive(false); // Reset cheat meal status
+  };
+
+  // Cancel a saved cheat meal with confirmation
+  const cancelCheatMeal = () => {
+    const currentPlan = currentEditingMealPlan || findTodaysMealPlan(selectedMealId);
+    
+    if (!currentPlan || !currentPlan.isCheatMeal) {
+      return;
+    }
+
+    // Use platform-specific alert handling like we do for cheat days
+    if (typeof window !== 'undefined' && window.confirm) {
+      // Web environment - use window.confirm
+      const confirmed = window.confirm(
+        'Are you sure you want to cancel your cheat meal? This will remove the cheat meal status and you\'ll need to add foods to meet your macro targets.'
+      );
+      if (confirmed) {
+        // Delete the cheat meal plan entirely (it should be as if never eaten)
+        deleteMealPlan(currentPlan.id);
+        
+        // Clear local state completely
+        setCurrentEditingMealPlan(null);
+        setIsCheatMealActive(false);
+        updateMealState(selectedMealId, { 
+          isCheatMealActive: false,
+          selectedFoods: [] // Also clear any foods since meal is cancelled
+        });
+        
+        showConfirmation('Cheat meal cancelled - add foods to meet your targets');
+      }
+    } else {
+      // Mobile environment - use Alert.alert
+      Alert.alert(
+        'Cancel Cheat Meal',
+        'Are you sure you want to cancel your cheat meal? This will remove the cheat meal status and you\'ll need to add foods to meet your macro targets.',
+        [
+          { text: 'Keep Cheat Meal', style: 'cancel' },
+          { 
+            text: 'Cancel Cheat Meal', 
+            style: 'destructive',
+            onPress: () => {
+              // Delete the cheat meal plan entirely (it should be as if never eaten)
+              deleteMealPlan(currentPlan.id);
+              
+              // Clear local state completely
+              setCurrentEditingMealPlan(null);
+              setIsCheatMealActive(false);
+              updateMealState(selectedMealId, { 
+                isCheatMealActive: false,
+                selectedFoods: [] // Also clear any foods since meal is cancelled
+              });
+              
+              showConfirmation('Cheat meal cancelled - add foods to meet your targets');
+            }
+          }
+        ]
+      );
+    }
+  };
+
+  // Handle cheat meal toggle - Enhanced for cancellation
+  const handleCheatMealToggle = () => {
+    const currentPlan = currentEditingMealPlan || findTodaysMealPlan(selectedMealId);
+    
+    // If there's a saved cheat meal, trigger cancellation instead of toggle
+    if (currentPlan && currentPlan.isCheatMeal) {
+      cancelCheatMeal();
+      return;
+    }
+
+    if (isCheatMealActive) {
+      // Turning OFF - just clear the local state, no confirmation needed
+      setIsCheatMealActive(false);
+      updateMealState(selectedMealId, { isCheatMealActive: false });
+      showConfirmation('Cheat meal deactivated - now you can update this meal');
+      return;
+    }
+
+    // Turning ON - check limits first  
+    const canUse = canUseCheatMeal(appPreferences);
+    const stats = getCheatStats(appPreferences);
+    
+    if (!canUse) {
+      Alert.alert(
+        'Cheat Meal Limit Reached',
+        `You've already used ${stats.cheatMeals.used}/${stats.cheatMeals.limit} cheat meals this ${stats.periodType === 'weekly' ? 'week' : 'month'}.`
+      );
+      return;
+    }
+
+    // Turn ON cheat meal mode (don't save to database until "Mark as Eaten")
+    setIsCheatMealActive(true);
+    updateMealState(selectedMealId, { isCheatMealActive: true });
+    showConfirmation('🎉 Cheat meal activated!');
   };
 
   // Cancel editing and go back
@@ -424,9 +539,34 @@ export default function MealPlanningScreen({ route, navigation }) {
     }
   };
 
-  const currentMacros = selectedFoods.length > 0 
+  const actualMacros = selectedFoods.length > 0 
     ? CalculationService.calculateTotalMacros(selectedFoods, foods)
     : { protein: 0, carbs: 0, fat: 0, calories: 0, fiber: 0, sugar: 0 };
+
+  // Use effective macros when cheat meal is active
+  const currentMacros = isCheatMealActive && selectedMeal && selectedMeal.name !== 'Extra'
+    ? {
+        // For cheat meals, show perfect macro achievement
+        protein: selectedMeal.macroTargets.protein,
+        carbs: selectedMeal.macroTargets.carbs,
+        fat: selectedMeal.macroTargets.fat,
+        calories: (selectedMeal.macroTargets.protein * 4) + (selectedMeal.macroTargets.carbs * 4) + (selectedMeal.macroTargets.fat * 9),
+        // Sub-macros - assume optimal values for cheat meals
+        fiber: selectedMeal.macroTargets.minFiber || 0,
+        sugar: Math.min(selectedMeal.macroTargets.maxSugar || 0, selectedMeal.macroTargets.carbs * 0.3),
+        naturalSugars: Math.min(selectedMeal.macroTargets.maxSugar || 0, selectedMeal.macroTargets.carbs * 0.2) * 0.8,
+        addedSugars: Math.min(selectedMeal.macroTargets.maxSugar || 0, selectedMeal.macroTargets.carbs * 0.2) * 0.2,
+        saturatedFat: selectedMeal.macroTargets.fat * 0.3,
+        monounsaturatedFat: selectedMeal.macroTargets.fat * 0.4,
+        polyunsaturatedFat: selectedMeal.macroTargets.fat * 0.3,
+        transFat: 0,
+        omega3: selectedMeal.macroTargets.fat * 0.05,
+        // Micronutrients - reasonable values
+        iron: 2, calcium: 50, zinc: 1, magnesium: 25,
+        sodium: 300, potassium: 200, vitaminB6: 0.1,
+        vitaminB12: 0.2, vitaminC: 5, vitaminD: 1
+      }
+    : actualMacros;
 
   const targetCalories = selectedMeal 
     ? CalculationService.calculateTargetCalories(selectedMeal.macroTargets)
@@ -441,8 +581,14 @@ export default function MealPlanningScreen({ route, navigation }) {
   const hasSavedMeal = savedMealPlan !== undefined;
 
   const saveMealPlan = () => {
-    if (!selectedMeal || selectedFoods.length === 0) {
-      Alert.alert('No Foods Selected', 'Please add some foods before marking the meal as eaten.');
+    if (!selectedMeal) {
+      Alert.alert('No Meal Selected', 'Please select a meal first.');
+      return;
+    }
+
+    // Allow cheat meals to be saved without foods, but regular meals need foods
+    if (!isCheatMealActive && selectedFoods.length === 0) {
+      Alert.alert('No Foods Selected', 'Please add some foods before marking the meal as eaten, or use the cheat meal option.');
       return;
     }
 
@@ -450,13 +596,14 @@ export default function MealPlanningScreen({ route, navigation }) {
     const mealPlan = {
       mealId: selectedMealId,
       selectedFoods: selectedFoods,
-      calculatedMacros: currentMacros
+      calculatedMacros: selectedFoods.length > 0 ? actualMacros : { protein: 0, carbs: 0, fat: 0, calories: 0, fiber: 0, sugar: 0 },
+      isCheatMeal: isCheatMealActive // Include cheat meal status
     };
 
     // Special logic for extras: Only edit if we came from dashboard (editingMealPlan set)
     // If we're on extra chip (no editingMealPlan), always create new
     const isEditingExtra = selectedMeal.name === 'Extra' && editingMealPlan;
-    const isEditingRegularMeal = selectedMeal.name !== 'Extra' && (editingMealPlan || currentEditingMealPlan);
+    const isEditingRegularMeal = selectedMeal.name !== 'Extra' && (editingMealPlan || currentEditingMealPlan || findTodaysMealPlan(selectedMealId));
     const isEditing = isEditingExtra || isEditingRegularMeal;
     
     console.log('saveMealPlan - isEditing:', isEditing);
@@ -466,7 +613,7 @@ export default function MealPlanningScreen({ route, navigation }) {
 
     if (isEditing) {
       // Update existing meal plan
-      const existingPlan = editingMealPlan || currentEditingMealPlan;
+      const existingPlan = editingMealPlan || currentEditingMealPlan || findTodaysMealPlan(selectedMealId);
       console.log('Updating existing meal plan:', existingPlan.id);
       updateMealPlan({
         ...existingPlan,
@@ -486,9 +633,13 @@ export default function MealPlanningScreen({ route, navigation }) {
           tempPortionValue: ''
         });
       } else {
-        // Update the current editing plan to reflect changes for regular meals
-        const updatedPlan = { ...existingPlan, ...mealPlan };
-        setCurrentEditingMealPlan(updatedPlan);
+        // Don't update currentEditingMealPlan for regular meals - this was causing state confusion
+        // Keep it null for regular meal editing workflow
+        if (editingMealPlan) {
+          // Only update if we came from dashboard editing
+          const updatedPlan = { ...existingPlan, ...mealPlan };
+          setCurrentEditingMealPlan(updatedPlan);
+        }
       }
     } else {
       // Create new meal plan
@@ -508,7 +659,7 @@ export default function MealPlanningScreen({ route, navigation }) {
           tempPortionValue: ''
         });
       } else {
-        // After creating, treat it as an existing meal plan for future edits
+        // After creating, set currentEditingMealPlan to the newly created plan so button text updates
         const newPlan = { ...mealPlan, id: Date.now().toString(), createdAt: new Date().toISOString() };
         setCurrentEditingMealPlan(newPlan);
       }
@@ -880,6 +1031,37 @@ export default function MealPlanningScreen({ route, navigation }) {
                   />
                 </View>
               )}
+
+              {/* Cheat Meal Button - Always show for non-Extra meals */}
+              {selectedMeal && selectedMeal.name !== 'Extra' && (() => {
+                const canUse = canUseCheatMeal(appPreferences);
+                const currentPlan = currentEditingMealPlan || findTodaysMealPlan(selectedMealId);
+                const hasSavedCheat = currentPlan && currentPlan.isCheatMeal;
+                const isDisabled = !canUse && !isCheatMealActive && !hasSavedCheat;
+                
+                return (
+                  <Pressable 
+                    style={[
+                      styles.cheatMealButton, 
+                      (isCheatMealActive || hasSavedCheat) && styles.cheatMealButtonActive,
+                      isDisabled && styles.cheatMealButtonDisabled
+                    ]}
+                    onPressIn={() => Keyboard.dismiss()}
+                    onPress={isDisabled ? null : handleCheatMealToggle}
+                    disabled={isDisabled}
+                  >
+                    <Text style={[
+                      styles.cheatMealButtonText,
+                      (isCheatMealActive || hasSavedCheat) && styles.cheatMealButtonTextActive,
+                      isDisabled && styles.cheatMealButtonTextDisabled
+                    ]}>
+                      {isDisabled ? '❌ No Limit' : 
+                       hasSavedCheat ? '✕ Cancel' :
+                       isCheatMealActive ? '✅ Cheat' : '🎉 Cheat'}
+                    </Text>
+                  </Pressable>
+                );
+              })()}
               
               {selectedFoods.length > 0 && (
                 <Pressable 
@@ -928,39 +1110,63 @@ export default function MealPlanningScreen({ route, navigation }) {
           end={{ x: 1, y: 1 }}
         >
           <View style={styles.selectedFoodsContainer}>
-            <Text style={styles.cardTitle}>Selected Foods</Text>
-            {selectedFoods.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyIcon}>🍽️</Text>
-                <Text style={styles.emptyText}>No foods selected yet</Text>
-                <Text style={styles.emptySubtext}>Add foods above to start planning your perfect meal</Text>
-              </View>
-            ) : (
+            {/* Cheat Meal Active - Show cheat meal indicator */}
+            {isCheatMealActive && selectedMeal && selectedMeal.name !== 'Extra' ? (
               <>
-                <FlatList
-                  data={selectedFoods}
-                  renderItem={renderFoodItem}
-                  keyExtractor={(item) => item.foodId}
-                  scrollEnabled={false}
-                  showsVerticalScrollIndicator={false}
-                />
+                <Text style={styles.cardTitle}>🎉 Cheat Meal Active</Text>
+                <LinearGradient
+                  colors={['#FF9F00', '#FFB84D']}
+                  style={styles.cheatMealIndicator}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <View style={styles.cheatMealContent}>
+                    <Text style={styles.cheatMealIcon}>🍕</Text>
+                    <Text style={styles.cheatMealTitle}>Enjoy Your Cheat Meal!</Text>
+                    <Text style={styles.cheatMealDescription}>
+                      Your macro targets will be counted as perfectly achieved regardless of what you eat.
+                    </Text>
+                    
+                    <View style={styles.cheatMealMacros}>
+                      <Text style={styles.cheatMealMacrosLabel}>Perfect Achievement:</Text>
+                      <View style={styles.cheatMealMacrosRow}>
+                        <View style={styles.cheatMealMacroItem}>
+                          <Text style={styles.cheatMealMacroValue}>{selectedMeal.macroTargets.protein}g</Text>
+                          <Text style={styles.cheatMealMacroLabel}>Protein</Text>
+                        </View>
+                        <View style={styles.cheatMealMacroItem}>
+                          <Text style={styles.cheatMealMacroValue}>{selectedMeal.macroTargets.carbs}g</Text>
+                          <Text style={styles.cheatMealMacroLabel}>Carbs</Text>
+                        </View>
+                        <View style={styles.cheatMealMacroItem}>
+                          <Text style={styles.cheatMealMacroValue}>{selectedMeal.macroTargets.fat}g</Text>
+                          <Text style={styles.cheatMealMacroLabel}>Fat</Text>
+                        </View>
+                        <View style={styles.cheatMealMacroItem}>
+                          <Text style={styles.cheatMealMacroValue}>{targetCalories}</Text>
+                          <Text style={styles.cheatMealMacroLabel}>Calories</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                </LinearGradient>
                 
-                {/* Action Buttons */}
+                {/* Cheat Meal Action Button */}
                 {(editingMealPlan || currentEditingMealPlan) ? (
                   <Pressable 
                     style={styles.eatenButton}
                     onPressIn={() => Keyboard.dismiss()}
-                    onPress={saveMealPlan}
+                    onPress={cancelCheatMeal}
                   >
                     <LinearGradient
-                      colors={['#00D084', '#00A86B']}
+                      colors={['#FF453A', '#FF6B6B']}
                       style={styles.eatenButtonGradient}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                     >
-                      <Text style={styles.eatenButtonText}>✓ Update Meal</Text>
+                      <Text style={styles.eatenButtonText}>✕ Cancel Cheat Meal</Text>
                       <Text style={styles.eatenButtonSubtext}>
-                        {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+                        Remove cheat meal status and add foods instead
                       </Text>
                     </LinearGradient>
                   </Pressable>
@@ -976,12 +1182,73 @@ export default function MealPlanningScreen({ route, navigation }) {
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                     >
-                      <Text style={styles.eatenButtonText}>✓ Mark as Eaten</Text>
+                      <Text style={styles.eatenButtonText}>✓ Mark Cheat Meal as Eaten</Text>
                       <Text style={styles.eatenButtonSubtext}>
-                        {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+                        Perfect targets achieved! 🎯 {targetCalories} calories
                       </Text>
                     </LinearGradient>
                   </Pressable>
+                )}
+              </>
+            ) : (
+              /* Normal Foods Display */
+              <>
+                <Text style={styles.cardTitle}>Selected Foods</Text>
+                {selectedFoods.length === 0 ? (
+                  <View style={styles.emptyState}>
+                    <Text style={styles.emptyIcon}>🍽️</Text>
+                    <Text style={styles.emptyText}>No foods selected yet</Text>
+                    <Text style={styles.emptySubtext}>Add foods above to start planning your perfect meal</Text>
+                  </View>
+                ) : (
+                  <>
+                    <FlatList
+                      data={selectedFoods}
+                      renderItem={renderFoodItem}
+                      keyExtractor={(item) => item.foodId}
+                      scrollEnabled={false}
+                      showsVerticalScrollIndicator={false}
+                    />
+                    
+                    {/* Action Buttons */}
+                    {(editingMealPlan || currentEditingMealPlan || findTodaysMealPlan(selectedMealId)) ? (
+                      <Pressable 
+                        style={styles.eatenButton}
+                        onPressIn={() => Keyboard.dismiss()}
+                        onPress={saveMealPlan}
+                      >
+                        <LinearGradient
+                          colors={['#00D084', '#00A86B']}
+                          style={styles.eatenButtonGradient}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                        >
+                          <Text style={styles.eatenButtonText}>✓ Update Meal</Text>
+                          <Text style={styles.eatenButtonSubtext}>
+                            {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+                          </Text>
+                        </LinearGradient>
+                      </Pressable>
+                    ) : (
+                      <Pressable 
+                        style={styles.eatenButton}
+                        onPressIn={() => Keyboard.dismiss()}
+                        onPress={saveMealPlan}
+                      >
+                        <LinearGradient
+                          colors={['#00D084', '#00A86B']}
+                          style={styles.eatenButtonGradient}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                        >
+                          <Text style={styles.eatenButtonText}>✓ Mark as Eaten</Text>
+                          <Text style={styles.eatenButtonSubtext}>
+                            {Math.round(currentMacros.calories)}/{targetCalories} calories • {Math.round(currentMacros.protein)}p {Math.round(currentMacros.carbs)}c {Math.round(currentMacros.fat)}f
+                          </Text>
+                        </LinearGradient>
+                      </Pressable>
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -1716,6 +1983,37 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
+  
+  // Cheat Meal Button
+  cheatMealButton: {
+    backgroundColor: 'rgba(255, 159, 0, 0.2)',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 159, 0, 0.3)',
+    marginLeft: 8,
+  },
+  cheatMealButtonActive: {
+    backgroundColor: 'rgba(0, 208, 132, 0.2)',
+    borderColor: 'rgba(0, 208, 132, 0.3)',
+  },
+  cheatMealButtonText: {
+    color: '#FF9F00',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  cheatMealButtonTextActive: {
+    color: '#00D084',
+  },
+  cheatMealButtonDisabled: {
+    backgroundColor: 'rgba(128, 128, 128, 0.2)',
+    borderColor: 'rgba(128, 128, 128, 0.3)',
+    opacity: 0.6,
+  },
+  cheatMealButtonTextDisabled: {
+    color: '#808080',
+  },
 
   // Compact Food Container Styles
   compactFoodHeader: {
@@ -2005,6 +2303,71 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
     flex: 1,
+  },
+
+  // Cheat Meal Indicator Styles
+  cheatMealIndicator: {
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: '#FF9F00',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  cheatMealContent: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  cheatMealIcon: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
+  cheatMealTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  cheatMealDescription: {
+    fontSize: 14,
+    color: 'rgba(255, 255, 255, 0.9)',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  cheatMealMacros: {
+    width: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+    padding: 16,
+  },
+  cheatMealMacrosLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  cheatMealMacrosRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  cheatMealMacroItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  cheatMealMacroValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  cheatMealMacroLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: '500',
   },
 
 });

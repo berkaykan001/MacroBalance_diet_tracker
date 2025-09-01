@@ -161,23 +161,23 @@ export default function CompletionScreen({ navigation }) {
           <View style={styles.macroCard}>
             <View style={styles.calorieRow}>
               <Text style={styles.calorieLabel}>Daily Calories</Text>
-              <Text style={styles.calorieValue}>{Math.round(calculatedNutrition.dailyCalories)}</Text>
+              <Text style={styles.calorieValue}>{calculatedNutrition.calculations.targetCalories}</Text>
             </View>
             
             <View style={styles.macroGrid}>
               <MacroItem 
                 label="Protein" 
-                value={`${Math.round(calculatedNutrition.dailyMacros.protein)}g`}
+                value={`${calculatedNutrition.dailyTargets.protein}g`}
                 color="#FF6B6B"
               />
               <MacroItem 
                 label="Carbs" 
-                value={`${Math.round(calculatedNutrition.dailyMacros.carbs)}g`}
+                value={`${calculatedNutrition.dailyTargets.carbs}g`}
                 color="#4ECDC4"
               />
               <MacroItem 
                 label="Fat" 
-                value={`${Math.round(calculatedNutrition.dailyMacros.fat)}g`}
+                value={`${calculatedNutrition.dailyTargets.fat}g`}
                 color="#FFD93D"
               />
             </View>

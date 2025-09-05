@@ -13,6 +13,7 @@ const Stack = createStackNavigator();
 export default function OnboardingNavigator() {
   return (
     <Stack.Navigator
+      detachInactiveScreens={true}
       screenOptions={{
         headerStyle: {
           backgroundColor: '#1C1C1E',
@@ -25,9 +26,10 @@ export default function OnboardingNavigator() {
           fontSize: 18,
         },
         headerBackTitleVisible: false,
-        cardStyle: { backgroundColor: '#000000' },
-        gestureEnabled: true,
+        cardStyle: { backgroundColor: '#000000', flex: 1 },
+        gestureEnabled: false, // Disable gestures that might interfere
         gestureDirection: 'horizontal',
+        animationEnabled: false, // Disable animations that create overlays
       }}
     >
       <Stack.Screen 
@@ -51,7 +53,7 @@ export default function OnboardingNavigator() {
       <Stack.Screen 
         name="GoalSelection" 
         component={GoalSelectionScreen} 
-        options={{ title: 'Your Goal' }}
+        options={{ title: 'Your Goal - FIXED!' }}
       />
       <Stack.Screen 
         name="MealFrequency" 

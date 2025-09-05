@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert, Switch } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert, Switch, Modal, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFood } from '../../context/FoodContext';
 import { useMeal } from '../../context/MealContext';
@@ -11,14 +11,16 @@ export default function SettingsScreen() {
   const { meals, updateMeal, addMeal, deleteMeal, reloadMeals } = useMeal();
   const { 
     selectedQuickFoods, 
-    appPreferences, 
+    appPreferences,
+    userProfile,
     updateQuickFoods, 
     updateAppPreferences, 
+    updateUserProfile,
     resetSettings, 
     clearAllData 
   } = useSettings();
   
-  const [activeSection, setActiveSection] = useState('meal-targets');
+  const [activeSection, setActiveSection] = useState('profile');
   const [editingMeal, setEditingMeal] = useState(null);
   const [isCreatingMeal, setIsCreatingMeal] = useState(false);
   const [mealFormData, setMealFormData] = useState({
@@ -26,12 +28,162 @@ export default function SettingsScreen() {
     macroTargets: { protein: '', carbs: '', fat: '' }
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [showGoalSelector, setShowGoalSelector] = useState(false);
+  const [selectedGoal, setSelectedGoal] = useState(userProfile?.goal || 'maintenance');
+  
+  // Profile editing states
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
+  const [profileUpdateTrigger, setProfileUpdateTrigger] = useState(0);
+  const [editingProfile, setEditingProfile] = useState({
+    age: userProfile?.age?.toString() || '',
+    height: userProfile?.height?.toString() || '',
+    weight: userProfile?.weight?.toString() || '',
+    gender: userProfile?.gender || 'male',
+    activityLevel: userProfile?.activityLevel || 'moderately_active',
+    mealsPerDay: userProfile?.mealsPerDay || 4
+  });
 
   const sections = [
+    { id: 'profile', title: 'Personal Profile', icon: '👤' },
     { id: 'meal-targets', title: 'Meal Targets', icon: '🎯' },
     { id: 'quick-foods', title: 'Quick-Add Foods', icon: '⚡' },
     { id: 'preferences', title: 'App Preferences', icon: '⚙️' }
   ];
+
+  // Goal options (same as onboarding)
+  const GOAL_OPTIONS = [
+    {
+      id: 'cutting',
+      title: 'Weight Loss (Cutting)',
+      subtitle: 'Lose fat while preserving muscle',
+      description: '15% calorie deficit with higher protein to maintain lean mass',
+      icon: '📉'
+    },
+    {
+      id: 'maintenance',
+      title: 'Maintain Weight',
+      subtitle: 'Stay at current weight',
+      description: 'Balanced nutrition to maintain your current physique and weight',
+      icon: '⚖️'
+    },
+    {
+      id: 'bulking',
+      title: 'Weight Gain (Bulking)',
+      subtitle: 'Build muscle and gain weight',
+      description: '15% calorie surplus with optimized macros for muscle growth',
+      icon: '📈'
+    },
+    {
+      id: 'aggressive_cutting',
+      title: 'Aggressive Weight Loss',
+      subtitle: 'Faster fat loss (Advanced)',
+      description: '25% calorie deficit - requires discipline and experience',
+      icon: '🔥'
+    },
+    {
+      id: 'aggressive_bulking',
+      title: 'Aggressive Weight Gain',
+      subtitle: 'Faster muscle gain (Advanced)',
+      description: '25% calorie surplus for rapid gains - may include some fat gain',
+      icon: '⚡'
+    }
+  ];
+
+  const handleGoalUpdate = async () => {
+    if (!selectedGoal) return;
+
+    // Show confirmation for aggressive options
+    if (selectedGoal.includes('aggressive')) {
+      setShowGoalSelector(false);
+      // For web compatibility, use window.confirm instead of Alert.alert
+      if (typeof window !== 'undefined') {
+        const confirmed = window.confirm(
+          'Aggressive Goal Selected\n\nAggressive goals require more discipline and experience. Are you sure you want to proceed?'
+        );
+        if (confirmed) {
+          await saveGoal();
+        }
+      } else {
+        Alert.alert(
+          'Aggressive Goal Selected',
+          'Aggressive goals require more discipline and experience. Are you sure you want to proceed?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Continue', onPress: saveGoal }
+          ]
+        );
+      }
+    } else {
+      setShowGoalSelector(false);
+      await saveGoal();
+    }
+  };
+
+  const saveGoal = async () => {
+    try {
+      await updateUserProfile({ goal: selectedGoal });
+      Alert.alert('Success', 'Your fitness goal has been updated successfully!');
+    } catch (error) {
+      console.error('Error updating goal:', error);
+      Alert.alert('Error', 'Failed to update your goal. Please try again.');
+    }
+  };
+
+  const handleProfileUpdate = async () => {
+    // Validate inputs
+    const age = parseInt(editingProfile.age);
+    const height = parseInt(editingProfile.height);
+    const weight = parseInt(editingProfile.weight);
+
+    if (!age || age < 13 || age > 100) {
+      Alert.alert('Invalid Age', 'Please enter a valid age between 13-100 years');
+      return;
+    }
+
+    if (!height || height < 100 || height > 250) {
+      Alert.alert('Invalid Height', 'Please enter a valid height between 100-250 cm');
+      return;
+    }
+
+    if (!weight || weight < 30 || weight > 300) {
+      Alert.alert('Invalid Weight', 'Please enter a valid weight between 30-300 kg');
+      return;
+    }
+
+    try {
+      await updateUserProfile({
+        age,
+        height,
+        weight,
+        gender: editingProfile.gender,
+        activityLevel: editingProfile.activityLevel,
+        mealsPerDay: editingProfile.mealsPerDay
+      });
+      
+      setShowProfileEditor(false);
+      
+      // Trigger UI refresh
+      setProfileUpdateTrigger(prev => prev + 1);
+      
+      Alert.alert('Success', 'Your profile has been updated successfully! Your macro targets have been recalculated based on your new information.');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Failed to update your profile. Please try again.');
+    }
+  };
+
+  const openProfileEditor = () => {
+    // Reset form with current values
+    setEditingProfile({
+      age: userProfile?.age?.toString() || '',
+      height: userProfile?.height?.toString() || '',
+      weight: userProfile?.weight?.toString() || '',
+      gender: userProfile?.gender || 'male',
+      activityLevel: userProfile?.activityLevel || 'moderately_active',
+      mealsPerDay: userProfile?.mealsPerDay || 4
+    });
+    setShowProfileEditor(true);
+  };
 
   const handleMealEdit = (meal) => {
     setEditingMeal(meal);
@@ -259,6 +411,156 @@ export default function SettingsScreen() {
 
   const renderSectionContent = () => {
     switch (activeSection) {
+      case 'profile':
+        return (
+          <View style={styles.sectionContent}>
+            <Text style={styles.sectionTitle}>Personal Profile</Text>
+            <Text style={styles.sectionDescription}>
+              Update your personal information and fitness goals
+            </Text>
+            
+            <View style={styles.preferencesContainer}>
+              {/* Current Goal Display */}
+              <View style={styles.preferenceItem}>
+                <View style={styles.preferenceInfo}>
+                  <Text style={styles.preferenceTitle}>Current Goal</Text>
+                  <Text style={styles.preferenceDescription}>
+                    {GOAL_OPTIONS.find(g => g.id === (userProfile?.goal || 'maintenance'))?.title || 'Maintain Weight'}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.goalChangeButton}
+                  onPress={() => setShowGoalSelector(true)}
+                >
+                  <Text style={styles.goalChangeButtonText}>Change</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* User Info Display */}
+              {userProfile && (
+                <>
+                  <View style={styles.preferenceItem}>
+                    <View style={styles.preferenceInfo}>
+                      <Text style={styles.preferenceTitle}>Age</Text>
+                      <Text style={styles.preferenceDescription}>
+                        {userProfile.age ? `${userProfile.age} years old` : 'Not set'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.preferenceItem}>
+                    <View style={styles.preferenceInfo}>
+                      <Text style={styles.preferenceTitle}>Gender</Text>
+                      <Text style={styles.preferenceDescription}>
+                        {userProfile.gender ? (userProfile.gender === 'male' ? 'Male' : 'Female') : 'Not set'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.preferenceItem}>
+                    <View style={styles.preferenceInfo}>
+                      <Text style={styles.preferenceTitle}>Height</Text>
+                      <Text style={styles.preferenceDescription}>
+                        {userProfile.height ? `${userProfile.height} cm` : 'Not set'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.preferenceItem}>
+                    <View style={styles.preferenceInfo}>
+                      <Text style={styles.preferenceTitle}>Weight</Text>
+                      <Text style={styles.preferenceDescription}>
+                        {userProfile.weight ? `${userProfile.weight} kg` : 'Not set'}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.preferenceItem}>
+                    <View style={styles.preferenceInfo}>
+                      <Text style={styles.preferenceTitle}>Activity Level</Text>
+                      <Text style={styles.preferenceDescription}>
+                        {userProfile.activityLevel ? 
+                          userProfile.activityLevel.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 
+                          'Not set'
+                        }
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.preferenceItem}>
+                    <View style={styles.preferenceInfo}>
+                      <Text style={styles.preferenceTitle}>Meals Per Day</Text>
+                      <Text style={styles.preferenceDescription}>
+                        {userProfile.mealsPerDay || 4} meals per day
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Current Calculated Targets */}
+                  {userProfile?.age && userProfile?.height && userProfile?.weight && (
+                    <>
+                      <View style={styles.sectionDivider}>
+                        <Text style={styles.sectionDividerText}>Current Calculated Targets</Text>
+                      </View>
+                      
+                      {(() => {
+                        try {
+                          const calculatedTargets = require('../../services/MacroCalculationService').default.calculatePersonalizedNutrition(userProfile);
+                          return (
+                            <>
+                              <View style={styles.preferenceItem}>
+                                <View style={styles.preferenceInfo}>
+                                  <Text style={styles.preferenceTitle}>Daily Calories</Text>
+                                  <Text style={styles.preferenceDescriptionHighlight}>
+                                    {calculatedTargets?.calculations?.targetCalories || 'Not calculated'} calories
+                                  </Text>
+                                </View>
+                              </View>
+                              
+                              <View style={styles.preferenceItem}>
+                                <View style={styles.preferenceInfo}>
+                                  <Text style={styles.preferenceTitle}>Daily Macros</Text>
+                                  <Text style={styles.preferenceDescriptionHighlight}>
+                                    {calculatedTargets?.dailyTargets?.protein || 0}g protein • {' '}
+                                    {calculatedTargets?.dailyTargets?.carbs || 0}g carbs • {' '}
+                                    {calculatedTargets?.dailyTargets?.fat || 0}g fat
+                                  </Text>
+                                </View>
+                              </View>
+                            </>
+                          );
+                        } catch (error) {
+                          console.error('Error calculating targets for display:', error);
+                          return (
+                            <View style={styles.preferenceItem}>
+                              <View style={styles.preferenceInfo}>
+                                <Text style={styles.preferenceTitle}>Calculated Targets</Text>
+                                <Text style={styles.preferenceDescription}>
+                                  Complete your profile to see calculated targets
+                                </Text>
+                              </View>
+                            </View>
+                          );
+                        }
+                      })()}
+                    </>
+                  )}
+
+                  {/* Edit Profile Button */}
+                  <View style={styles.preferenceItem}>
+                    <TouchableOpacity
+                      style={styles.editProfileButton}
+                      onPress={openProfileEditor}
+                    >
+                      <Text style={styles.editProfileButtonText}>Edit Personal Info</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+        );
+
       case 'meal-targets':
         return (
           <View style={styles.sectionContent}>
@@ -681,6 +983,249 @@ export default function SettingsScreen() {
         {renderSectionContent()}
         <View style={styles.bottomSpacer} />
       </ScrollView>
+
+      {/* Goal Selector Modal */}
+      <Modal
+        visible={showGoalSelector}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.goalModalOverlay}>
+          <View style={styles.goalModalContainer}>
+            <View style={styles.goalModalHeader}>
+              <Text style={styles.goalModalTitle}>Choose Your Goal</Text>
+              <TouchableOpacity
+                style={styles.goalModalCloseButton}
+                onPress={() => setShowGoalSelector(false)}
+              >
+                <Text style={styles.goalModalCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.goalModalContent} showsVerticalScrollIndicator={false}>
+              {GOAL_OPTIONS.map((goal) => (
+                <Pressable
+                  key={goal.id}
+                  style={[
+                    styles.goalSelectionCard,
+                    selectedGoal === goal.id && styles.goalSelectionCardSelected
+                  ]}
+                  onPress={() => setSelectedGoal(goal.id)}
+                >
+                  <View style={styles.goalSelectionContent}>
+                    <Text style={styles.goalSelectionIcon}>{goal.icon}</Text>
+                    <View style={styles.goalSelectionTextContainer}>
+                      <Text style={[
+                        styles.goalSelectionTitle,
+                        selectedGoal === goal.id && styles.goalSelectionTitleSelected
+                      ]}>
+                        {goal.title}
+                      </Text>
+                      <Text style={[
+                        styles.goalSelectionSubtitle,
+                        selectedGoal === goal.id && styles.goalSelectionSubtitleSelected
+                      ]}>
+                        {goal.subtitle}
+                      </Text>
+                      <Text style={styles.goalSelectionDescription}>{goal.description}</Text>
+                    </View>
+                    <View style={[
+                      styles.goalSelectionIndicator,
+                      selectedGoal === goal.id && styles.goalSelectionIndicatorSelected
+                    ]}>
+                      {selectedGoal === goal.id && <Text style={styles.goalCheckmark}>✓</Text>}
+                    </View>
+                  </View>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            <View style={styles.goalModalButtons}>
+              <TouchableOpacity
+                style={styles.goalModalSecondaryButton}
+                onPress={() => setShowGoalSelector(false)}
+              >
+                <Text style={styles.goalModalSecondaryButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.goalModalPrimaryButton}
+                onPress={handleGoalUpdate}
+              >
+                <Text style={styles.goalModalPrimaryButtonText}>Update Goal</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Profile Editor Modal */}
+      <Modal
+        visible={showProfileEditor}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.goalModalOverlay}>
+          <View style={styles.profileModalContainer}>
+            <View style={styles.goalModalHeader}>
+              <Text style={styles.goalModalTitle}>Edit Personal Info</Text>
+              <TouchableOpacity
+                style={styles.goalModalCloseButton}
+                onPress={() => setShowProfileEditor(false)}
+              >
+                <Text style={styles.goalModalCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.profileModalContent} showsVerticalScrollIndicator={false}>
+              {/* Age Input */}
+              <View style={styles.profileInputGroup}>
+                <Text style={styles.profileInputLabel}>Age (years)</Text>
+                <TextInput
+                  style={styles.profileInput}
+                  value={editingProfile.age}
+                  onChangeText={(text) => setEditingProfile(prev => ({...prev, age: text}))}
+                  keyboardType="numeric"
+                  placeholder="25"
+                  placeholderTextColor="#8E8E93"
+                />
+              </View>
+
+              {/* Gender Selector */}
+              <View style={styles.profileInputGroup}>
+                <Text style={styles.profileInputLabel}>Gender</Text>
+                <View style={styles.genderSelectorContainer}>
+                  <Pressable
+                    style={[
+                      styles.genderOptionButton,
+                      editingProfile.gender === 'male' && styles.genderOptionButtonSelected
+                    ]}
+                    onPress={() => setEditingProfile(prev => ({...prev, gender: 'male'}))}
+                  >
+                    <Text style={[
+                      styles.genderOptionText,
+                      editingProfile.gender === 'male' && styles.genderOptionTextSelected
+                    ]}>Male</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[
+                      styles.genderOptionButton,
+                      editingProfile.gender === 'female' && styles.genderOptionButtonSelected
+                    ]}
+                    onPress={() => setEditingProfile(prev => ({...prev, gender: 'female'}))}
+                  >
+                    <Text style={[
+                      styles.genderOptionText,
+                      editingProfile.gender === 'female' && styles.genderOptionTextSelected
+                    ]}>Female</Text>
+                  </Pressable>
+                </View>
+              </View>
+
+              {/* Height Input */}
+              <View style={styles.profileInputGroup}>
+                <Text style={styles.profileInputLabel}>Height (cm)</Text>
+                <TextInput
+                  style={styles.profileInput}
+                  value={editingProfile.height}
+                  onChangeText={(text) => setEditingProfile(prev => ({...prev, height: text}))}
+                  keyboardType="numeric"
+                  placeholder="175"
+                  placeholderTextColor="#8E8E93"
+                />
+              </View>
+
+              {/* Weight Input */}
+              <View style={styles.profileInputGroup}>
+                <Text style={styles.profileInputLabel}>Weight (kg)</Text>
+                <TextInput
+                  style={styles.profileInput}
+                  value={editingProfile.weight}
+                  onChangeText={(text) => setEditingProfile(prev => ({...prev, weight: text}))}
+                  keyboardType="numeric"
+                  placeholder="70"
+                  placeholderTextColor="#8E8E93"
+                />
+              </View>
+
+              {/* Activity Level Selector */}
+              <View style={styles.profileInputGroup}>
+                <Text style={styles.profileInputLabel}>Activity Level</Text>
+                {[
+                  { id: 'sedentary', title: 'Sedentary', description: 'Little or no exercise' },
+                  { id: 'lightly_active', title: 'Lightly Active', description: 'Light exercise 1-3 days/week' },
+                  { id: 'moderately_active', title: 'Moderately Active', description: 'Exercise 3-5 days/week' },
+                  { id: 'very_active', title: 'Very Active', description: 'Hard exercise 6-7 days/week' },
+                  { id: 'super_active', title: 'Super Active', description: 'Very hard exercise, physical job' }
+                ].map((level) => (
+                  <Pressable
+                    key={level.id}
+                    style={[
+                      styles.activityLevelOption,
+                      editingProfile.activityLevel === level.id && styles.activityLevelOptionSelected
+                    ]}
+                    onPress={() => setEditingProfile(prev => ({...prev, activityLevel: level.id}))}
+                  >
+                    <View style={styles.activityLevelContent}>
+                      <Text style={[
+                        styles.activityLevelTitle,
+                        editingProfile.activityLevel === level.id && styles.activityLevelTitleSelected
+                      ]}>
+                        {level.title}
+                      </Text>
+                      <Text style={styles.activityLevelDescription}>{level.description}</Text>
+                    </View>
+                    <View style={[
+                      styles.activityLevelIndicator,
+                      editingProfile.activityLevel === level.id && styles.activityLevelIndicatorSelected
+                    ]}>
+                      {editingProfile.activityLevel === level.id && <Text style={styles.goalCheckmark}>✓</Text>}
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+
+              {/* Meals Per Day */}
+              <View style={styles.profileInputGroup}>
+                <Text style={styles.profileInputLabel}>Meals Per Day</Text>
+                <View style={styles.mealsPerDayContainer}>
+                  {[3, 4, 5, 6].map((num) => (
+                    <Pressable
+                      key={num}
+                      style={[
+                        styles.mealsPerDayOption,
+                        editingProfile.mealsPerDay === num && styles.mealsPerDayOptionSelected
+                      ]}
+                      onPress={() => setEditingProfile(prev => ({...prev, mealsPerDay: num}))}
+                    >
+                      <Text style={[
+                        styles.mealsPerDayText,
+                        editingProfile.mealsPerDay === num && styles.mealsPerDayTextSelected
+                      ]}>
+                        {num}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            </ScrollView>
+
+            <View style={styles.goalModalButtons}>
+              <TouchableOpacity
+                style={styles.goalModalSecondaryButton}
+                onPress={() => setShowProfileEditor(false)}
+              >
+                <Text style={styles.goalModalSecondaryButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.goalModalPrimaryButton}
+                onPress={handleProfileUpdate}
+              >
+                <Text style={styles.goalModalPrimaryButtonText}>Save Changes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -1242,5 +1787,335 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     minWidth: 30,
     textAlign: 'center',
+  },
+
+  // Goal Change Button
+  goalChangeButton: {
+    backgroundColor: 'rgba(0,122,255,0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  goalChangeButtonText: {
+    color: '#007AFF',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  // Goal Modal Styles
+  goalModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'flex-end',
+  },
+  goalModalContainer: {
+    backgroundColor: '#1C1C1E',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+    paddingTop: 20,
+  },
+  goalModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  goalModalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  goalModalCloseButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  goalModalCloseText: {
+    color: '#8E8E93',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  goalModalContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  goalModalButtons: {
+    flexDirection: 'row',
+    padding: 20,
+    gap: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  goalModalSecondaryButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  goalModalSecondaryButtonText: {
+    color: '#8E8E93',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  goalModalPrimaryButton: {
+    flex: 1,
+    backgroundColor: '#00D084',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  goalModalPrimaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // Goal Selection Card Styles
+  goalSelectionCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    marginVertical: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  goalSelectionCardSelected: {
+    borderColor: '#00D084',
+    backgroundColor: 'rgba(0, 208, 132, 0.1)',
+  },
+  goalSelectionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+  },
+  goalSelectionIcon: {
+    fontSize: 24,
+    marginRight: 16,
+  },
+  goalSelectionTextContainer: {
+    flex: 1,
+  },
+  goalSelectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  goalSelectionTitleSelected: {
+    color: '#00D084',
+  },
+  goalSelectionSubtitle: {
+    fontSize: 14,
+    color: '#8E8E93',
+    marginBottom: 6,
+  },
+  goalSelectionSubtitleSelected: {
+    color: '#FFFFFF',
+  },
+  goalSelectionDescription: {
+    fontSize: 12,
+    color: '#8E8E93',
+    lineHeight: 16,
+  },
+  goalSelectionIndicator: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#8E8E93',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  goalSelectionIndicatorSelected: {
+    borderColor: '#00D084',
+    backgroundColor: '#00D084',
+  },
+  goalCheckmark: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+
+  // Edit Profile Button
+  editProfileButton: {
+    backgroundColor: '#00D084',
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    width: '100%',
+  },
+  editProfileButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // Profile Modal Styles
+  profileModalContainer: {
+    backgroundColor: '#1C1C1E',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '90%',
+    paddingTop: 20,
+  },
+  profileModalContent: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  profileInputGroup: {
+    marginBottom: 24,
+  },
+  profileInputLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 12,
+  },
+  profileInput: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    color: '#FFFFFF',
+    fontSize: 16,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+
+  // Gender Selector
+  genderSelectorContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  genderOptionButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  genderOptionButtonSelected: {
+    borderColor: '#00D084',
+    backgroundColor: 'rgba(0, 208, 132, 0.1)',
+  },
+  genderOptionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#8E8E93',
+  },
+  genderOptionTextSelected: {
+    color: '#00D084',
+  },
+
+  // Activity Level Options
+  activityLevelOption: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  activityLevelOptionSelected: {
+    borderColor: '#00D084',
+    backgroundColor: 'rgba(0, 208, 132, 0.1)',
+  },
+  activityLevelContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    flex: 1,
+  },
+  activityLevelTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    flex: 1,
+  },
+  activityLevelTitleSelected: {
+    color: '#00D084',
+  },
+  activityLevelDescription: {
+    fontSize: 12,
+    color: '#8E8E93',
+    marginLeft: 12,
+  },
+  activityLevelIndicator: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#8E8E93',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  activityLevelIndicatorSelected: {
+    borderColor: '#00D084',
+    backgroundColor: '#00D084',
+  },
+
+  // Meals Per Day
+  mealsPerDayContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  mealsPerDayOption: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  mealsPerDayOptionSelected: {
+    borderColor: '#00D084',
+    backgroundColor: 'rgba(0, 208, 132, 0.1)',
+  },
+  mealsPerDayText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#8E8E93',
+  },
+  mealsPerDayTextSelected: {
+    color: '#00D084',
+  },
+
+  // Section Divider
+  sectionDivider: {
+    marginVertical: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    alignItems: 'center',
+  },
+  sectionDividerText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#00D084',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+
+  // Highlighted preference description
+  preferenceDescriptionHighlight: {
+    fontSize: 12,
+    color: '#00D084',
+    fontWeight: '600',
+    lineHeight: 14,
   },
 });

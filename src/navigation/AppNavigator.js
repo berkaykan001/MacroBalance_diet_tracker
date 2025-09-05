@@ -102,9 +102,12 @@ export default function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName={initialRouteName}
+        detachInactiveScreens={true}
         screenOptions={{
           headerShown: false,
           gestureEnabled: false, // Prevent swipe back during onboarding
+          cardStyle: { flex: 1 }, // Fix for React Navigation Web scrolling
+          animationEnabled: false, // Disable animations that create overlays
         }}
       >
         <Stack.Screen 

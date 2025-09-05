@@ -17,16 +17,12 @@ jest.mock('@react-native-async-storage/async-storage', () => ({
   removeItem: jest.fn(),
 }));
 
-// Mock Alert
-jest.mock('react-native', () => {
-  const actualRN = jest.requireActual('react-native');
-  return {
-    ...actualRN,
-    Alert: {
-      alert: jest.fn(),
-    },
-  };
-});
+// Mock React Native Alert
+jest.mock('react-native', () => ({
+  Alert: {
+    alert: jest.fn(),
+  },
+}));
 
 // Test component to interact with WeightContext
 function TestComponent({ onContextReady }) {
@@ -96,7 +92,7 @@ describe('Weight Tracking Integration', () => {
       // Add a weight entry
       const weightData = {
         weight: 70.5,
-        date: '2024-01-15',
+        date: '2025-01-15',
         notes: 'Morning weight'
       };
 
@@ -108,7 +104,7 @@ describe('Weight Tracking Integration', () => {
       expect(addResult.success).toBe(true);
       expect(addResult.entry).toBeDefined();
       expect(addResult.entry.weight).toBe(70.5);
-      expect(addResult.entry.date).toBe('2024-01-15');
+      expect(addResult.entry.date).toBe('2025-01-15');
 
       // Verify AsyncStorage was called
       expect(AsyncStorage.setItem).toHaveBeenCalledWith(
@@ -132,7 +128,7 @@ describe('Weight Tracking Integration', () => {
       // Add first entry
       const weightData = {
         weight: 70.5,
-        date: '2024-01-15'
+        date: '2025-01-15'
       };
 
       await act(async () => {
@@ -142,7 +138,7 @@ describe('Weight Tracking Integration', () => {
       // Try to add duplicate entry
       const duplicateData = {
         weight: 71.0,
-        date: '2024-01-15'
+        date: '2025-01-15'
       };
 
       let duplicateResult;
@@ -169,7 +165,7 @@ describe('Weight Tracking Integration', () => {
       // Try to add invalid entry
       const invalidData = {
         weight: 25, // Too low
-        date: '2024-01-15'
+        date: '2025-01-15'
       };
 
       let result;
@@ -188,10 +184,10 @@ describe('Weight Tracking Integration', () => {
 
       // Mock AsyncStorage to return weight entries
       const mockEntries = [
-        { id: '1', weight: 70.0, date: '2024-01-01', timestamp: Date.now() - 14 * 24 * 60 * 60 * 1000 },
-        { id: '2', weight: 69.5, date: '2024-01-05', timestamp: Date.now() - 10 * 24 * 60 * 60 * 1000 },
-        { id: '3', weight: 69.0, date: '2024-01-10', timestamp: Date.now() - 5 * 24 * 60 * 60 * 1000 },
-        { id: '4', weight: 68.5, date: '2024-01-15', timestamp: Date.now() }
+        { id: '1', weight: 70.0, date: '2025-01-01', timestamp: Date.now() - 14 * 24 * 60 * 60 * 1000 },
+        { id: '2', weight: 69.5, date: '2025-01-05', timestamp: Date.now() - 10 * 24 * 60 * 60 * 1000 },
+        { id: '3', weight: 69.0, date: '2025-01-10', timestamp: Date.now() - 5 * 24 * 60 * 60 * 1000 },
+        { id: '4', weight: 68.5, date: '2025-01-15', timestamp: Date.now() }
       ];
 
       AsyncStorage.getItem.mockImplementation((key) => {
@@ -225,7 +221,7 @@ describe('Weight Tracking Integration', () => {
       const mockEntries = Array.from({ length: 8 }, (_, i) => ({
         id: `${i + 1}`,
         weight: 70.0 - (i * 0.2), // Steady weight loss
-        date: `2024-01-${String(i + 1).padStart(2, '0')}`,
+        date: `2025-01-${String(i + 1).padStart(2, '0')}`,
         timestamp: Date.now() - (14 - i) * 24 * 60 * 60 * 1000
       }));
 
@@ -263,7 +259,7 @@ describe('Weight Tracking Integration', () => {
       const mockEntries = Array.from({ length: 8 }, (_, i) => ({
         id: `${i + 1}`,
         weight: 70.0 - (i * 0.05), // Very slow weight loss
-        date: `2024-01-${String(i + 1).padStart(2, '0')}`,
+        date: `2025-01-${String(i + 1).padStart(2, '0')}`,
         timestamp: Date.now() - (14 - i) * 24 * 60 * 60 * 1000
       }));
 
@@ -369,7 +365,7 @@ describe('Weight Tracking Integration', () => {
       const mockEntries = Array.from({ length: 10 }, (_, i) => ({
         id: `${i + 1}`,
         weight: 70.0 - (i * 0.15),
-        date: `2024-01-${String(i + 1).padStart(2, '0')}`,
+        date: `2025-01-${String(i + 1).padStart(2, '0')}`,
         timestamp: Date.now() - (20 - i * 2) * 24 * 60 * 60 * 1000
       }));
 
@@ -464,8 +460,8 @@ describe('Weight Tracking Integration', () => {
 
       // Mock weight entries with invalid data
       const invalidEntries = [
-        { id: '1', weight: 'invalid', date: '2024-01-01' },
-        { id: '2', weight: null, date: '2024-01-02' }
+        { id: '1', weight: 'invalid', date: '2025-01-01' },
+        { id: '2', weight: null, date: '2025-01-02' }
       ];
 
       AsyncStorage.getItem.mockImplementation((key) => {
@@ -503,7 +499,7 @@ describe('Weight Tracking Integration', () => {
 
       const weightData = {
         weight: 70.5,
-        date: '2024-01-15',
+        date: '2025-01-15',
         notes: 'Test entry'
       };
 
@@ -522,8 +518,8 @@ describe('Weight Tracking Integration', () => {
       let contextReady = false;
 
       const mockEntries = [
-        { id: '1', weight: 70.0, date: '2024-01-01' },
-        { id: '2', weight: 69.5, date: '2024-01-02' }
+        { id: '1', weight: 70.0, date: '2025-01-01' },
+        { id: '2', weight: 69.5, date: '2025-01-02' }
       ];
 
       AsyncStorage.getItem.mockImplementation((key) => {

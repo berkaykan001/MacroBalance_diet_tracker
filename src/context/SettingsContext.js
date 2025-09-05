@@ -176,6 +176,13 @@ export function SettingsProvider({ children }) {
       const updatedSettings = { ...state, userProfile: updatedProfile };
       await AsyncStorage.setItem('appSettings', JSON.stringify(updatedSettings));
       console.log('User profile updated and saved successfully');
+      
+      // Trigger a global refresh event
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('profileUpdated', { 
+          detail: { userProfile: updatedProfile, personalizedTargets: state.personalizedTargets } 
+        }));
+      }
 
     } catch (error) {
       console.error('Error updating user profile:', error);

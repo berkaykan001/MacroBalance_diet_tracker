@@ -271,7 +271,7 @@ describe('MacroAdjustmentService', () => {
 
       expect(result.isValid).toBe(true); // Valid but with warnings
       expect(result.warnings.length).toBeGreaterThan(0);
-      expect(result.warnings[0]).toContain('Very high calorie target');
+      expect(result.warnings[0]).toContain('Large calorie adjustment detected. Consider gradual implementation.');
     });
 
     it('should warn about low protein intake', () => {
@@ -358,29 +358,29 @@ describe('MacroAdjustmentService', () => {
     it('should generate benefits for cutting with calorie decrease', () => {
       const result = MacroAdjustmentService.generateAdjustmentBenefits('cutting', false, 'moderate');
 
-      expect(result).toContain('Accelerate fat loss progress');
+      expect(result).toContain('Accelerate fat loss progress toward your goal');
       expect(result).toContain('Overcome potential weight loss plateau');
     });
 
     it('should generate benefits for cutting with calorie increase', () => {
       const result = MacroAdjustmentService.generateAdjustmentBenefits('cutting', true, 'small');
 
-      expect(result).toContain('Prevent metabolic slowdown');
-      expect(result).toContain('Preserve lean muscle mass');
+      expect(result).toContain('Prevent metabolic slowdown and maintain energy levels');
+      expect(result).toContain('Preserve lean muscle mass during weight loss');
     });
 
     it('should generate benefits for bulking with calorie increase', () => {
       const result = MacroAdjustmentService.generateAdjustmentBenefits('bulking', true, 'moderate');
 
-      expect(result).toContain('Support muscle protein synthesis');
-      expect(result).toContain('Provide adequate energy');
+      expect(result).toContain('Support muscle protein synthesis for growth');
+      expect(result).toContain('Provide adequate energy for intense training');
     });
 
     it('should generate benefits for bulking with calorie decrease', () => {
       const result = MacroAdjustmentService.generateAdjustmentBenefits('bulking', false, 'small');
 
       expect(result).toContain('Minimize excess fat accumulation');
-      expect(result).toContain('Maintain lean bulk');
+      expect(result).toContain('Maintain lean bulk with better body composition');
     });
 
     it('should add gradual implementation benefits for significant adjustments', () => {

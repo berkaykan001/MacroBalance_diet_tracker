@@ -150,8 +150,8 @@ export function GenderSelector({ selectedGender, onGenderSelect }) {
   );
 }
 
-// Main container for onboarding screens
-export function OnboardingContainer({ children, showProgress = true, currentStep, totalSteps }) {
+// Main container for onboarding screens - FIXED with HTML div scrolling
+export function OnboardingContainer({ children, showProgress = true, currentStep, totalSteps, contentContainerStyle }) {
   return (
     <LinearGradient
       colors={['#000000', '#1C1C1E']}
@@ -160,13 +160,21 @@ export function OnboardingContainer({ children, showProgress = true, currentStep
       {showProgress && (
         <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
       )}
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {children}
-      </ScrollView>
+      {/* Use HTML div for scrolling instead of broken ScrollView */}
+      <div style={{
+        flex: 1,
+        height: showProgress ? 'calc(100vh - 100px)' : '100vh',
+        overflowY: 'scroll',
+        WebkitOverflowScrolling: 'touch'
+      }}>
+        <div style={{
+          padding: '24px',
+          paddingBottom: '20px',
+          ...contentContainerStyle
+        }}>
+          {children}
+        </div>
+      </div>
     </LinearGradient>
   );
 }
@@ -179,6 +187,10 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
+  },
+  contentContainer: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
 
   // Progress indicator

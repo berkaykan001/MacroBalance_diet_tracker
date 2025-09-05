@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { Text, View, StyleSheet, Alert } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -113,6 +113,50 @@ function MacroAdjustmentManager() {
 
 function AppContent() {
   const insets = useSafeAreaInsets();
+  
+  // Fix React Navigation mouse wheel blocking on web
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Add CSS to prevent hidden React Navigation overlays from blocking mouse events
+      const style = document.createElement('style');
+      style.innerHTML = `
+        /* Fix for React Navigation blocking mouse wheel events */
+        [aria-hidden="true"] {
+          pointer-events: none !important;
+        }
+        [aria-hidden="true"] * {
+          pointer-events: none !important;
+        }
+        [style*="display: none"] {
+          pointer-events: none !important;
+        }
+        
+        /* Re-enable for visible content */
+        [aria-hidden="false"] {
+          pointer-events: auto !important;
+        }
+        [aria-hidden="false"] * {
+          pointer-events: auto !important;
+        }
+        
+        /* Hide web scrollbars to match dashboard style */
+        ::-webkit-scrollbar {
+          display: none;
+        }
+        * {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+      `;
+      document.head.appendChild(style);
+      
+      return () => {
+        if (document.head.contains(style)) {
+          document.head.removeChild(style);
+        }
+      };
+    }
+  }, []);
   
   try {
     return (

@@ -10,6 +10,9 @@ import MacroTrendsSection from '../../components/charts/MacroTrendsSection';
 import WeeklyComparisonChart from '../../components/charts/WeeklyComparisonChart';
 import { CircularProgressSection } from '../../components/charts/CircularProgress';
 import ConsistencyHeatmap from '../../components/charts/ConsistencyHeatmap';
+import useWeeklyCheck from '../../hooks/useWeeklyCheck';
+import WeeklyCheckDialog from '../../components/notifications/WeeklyCheckDialog';
+import MacroAdjustmentDialog from '../../components/notifications/MacroAdjustmentDialog';
 
 const { width } = Dimensions.get('window');
 
@@ -26,6 +29,18 @@ export default function HomeScreen() {
   } = useMeal();
   const { foods } = useFood();
   const { appPreferences } = useSettings();
+
+  // Weekly check system
+  const {
+    weeklyCheckNotification,
+    macroAdjustmentNotification,
+    isProcessingWeight,
+    logWeeklyWeight,
+    applyMacroAdjustment,
+    dismissWeeklyCheck,
+    dismissMacroAdjustment,
+    getWeeklyCheckStatus
+  } = useWeeklyCheck();
 
   // Modal state
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -240,6 +255,37 @@ export default function HomeScreen() {
           <Text style={styles.title}>Dashboard</Text>
         </View>
 
+        {/* Weekly Check Notification Banner */}
+        {weeklyCheckNotification && (
+          <View style={styles.notificationBanner}>
+            <LinearGradient
+              colors={['#00D084', '#00A86B']}
+              style={styles.bannerGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.bannerContent}>
+                <View style={styles.bannerTextContainer}>
+                  <Text style={styles.bannerIcon}>📊</Text>
+                  <View style={styles.bannerText}>
+                    <Text style={styles.bannerTitle}>{weeklyCheckNotification.title}</Text>
+                    <Text style={styles.bannerSubtitle} numberOfLines={2}>
+                      {weeklyCheckNotification.message}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity 
+                  style={styles.bannerButton}
+                  onPress={() => {/* Will be handled by modal */}}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.bannerButtonText}>Check In</Text>
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+          </View>
+        )}
+
         {/* Circular Progress Section */}
         <CircularProgressSection />
 
@@ -426,6 +472,28 @@ export default function HomeScreen() {
         mealPlan={selectedMealPlan}
         onUpdate={handleMealUpdate}
       />
+
+      {/* Weekly Check Dialog */}
+      <WeeklyCheckDialog
+        visible={!!weeklyCheckNotification}
+        notification={weeklyCheckNotification}
+        onLogWeight={logWeeklyWeight}
+        onDismiss={dismissWeeklyCheck}
+        isProcessing={isProcessingWeight}
+      />
+
+      {/* Macro Adjustment Dialog */}
+      <MacroAdjustmentDialog
+        visible={!!macroAdjustmentNotification}
+        notification={macroAdjustmentNotification}
+        onAcceptAdjustment={applyMacroAdjustment}
+        onCustomizeAdjustment={() => {
+          // TODO: Add customization screen in future
+          Alert.alert('Coming Soon', 'Macro customization will be available in a future update.');
+        }}
+        onDismiss={dismissMacroAdjustment}
+        isProcessing={false}
+      />
     </LinearGradient>
   );
 }
@@ -452,6 +520,57 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: '#8E8E93',
+  },
+
+  // Notification banner styles
+  notificationBanner: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  bannerGradient: {
+    padding: 16,
+  },
+  bannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  bannerTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 12,
+  },
+  bannerIcon: {
+    fontSize: 24,
+    marginRight: 12,
+  },
+  bannerText: {
+    flex: 1,
+  },
+  bannerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  bannerSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.9)',
+    lineHeight: 18,
+  },
+  bannerButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  bannerButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 
   // Card Styles

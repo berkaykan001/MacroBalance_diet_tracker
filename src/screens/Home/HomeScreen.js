@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, Dimensions, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMeal } from '../../context/MealContext';
@@ -13,6 +13,7 @@ import ConsistencyHeatmap from '../../components/charts/ConsistencyHeatmap';
 import useWeeklyCheck from '../../hooks/useWeeklyCheck';
 import WeeklyCheckDialog from '../../components/notifications/WeeklyCheckDialog';
 import MacroAdjustmentDialog from '../../components/notifications/MacroAdjustmentDialog';
+import { useTimeService } from '../../hooks/useTimeService';
 
 const { width } = Dimensions.get('window');
 
@@ -29,6 +30,17 @@ export default function HomeScreen() {
   } = useMeal();
   const { foods } = useFood();
   const { appPreferences } = useSettings();
+  
+  // Time service for date simulation
+  const { currentDate, offsetDays, isSimulated } = useTimeService();
+  
+  // Force refresh when date changes
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  useEffect(() => {
+    // Refresh data when simulated date changes
+    setRefreshKey(prev => prev + 1);
+  }, [currentDate, offsetDays]);
 
   // Weekly check system
   const {
@@ -253,6 +265,13 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Dashboard</Text>
+          {isSimulated && (
+            <View style={styles.simulationBadge}>
+              <Text style={styles.simulationText}>
+                🕒 +{offsetDays}d
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Weekly Check Notification Banner */}
@@ -509,6 +528,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   title: {
     fontSize: 24,
@@ -516,6 +538,19 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginBottom: 4,
     letterSpacing: -0.3,
+  },
+  simulationBadge: {
+    backgroundColor: 'rgba(255, 159, 0, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#FF9F00',
+  },
+  simulationText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FF9F00',
   },
   subtitle: {
     fontSize: 14,

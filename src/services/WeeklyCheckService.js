@@ -10,6 +10,7 @@
 
 import { WeightTrackingService } from './WeightTrackingService';
 import { MacroAdjustmentService } from './MacroAdjustmentService';
+import TimeService from './TimeService';
 
 export class WeeklyCheckService {
 
@@ -43,7 +44,7 @@ export class WeeklyCheckService {
 
     const lastEntry = sortedEntries[0];
     const lastEntryDate = new Date(lastEntry.date);
-    const today = new Date();
+    const today = TimeService.getCurrentDate();
     const daysSinceLastEntry = Math.floor((today - lastEntryDate) / (1000 * 60 * 60 * 24));
 
     // Check if it's been a week or more
@@ -98,12 +99,12 @@ export class WeeklyCheckService {
       const updatedEntries = [
         ...weightEntries,
         {
-          id: Date.now().toString(),
+          id: TimeService.now().toString(),
           weight: parseFloat(newWeight),
           date: date,
-          timestamp: Date.now(),
+          timestamp: TimeService.now(),
           source: 'weekly_check',
-          createdAt: Date.now()
+          createdAt: TimeService.now()
         }
       ];
 
@@ -234,7 +235,7 @@ export class WeeklyCheckService {
       title,
       message,
       priority: urgencyLevel,
-      timestamp: Date.now(),
+      timestamp: TimeService.now(),
       data: {
         checkResult,
         userProfile,
@@ -285,7 +286,7 @@ export class WeeklyCheckService {
       title,
       message: adjustmentExplanation.summary,
       priority: 'high',
-      timestamp: Date.now(),
+      timestamp: TimeService.now(),
       data: {
         adjustmentData,
         userProfile,
@@ -323,7 +324,7 @@ export class WeeklyCheckService {
     // Don't remind too frequently
     const minimumDaysBetweenReminders = 7;
     const daysSinceLastAdjustment = lastAdjustment ? 
-      Math.floor((Date.now() - lastAdjustment) / (1000 * 60 * 60 * 24)) : 
+      Math.floor((TimeService.now() - lastAdjustment) / (1000 * 60 * 60 * 24)) : 
       Infinity;
 
     if (daysSinceLastAdjustment < minimumDaysBetweenReminders) {
@@ -341,7 +342,7 @@ export class WeeklyCheckService {
     );
     
     const trackingStartDate = new Date(sortedEntries[0].date);
-    const daysSinceStart = Math.floor((Date.now() - trackingStartDate) / (1000 * 60 * 60 * 24));
+    const daysSinceStart = Math.floor((TimeService.now() - trackingStartDate) / (1000 * 60 * 60 * 24));
 
     return daysSinceStart >= 14; // At least 2 weeks of data
   }

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, FlatList, Alert, Switch, Modal, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFood } from '../../context/FoodContext';
 import { useMeal } from '../../context/MealContext';
 import { useSettings } from '../../context/SettingsContext';
 import { CalculationService } from '../../services/calculationService';
+import TimeService from '../../services/TimeService';
 
 export default function SettingsScreen() {
   const { foods, reloadFoods } = useFood();
@@ -42,6 +43,10 @@ export default function SettingsScreen() {
     activityLevel: userProfile?.activityLevel || 'moderately_active',
     mealsPerDay: userProfile?.mealsPerDay || 4
   });
+
+  // Time simulation states
+  const [currentOffsetDays, setCurrentOffsetDays] = useState(0);
+  const [simulatedDate, setSimulatedDate] = useState(TimeService.getCurrentDate());
 
   const sections = [
     { id: 'profile', title: 'Personal Profile', icon: '👤' },
@@ -88,6 +93,45 @@ export default function SettingsScreen() {
       icon: '⚡'
     }
   ];
+
+  // Initialize time offset on mount
+  useEffect(() => {
+    const initializeTimeOffset = async () => {
+      await TimeService.loadOffset();
+      setCurrentOffsetDays(TimeService.getOffsetDays());
+      setSimulatedDate(TimeService.getCurrentDate());
+    };
+    initializeTimeOffset();
+  }, []);
+
+  // Skip day handler
+  const handleSkipDay = async () => {
+    try {
+      const newDate = await TimeService.skipDay();
+      setCurrentOffsetDays(TimeService.getOffsetDays());
+      setSimulatedDate(newDate);
+      Alert.alert(
+        'Day Skipped!',
+        `Skipped to ${newDate.toLocaleDateString()}.\n\nThe app now thinks it's ${currentOffsetDays + 1} day${currentOffsetDays + 1 !== 1 ? 's' : ''} in the future.`
+      );
+    } catch (error) {
+      console.error('Error skipping day:', error);
+      Alert.alert('Error', 'Failed to skip day. Please try again.');
+    }
+  };
+
+  // Reset time simulation
+  const handleResetTime = async () => {
+    try {
+      const realDate = await TimeService.resetToCurrentTime();
+      setCurrentOffsetDays(0);
+      setSimulatedDate(realDate);
+      Alert.alert('Time Reset', 'Time simulation has been reset to current date.');
+    } catch (error) {
+      console.error('Error resetting time:', error);
+      Alert.alert('Error', 'Failed to reset time. Please try again.');
+    }
+  };
 
   const handleGoalUpdate = async () => {
     if (!selectedGoal) return;
@@ -788,6 +832,53 @@ export default function SettingsScreen() {
                     }}
                   >
                     <Text style={styles.hourButtonText}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Time Simulation Section */}
+              <View style={styles.timeSimulationSection}>
+                <Text style={styles.timeSectionTitle}>🕒 Time Simulation (Testing)</Text>
+                <Text style={styles.timeSectionDescription}>
+                  Skip days to test weekly features without waiting
+                </Text>
+                
+                {/* Current Simulated Date Display */}
+                <View style={styles.preferenceItem}>
+                  <View style={styles.preferenceInfo}>
+                    <Text style={styles.preferenceTitle}>Current App Date</Text>
+                    <Text style={[
+                      styles.preferenceDescription,
+                      currentOffsetDays > 0 && styles.simulatedDateText
+                    ]}>
+                      {simulatedDate.toLocaleDateString()}
+                      {currentOffsetDays > 0 && ` (+${currentOffsetDays} day${currentOffsetDays !== 1 ? 's' : ''})`}
+                    </Text>
+                  </View>
+                  {currentOffsetDays > 0 && (
+                    <TouchableOpacity
+                      style={styles.resetTimeButton}
+                      onPress={handleResetTime}
+                    >
+                      <Text style={styles.resetTimeButtonText}>Reset</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                
+                {/* Skip Day Button */}
+                <View style={styles.preferenceItem}>
+                  <TouchableOpacity
+                    style={styles.skipDayButton}
+                    onPress={handleSkipDay}
+                  >
+                    <LinearGradient
+                      colors={['#FF9F00', '#FF6B00']}
+                      style={styles.skipDayButtonGradient}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                    >
+                      <Text style={styles.skipDayButtonText}>⏭ Skip One Day</Text>
+                    </LinearGradient>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -2117,5 +2208,56 @@ const styles = StyleSheet.create({
     color: '#00D084',
     fontWeight: '600',
     lineHeight: 14,
+  },
+
+  // Time Simulation Styles
+  timeSimulationSection: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  timeSectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#FF9F00',
+    marginBottom: 4,
+  },
+  timeSectionDescription: {
+    fontSize: 11,
+    color: '#8E8E93',
+    marginBottom: 12,
+    lineHeight: 16,
+  },
+  simulatedDateText: {
+    color: '#FF9F00',
+    fontWeight: '600',
+  },
+  skipDayButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    flex: 1,
+  },
+  skipDayButtonGradient: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  skipDayButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  resetTimeButton: {
+    backgroundColor: 'rgba(142, 142, 147, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  resetTimeButtonText: {
+    color: '#8E8E93',
+    fontSize: 11,
+    fontWeight: '600',
   },
 });

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSettings } from './SettingsContext';
+import TimeService from '../services/TimeService';
 
 const MealContext = createContext();
 
@@ -30,7 +31,7 @@ const defaultMeals = [
       fat: 15
     },
     userCustom: false,
-    createdAt: new Date().toISOString()
+    createdAt: TimeService.getCurrentDate().toISOString()
   },
   {
     id: '2',
@@ -43,7 +44,7 @@ const defaultMeals = [
       fat: 15
     },
     userCustom: false,
-    createdAt: new Date().toISOString()
+    createdAt: TimeService.getCurrentDate().toISOString()
   },
   {
     id: '3',
@@ -56,7 +57,7 @@ const defaultMeals = [
       fat: 8
     },
     userCustom: false,
-    createdAt: new Date().toISOString()
+    createdAt: TimeService.getCurrentDate().toISOString()
   },
   {
     id: '4',
@@ -69,7 +70,7 @@ const defaultMeals = [
       fat: 12
     },
     userCustom: false,
-    createdAt: new Date().toISOString()
+    createdAt: TimeService.getCurrentDate().toISOString()
   },
   {
     id: '5',
@@ -82,7 +83,7 @@ const defaultMeals = [
       fat: 0
     },
     userCustom: false,
-    createdAt: new Date().toISOString()
+    createdAt: TimeService.getCurrentDate().toISOString()
   }
 ];
 
@@ -135,9 +136,9 @@ function mealReducer(state, action) {
     case ACTIONS.ADD_MEAL:
       const newMeal = {
         ...action.payload,
-        id: Date.now().toString(),
+        id: TimeService.now().toString(),
         userCustom: true,
-        createdAt: new Date().toISOString()
+        createdAt: TimeService.getCurrentDate().toISOString()
       };
       return {
         ...state,
@@ -165,19 +166,19 @@ function mealReducer(state, action) {
       };
     
     case ACTIONS.CREATE_MEAL_PLAN:
-      const now = new Date();
+      const now = TimeService.getCurrentDate();
       const newMealPlan = {
         ...action.payload,
-        id: Date.now().toString(),
-        createdAt: now.toISOString(), // Keep actual timestamp for precision
+        id: TimeService.now().toString(),
+        createdAt: now.toISOString(), // Keep timestamp for precision
         isCheatMeal: action.payload.isCheatMeal || false // Default to false if not specified
       };
       
       // DEBUG: Log meal plan creation with date mapping info
       // This helps us understand if dates are being mapped correctly
-      const createdDateKey = new Date(newMealPlan.createdAt).toDateString();
+      const createdDateKey = now.toDateString();
       const myTodayKey = newMealPlan.createdAt ? (() => {
-        const currentDate = new Date(newMealPlan.createdAt);
+        const currentDate = TimeService.getCurrentDate();
         const dayResetHour = 4; // Default since appPreferences might not be available in reducer
         if (currentDate.getHours() < dayResetHour) {
           currentDate.setDate(currentDate.getDate() - 1);
@@ -323,7 +324,7 @@ export function MealProvider({ children }) {
       },
       userCustom: false,
       personalizedGenerated: true,
-      createdAt: new Date().toISOString()
+      createdAt: TimeService.getCurrentDate().toISOString()
     }));
 
     // Always add the Extra meal
@@ -339,7 +340,7 @@ export function MealProvider({ children }) {
       },
       userCustom: false,
       personalizedGenerated: false,
-      createdAt: new Date().toISOString()
+      createdAt: TimeService.getCurrentDate().toISOString()
     });
 
     return personalizedMeals;
@@ -678,7 +679,7 @@ export function MealProvider({ children }) {
       nutrientResults,
       topFoods,
       isCheatDay: false, // Default to false, can be toggled by user
-      createdAt: new Date().toISOString()
+      createdAt: TimeService.getCurrentDate().toISOString()
     };
   };
 
@@ -938,7 +939,7 @@ export function MealProvider({ children }) {
   };
 
   // Helper function to get "today" based on user's custom reset hour instead of midnight
-  const getMyTodayDate = (date = new Date()) => {
+  const getMyTodayDate = (date = TimeService.getCurrentDate()) => {
     const currentDate = new Date(date);
     const dayResetHour = appPreferences?.dayResetHour || 4;
     // If it's before the reset hour, consider it as the previous day

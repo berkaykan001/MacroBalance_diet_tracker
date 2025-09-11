@@ -4,6 +4,7 @@ class TimeService {
   constructor() {
     this.offsetDays = 0;
     this.listeners = [];
+    this.dayResetHour = 4; // Default reset hour
     this.loadOffset();
   }
 
@@ -75,6 +76,22 @@ class TimeService {
   today() {
     const current = this.getCurrentDate();
     return new Date(current.getFullYear(), current.getMonth(), current.getDate());
+  }
+
+  // Get today's date string accounting for custom day reset hour
+  getTodayString(dayResetHour = null) {
+    const resetHour = dayResetHour ?? this.dayResetHour;
+    const currentDate = this.getCurrentDate();
+    // If it's before the reset hour, consider it as the previous day
+    if (currentDate.getHours() < resetHour) {
+      currentDate.setDate(currentDate.getDate() - 1);
+    }
+    return currentDate.toDateString();
+  }
+
+  // Set the day reset hour (called by app when settings change)
+  setDayResetHour(hour) {
+    this.dayResetHour = hour;
   }
 
   format(date = null) {

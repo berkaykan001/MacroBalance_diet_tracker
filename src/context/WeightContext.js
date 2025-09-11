@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WeightTrackingService } from '../services/WeightTrackingService';
+import TimeService from '../services/TimeService';
 
 const WeightContext = createContext();
 
@@ -97,7 +98,7 @@ function weightReducer(state, action) {
         ...state,
         progressAnalytics: action.payload.analytics,
         insights: action.payload.insights || state.insights,
-        lastAnalyticsUpdate: Date.now()
+        lastAnalyticsUpdate: TimeService.now()
       };
       
     case ACTIONS.UPDATE_WEIGHT_SETTINGS:
@@ -119,7 +120,7 @@ function weightReducer(state, action) {
         ...state,
         macroAdjustmentRecommendation: null,
         pendingMacroAdjustment: false,
-        lastMacroAdjustment: Date.now()
+        lastMacroAdjustment: TimeService.now()
       };
       
     case ACTIONS.SET_LOADING:
@@ -219,19 +220,38 @@ export function WeightProvider({ children }) {
 
       // Create new entry
       const newEntry = {
-        id: Date.now().toString(),
+        id: TimeService.now().toString(),
         weight: parseFloat(weightData.weight),
         date: weightData.date,
-        timestamp: Date.now(),
+        timestamp: TimeService.now(),
         notes: weightData.notes || '',
         bodyFat: weightData.bodyFat ? parseFloat(weightData.bodyFat) : null,
-        source: 'manual',
-        createdAt: Date.now()
+        source: weightData.source || 'manual',
+        createdAt: TimeService.now()
       };
 
       // Check for duplicate dates
       const existingEntry = state.weightEntries.find(entry => entry.date === newEntry.date);
       if (existingEntry) {
+        // If this is from weekly check, update the existing entry instead of throwing error
+        if (newEntry.source === 'weekly_check') {
+          const updatedEntry = {
+            ...existingEntry,
+            weight: newEntry.weight,
+            timestamp: newEntry.timestamp,
+            notes: newEntry.notes || existingEntry.notes,
+            source: 'weekly_check'
+          };
+          dispatch({ type: ACTIONS.UPDATE_WEIGHT_ENTRY, payload: updatedEntry });
+          
+          // Return success with updated entry
+          return {
+            success: true,
+            entry: updatedEntry,
+            updated: true
+          };
+        }
+        
         throw new Error('Weight entry already exists for this date. Please update the existing entry or choose a different date.');
       }
 

@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { WeeklyCheckService } from '../services/WeeklyCheckService';
 import { useWeight } from '../context/WeightContext';
 import { useSettings } from '../context/SettingsContext';
+import TimeService from '../services/TimeService';
 
 export function useWeeklyCheck() {
   const { 
@@ -33,7 +34,7 @@ export function useWeeklyCheck() {
   const [weeklyCheckNotification, setWeeklyCheckNotification] = useState(null);
   const [macroAdjustmentNotification, setMacroAdjustmentNotification] = useState(null);
   const [isProcessingWeight, setIsProcessingWeight] = useState(false);
-  const [lastCheckTime, setLastCheckTime] = useState(Date.now());
+  const [lastCheckTime, setLastCheckTime] = useState(TimeService.now());
 
   /**
    * Check if weekly weight entry is due
@@ -73,7 +74,7 @@ export function useWeeklyCheck() {
     setIsProcessingWeight(true);
 
     try {
-      const entryDate = date || new Date().toISOString().split('T')[0];
+      const entryDate = date || TimeService.formatShort();
       
       // First add the weight entry
       const entryResult = await addWeightEntry({
@@ -114,7 +115,7 @@ export function useWeeklyCheck() {
       }
 
       // Update last check time
-      setLastCheckTime(Date.now());
+      setLastCheckTime(TimeService.now());
 
       return {
         success: true,
@@ -195,7 +196,7 @@ export function useWeeklyCheck() {
       }, 2 * 60 * 60 * 1000);
     } else if (action === 'skip_week') {
       // Mark as if they weighed in today to reset the 7-day cycle
-      setLastCheckTime(Date.now());
+      setLastCheckTime(TimeService.now());
     }
   }, [checkWeeklyWeightStatus]);
 
@@ -208,7 +209,7 @@ export function useWeeklyCheck() {
     if (keepCurrentMacros) {
       // User chose to keep current macros - record this decision
       // to avoid showing the same recommendation too soon
-      setLastCheckTime(Date.now());
+      setLastCheckTime(TimeService.now());
     }
   }, []);
 

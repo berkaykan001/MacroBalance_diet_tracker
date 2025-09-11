@@ -178,12 +178,7 @@ function mealReducer(state, action) {
       // This helps us understand if dates are being mapped correctly
       const createdDateKey = now.toDateString();
       const myTodayKey = newMealPlan.createdAt ? (() => {
-        const currentDate = TimeService.getCurrentDate();
-        const dayResetHour = 4; // Default since appPreferences might not be available in reducer
-        if (currentDate.getHours() < dayResetHour) {
-          currentDate.setDate(currentDate.getDate() - 1);
-        }
-        return currentDate.toDateString();
+        return TimeService.getTodayString(4); // Use TimeService for consistency
       })() : null;
       
       console.log(`REDUCER CREATE_MEAL_PLAN: Created at ${newMealPlan.createdAt}`);
@@ -264,6 +259,12 @@ export function MealProvider({ children }) {
       loadMeals();
     }
   }, [personalizedTargets, userProfile?.isProfileComplete]);
+
+  // Update day reset hour in TimeService when settings change
+  useEffect(() => {
+    const dayResetHour = appPreferences?.dayResetHour || 4;
+    TimeService.setDayResetHour(dayResetHour);
+  }, [appPreferences?.dayResetHour]);
 
   useEffect(() => {
     if (!state.loading) {
@@ -939,14 +940,20 @@ export function MealProvider({ children }) {
   };
 
   // Helper function to get "today" based on user's custom reset hour instead of midnight
-  const getMyTodayDate = (date = TimeService.getCurrentDate()) => {
-    const currentDate = new Date(date);
+  const getMyTodayDate = (date = null) => {
     const dayResetHour = appPreferences?.dayResetHour || 4;
-    // If it's before the reset hour, consider it as the previous day
-    if (currentDate.getHours() < dayResetHour) {
-      currentDate.setDate(currentDate.getDate() - 1);
+    
+    if (date) {
+      // For specific dates (like from meal plans), calculate based on that date
+      const currentDate = new Date(date);
+      if (currentDate.getHours() < dayResetHour) {
+        currentDate.setDate(currentDate.getDate() - 1);
+      }
+      return currentDate.toDateString();
     }
-    return currentDate.toDateString();
+    
+    // For "today", use TimeService which respects simulation
+    return TimeService.getTodayString(dayResetHour);
   };
 
   const getDailyProgress = () => {

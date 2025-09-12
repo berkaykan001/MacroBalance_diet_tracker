@@ -719,9 +719,15 @@ export function MealProvider({ children }) {
   const getDailySummariesForPeriod = (days = 7) => {
     const summaries = [];
     const todayKey = getMyTodayDate(); // Use custom day reset logic
-    const todayDate = new Date(todayKey);
+    // Use TimeService's current date instead of parsing the string
+    const todayDate = TimeService.getCurrentDate();
     
     console.log(`getDailySummariesForPeriod: Requesting ${days} days starting from ${todayKey}`);
+    console.log(`Available meal plans:`, state.mealPlans.map(plan => ({ 
+      id: plan.id, 
+      createdAt: plan.createdAt, 
+      dateKey: getMyTodayDate(new Date(plan.createdAt))
+    })));
     
     for (let i = 0; i < days; i++) {
       const date = new Date(todayDate);
@@ -731,6 +737,8 @@ export function MealProvider({ children }) {
       // Instead of using regular toDateString(), use the same getMyTodayDate logic
       // This ensures meal plans and summaries use the same date keys
       const dateKey = getMyTodayDate(date);
+      
+      console.log(`getDailySummariesForPeriod: Day ${i}: date=${date.toISOString()}, dateKey=${dateKey}`);
       
       if (i === 0) {
         // For today, get real-time summary
@@ -752,10 +760,12 @@ export function MealProvider({ children }) {
           // This handles recent days that haven't been converted to summaries yet
           const dayMealPlans = state.mealPlans.filter(plan => {
             const planDateKey = getMyTodayDate(new Date(plan.createdAt));
-            return planDateKey === dateKey;
+            const matches = planDateKey === dateKey;
+            console.log(`  Plan: createdAt=${plan.createdAt}, planDateKey=${planDateKey}, matches=${matches}`);
+            return matches;
           });
           
-          console.log(`getDailySummariesForPeriod: Searching for meal plans on ${dateKey}, found ${dayMealPlans.length} plans`);
+          console.log(`getDailySummariesForPeriod: Searching for meal plans on ${dateKey}, found ${dayMealPlans.length} plans out of ${state.mealPlans.length} total`);
           
           if (dayMealPlans.length > 0) {
             const summary = createDailySummary(dayMealPlans);

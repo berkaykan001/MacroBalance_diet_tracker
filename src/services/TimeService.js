@@ -81,7 +81,7 @@ class TimeService {
   // Get today's date string accounting for custom day reset hour
   getTodayString(dayResetHour = null) {
     const resetHour = dayResetHour ?? this.dayResetHour;
-    const currentDate = this.getCurrentDate();
+    const currentDate = new Date(this.getCurrentDate()); // Create a copy!
     // If it's before the reset hour, consider it as the previous day
     if (currentDate.getHours() < resetHour) {
       currentDate.setDate(currentDate.getDate() - 1);

@@ -271,6 +271,18 @@ export function useWeeklyCheck() {
     }
   }, [userProfile?.hasCompletedOnboarding, weightSettings?.trackingEnabled, checkWeeklyWeightStatus]);
 
+  // Listen for time changes and recheck weekly status
+  useEffect(() => {
+    const unsubscribe = TimeService.addListener((newDate, offsetDays) => {
+      // Recheck weekly status when time changes
+      setTimeout(() => {
+        checkWeeklyWeightStatus();
+      }, 200); // Delay to ensure contexts updated
+    });
+
+    return unsubscribe;
+  }, [weightEntries, weightSettings, userProfile, checkWeeklyWeightStatus]);
+
   // Periodically check for weekly weight status (every 30 minutes when app is active)
   useEffect(() => {
     if (!userProfile?.hasCompletedOnboarding) return;

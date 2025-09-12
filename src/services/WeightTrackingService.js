@@ -446,6 +446,36 @@ export class WeightTrackingService {
       return priorityOrder[b.priority] - priorityOrder[a.priority];
     });
   }
+
+  /**
+   * Validate weight entry data
+   */
+  static validateWeightEntry(weight, date) {
+    const errors = {};
+    
+    // Weight validation
+    if (!weight || isNaN(weight) || weight <= 0) {
+      errors.weight = 'Weight must be a positive number';
+    } else if (weight < 30 || weight > 500) {
+      errors.weight = 'Weight must be between 30 and 500 kg';
+    }
+    
+    // Date validation - allow future dates when time simulation is active
+    if (!date) {
+      errors.date = 'Date is required';
+    } else {
+      const entryDate = new Date(date);
+      if (isNaN(entryDate.getTime())) {
+        errors.date = 'Invalid date format';
+      }
+      // Note: Removed future date check to support time simulation
+    }
+    
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors
+    };
+  }
 }
 
 export default WeightTrackingService;

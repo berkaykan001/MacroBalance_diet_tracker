@@ -268,8 +268,23 @@ export function SettingsProvider({ children }) {
   const clearAllData = async () => {
     try {
       console.log('Clearing all AsyncStorage data...');
-      // Clear all AsyncStorage data including mealPlans and meal_presets
-      await AsyncStorage.multiRemove(['appSettings', 'foods', 'meals', 'mealPlans', 'meal_presets']);
+      // Clear ALL AsyncStorage data including all context data and time simulation
+      await AsyncStorage.multiRemove([
+        // Settings & User Data
+        'appSettings',
+        // Food & Meal Data  
+        'foods', 
+        'meals', 
+        'mealPlans', 
+        'meal_presets',
+        'dailySummaries',
+        // Weight Tracking Data
+        'weightEntries',
+        'weightSettings', 
+        'lastMacroAdjustment',
+        // Time Simulation Data
+        'timeOffset'
+      ]);
       console.log('AsyncStorage cleared successfully');
       dispatch({ type: ACTIONS.RESET_SETTINGS });
       console.log('Settings reset to defaults');

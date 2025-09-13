@@ -39,9 +39,14 @@ export class WeeklyCheckService {
     );
 
     const lastEntry = sortedEntries[0];
-    const lastEntryDate = new Date(lastEntry.date);
-    const today = TimeService.getCurrentDate();
-    const daysSinceLastEntry = Math.floor((today - lastEntryDate) / (1000 * 60 * 60 * 24));
+    const lastEntryDateStr = lastEntry.date; // YYYY-MM-DD format
+    const todayStr = TimeService.formatShort(); // Also YYYY-MM-DD format
+
+    // Calculate days difference using date strings to avoid timezone issues
+    const lastEntryDate = new Date(lastEntryDateStr + 'T00:00:00'); // Force local midnight
+    const todayDate = new Date(todayStr + 'T00:00:00'); // Force local midnight
+    const daysSinceLastEntry = Math.floor((todayDate - lastEntryDate) / (1000 * 60 * 60 * 24));
+
 
     // Check if it's been a week or more
     const weeklyTarget = 7; // days

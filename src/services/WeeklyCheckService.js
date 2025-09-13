@@ -25,15 +25,11 @@ export class WeeklyCheckService {
       };
     }
 
-    // No entries - always due for first entry
+    // No entries - first weight should be handled during onboarding, not weekly check
     if (!weightEntries || weightEntries.length === 0) {
       return {
-        isDue: true,
-        reason: 'No weight entries found - time to start tracking!',
-        priority: 'high',
-        daysSinceLastEntry: null,
-        isFirstEntry: true,
-        recommendedAction: 'log_first_weight'
+        isDue: false,
+        reason: 'First weight entry should be collected during onboarding'
       };
     }
 

@@ -1,6 +1,6 @@
 /**
  * WeightTrackingService - Comprehensive weight tracking and progress analytics
- * 
+ *
  * Features:
  * - Progress trend analysis with statistical methods
  * - Automatic macro adjustment recommendations
@@ -8,6 +8,8 @@
  * - Data validation and cleanup
  * - Multiple calculation algorithms for accuracy
  */
+
+import TimeService from './TimeService';
 
 export class WeightTrackingService {
   
@@ -45,22 +47,29 @@ export class WeightTrackingService {
       linearTrend,
       dataPoints: sortedEntries.length,
       trackingDays: this.calculateTrackingDays(sortedEntries),
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
+      // Always set recommendedWeeklyRate based on user's goal
+      recommendedWeeklyRate: this.getRecommendedWeeklyRate(userProfile?.goal),
+      isOnTrack: this.isProgressOnTrack(weeklyTrend, userProfile)
     };
 
-    // Add goal-specific calculations
+    console.log('Progress analytics goal debug:', {
+      userProfile,
+      userProfileGoal: userProfile?.goal,
+      recommendedWeeklyRate: this.getRecommendedWeeklyRate(userProfile?.goal)
+    });
+
+    // Add goal-specific calculations if goal weight is set
     if (goalWeight && goalWeight !== currentWeight) {
       const remainingChange = goalWeight - currentWeight;
-      const progressPercentage = totalChange !== 0 ? 
+      const progressPercentage = totalChange !== 0 ?
         Math.abs(totalChange) / Math.abs(goalWeight - startingWeight) * 100 : 0;
-      
+
       progressAnalytics = {
         ...progressAnalytics,
         remainingChange,
         progressPercentage: Math.min(progressPercentage, 100),
-        isOnTrack: this.isProgressOnTrack(weeklyTrend, userProfile),
-        projectedGoalDate: this.calculateProjectedGoalDate(currentWeight, goalWeight, weeklyTrend),
-        recommendedWeeklyRate: this.getRecommendedWeeklyRate(userProfile?.goal)
+        projectedGoalDate: this.calculateProjectedGoalDate(currentWeight, goalWeight, weeklyTrend)
       };
     }
 
@@ -73,7 +82,7 @@ export class WeightTrackingService {
   static calculateWeeklyTrend(sortedEntries, weeks = 2) {
     if (sortedEntries.length < 2) return 0;
 
-    const cutoffDate = new Date();
+    const cutoffDate = TimeService.getCurrentDate();
     cutoffDate.setDate(cutoffDate.getDate() - (weeks * 7));
 
     const recentEntries = sortedEntries.filter(entry => 
@@ -98,7 +107,7 @@ export class WeightTrackingService {
   static calculateMonthlyTrend(sortedEntries, months = 1) {
     if (sortedEntries.length < 2) return 0;
 
-    const cutoffDate = new Date();
+    const cutoffDate = TimeService.getCurrentDate();
     cutoffDate.setMonth(cutoffDate.getMonth() - months);
 
     const recentEntries = sortedEntries.filter(entry => 
@@ -226,11 +235,28 @@ export class WeightTrackingService {
    * Calculate macro adjustment recommendations based on progress
    */
   static calculateMacroAdjustmentRecommendation(progressAnalytics, userProfile, currentTargets) {
-    if (!progressAnalytics || progressAnalytics.dataPoints < 6) {
-      // Need at least 6 data points (2+ weeks) for reliable adjustment
+    console.log('Macro adjustment input validation:', {
+      hasProgressAnalytics: !!progressAnalytics,
+      dataPoints: progressAnalytics?.dataPoints,
+      hasUserProfile: !!userProfile,
+      goal: userProfile?.goal,
+      hasCurrentTargets: !!currentTargets,
+      currentTargetsCalories: currentTargets?.calories,
+      currentTargetsStructure: currentTargets
+    });
+
+    if (!progressAnalytics || progressAnalytics.dataPoints < 2) {
+      // Need at least 2 data points for basic adjustment (reduced for testing)
       return {
         shouldAdjust: false,
-        reason: 'Insufficient data - need at least 2 weeks of tracking'
+        reason: 'Insufficient data - need at least 2 weight entries'
+      };
+    }
+
+    if (!currentTargets || !currentTargets.calories) {
+      return {
+        shouldAdjust: false,
+        reason: 'Current macro targets not available'
       };
     }
 
@@ -245,8 +271,20 @@ export class WeightTrackingService {
     }
 
     // Calculate deviation from target
+    console.log('Deviation calculation inputs:', {
+      weeklyTrend,
+      recommendedWeeklyRate,
+      weeklyTrendType: typeof weeklyTrend,
+      recommendedWeeklyRateType: typeof recommendedWeeklyRate
+    });
+
     const deviation = weeklyTrend - recommendedWeeklyRate;
     const deviationPercent = Math.abs(deviation / recommendedWeeklyRate) * 100;
+
+    console.log('Deviation calculation results:', {
+      deviation,
+      deviationPercent
+    });
     
     // Only adjust if deviation is significant (>25%)
     if (deviationPercent < 25) {
@@ -258,11 +296,23 @@ export class WeightTrackingService {
 
     // Calculate calorie adjustment needed
     // 1 kg = ~7700 calories, so 1 kg/week = ~1100 calories/day adjustment
-    const calorieAdjustmentPerDay = deviation * 1100;
-    
+    // IMPORTANT: If deviation is positive (gaining more than target), we need to REDUCE calories (negative adjustment)
+    // If deviation is negative (losing more than target), we need to INCREASE calories (positive adjustment)
+    const calorieAdjustmentPerDay = -deviation * 1100; // Note the negative sign!
+
     // Cap adjustments to reasonable amounts (±300 calories per day)
     const cappedAdjustment = Math.max(-300, Math.min(300, calorieAdjustmentPerDay));
-    
+
+    // Debug the calculation
+    console.log('Calorie adjustment calculation:', {
+      deviation,
+      calorieAdjustmentPerDay,
+      cappedAdjustment,
+      currentCalories: currentTargets.calories,
+      newCalorieTarget: currentTargets.calories + cappedAdjustment,
+      logic: deviation > 0 ? 'Gaining too much → reduce calories' : 'Losing too much → increase calories'
+    });
+
     const newCalorieTarget = currentTargets.calories + cappedAdjustment;
     
     return {

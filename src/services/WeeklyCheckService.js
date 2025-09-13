@@ -156,12 +156,21 @@ export class WeeklyCheckService {
       }
 
       // Check if macro adjustment is needed
+      console.log('=== Checking for macro adjustment ===');
+      console.log('Updated entries count:', updatedEntries.length);
+      console.log('Progress analytics:', progressAnalytics ? 'Available' : 'None');
+
       const macroAdjustmentRecommendation = MacroAdjustmentService.analyzeProgressAndRecommendAdjustment(
         updatedEntries,
         userProfile,
         currentTargets,
         weightSettings
       );
+
+      console.log('Macro adjustment recommendation:', {
+        shouldAdjust: macroAdjustmentRecommendation?.shouldAdjust,
+        reason: macroAdjustmentRecommendation?.reason
+      });
 
       // Generate insights for user
       const insights = WeightTrackingService.generateWeightTrackingInsights(

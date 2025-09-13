@@ -23,12 +23,15 @@ export function useWeeklyCheck() {
     lastMacroAdjustment 
   } = useWeight();
   
-  const { 
-    userProfile, 
-    currentTargets, 
+  const {
+    userProfile,
+    personalizedTargets,
     updateUserProfile,
-    calculateAndSetPersonalizedTargets 
+    calculateAndSetPersonalizedTargets
   } = useSettings();
+
+  // Extract current macro targets from personalized targets
+  const currentTargets = personalizedTargets?.dailyTargets || null;
 
   // Notification state
   const [weeklyCheckNotification, setWeeklyCheckNotification] = useState(null);
@@ -89,6 +92,15 @@ export function useWeeklyCheck() {
       }
 
       // Process the entry and check for macro adjustments
+      console.log('=== Processing weekly weight entry ===');
+      console.log('Input data:', {
+        weight,
+        entryDate,
+        weightEntriesCount: weightEntries?.length,
+        userProfile: userProfile?.goal,
+        currentTargets: currentTargets?.calories
+      });
+
       const processResult = await WeeklyCheckService.processWeeklyWeightEntry(
         weight,
         entryDate,
@@ -97,6 +109,12 @@ export function useWeeklyCheck() {
         currentTargets,
         weightSettings
       );
+
+      console.log('Process result:', {
+        success: processResult.success,
+        requiresMacroAdjustment: processResult.requiresMacroAdjustment,
+        message: processResult.message
+      });
 
       if (!processResult.success) {
         throw new Error(processResult.error);
@@ -107,12 +125,17 @@ export function useWeeklyCheck() {
 
       // Show macro adjustment notification if needed
       if (processResult.requiresMacroAdjustment) {
+        console.log('Creating macro adjustment notification...');
         const adjustmentNotification = WeeklyCheckService.createMacroAdjustmentNotification(
           processResult,
           userProfile
         );
         setMacroAdjustmentNotification(adjustmentNotification);
+        console.log('Macro adjustment notification set');
+      } else {
+        console.log('No macro adjustment needed');
       }
+      console.log('=====================================');
 
       // Update last check time
       setLastCheckTime(TimeService.now());

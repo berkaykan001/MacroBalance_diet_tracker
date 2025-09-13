@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import { useSettings } from '../../context/SettingsContext';
+import { useWeight } from '../../context/WeightContext';
 import { MacroCalculationService } from '../../services/MacroCalculationService';
-import { 
-  OnboardingContainer, 
-  PrimaryButton 
+import TimeService from '../../services/TimeService';
+import {
+  OnboardingContainer,
+  PrimaryButton
 } from './components/OnboardingComponents';
 
 export default function CompletionScreen({ navigation }) {
   const { userProfile, completeOnboarding } = useSettings();
+  const { addWeightEntry } = useWeight();
   const [calculatedNutrition, setCalculatedNutrition] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -43,8 +46,27 @@ export default function CompletionScreen({ navigation }) {
 
     try {
       setIsLoading(true);
+
+      // First complete the onboarding process
       await completeOnboarding();
-      
+
+      // Create initial weight entry from user profile
+      if (userProfile.weight) {
+        console.log('Creating initial weight entry:', userProfile.weight);
+        const weightEntryResult = await addWeightEntry({
+          weight: userProfile.weight,
+          date: TimeService.formatShort(), // Today's date
+          notes: 'Initial weight from onboarding',
+          source: 'onboarding'
+        });
+
+        if (weightEntryResult.success) {
+          console.log('Initial weight entry created successfully');
+        } else {
+          console.error('Failed to create initial weight entry:', weightEntryResult.error);
+        }
+      }
+
       // Navigate to main app
       navigation.reset({
         index: 0,

@@ -41,11 +41,11 @@ export class WeeklyCheckService {
       };
     }
 
-    // No entries - first weight should be handled during onboarding, not weekly check
+    // No entries - user needs to complete onboarding first to get initial weight
     if (!weightEntries || weightEntries.length === 0) {
       return {
         isDue: false,
-        reason: 'First weight entry should be collected during onboarding'
+        reason: 'Complete onboarding and enter initial weight first'
       };
     }
 
@@ -69,7 +69,18 @@ export class WeeklyCheckService {
     const daysSinceLastEntry = Math.floor((todayDate - lastEntryDate) / (1000 * 60 * 60 * 24));
 
 
-    // Check if it's been a week or more
+    // Special case: If last entry was from weekly_check and it's been less than a week,
+    // don't trigger another weekly check (prevents immediate re-triggering)
+    if (lastEntry.source === 'weekly_check' && daysSinceLastEntry < 7) {
+      return {
+        isDue: false,
+        reason: `Last weekly check was ${daysSinceLastEntry} days ago`,
+        daysSinceLastEntry,
+        daysUntilNext: 7 - daysSinceLastEntry
+      };
+    }
+
+    // Check if it's been a week or more since any entry (including onboarding entries)
     const weeklyTarget = 7; // days
     const isDue = daysSinceLastEntry >= weeklyTarget;
 

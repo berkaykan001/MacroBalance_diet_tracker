@@ -170,16 +170,30 @@ export function useWeeklyCheck() {
    */
   const applyMacroAdjustment = useCallback(async (adjustmentData) => {
     try {
+      console.log('=== Applying Macro Adjustment ===');
+      console.log('adjustmentData:', adjustmentData);
+
       const { macroAdjustmentRecommendation } = adjustmentData;
-      
+      console.log('macroAdjustmentRecommendation:', macroAdjustmentRecommendation);
+      console.log('adjustedTargets:', macroAdjustmentRecommendation?.adjustedTargets);
+
       // Update user weight if it has changed
       if (macroAdjustmentRecommendation.progressAnalytics?.currentWeight !== userProfile.weight) {
+        console.log('Updating user weight...');
         await updateUserProfile({
           weight: macroAdjustmentRecommendation.progressAnalytics.currentWeight
         });
       }
 
       // Apply new macro targets
+      console.log('Calling calculateAndSetPersonalizedTargets with:', {
+        userProfile: {
+          ...userProfile,
+          weight: macroAdjustmentRecommendation.progressAnalytics.currentWeight
+        },
+        adjustedTargets: macroAdjustmentRecommendation.adjustedTargets
+      });
+
       await calculateAndSetPersonalizedTargets(
         {
           ...userProfile,
@@ -190,6 +204,9 @@ export function useWeeklyCheck() {
 
       // Clear the adjustment notification
       setMacroAdjustmentNotification(null);
+
+      console.log('Macro adjustment applied successfully!');
+      console.log('===================================');
 
       return {
         success: true,

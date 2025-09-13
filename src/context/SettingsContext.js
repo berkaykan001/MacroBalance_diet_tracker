@@ -189,10 +189,11 @@ export function SettingsProvider({ children }) {
     }
   };
 
-  const calculateAndSetPersonalizedTargets = async (profile) => {
+  const calculateAndSetPersonalizedTargets = async (profile, adjustedTargets = null) => {
     try {
       console.log('Calculating personalized targets for profile:', profile);
-      
+      console.log('Using adjusted targets:', adjustedTargets);
+
       // Validate profile has all required fields
       const errors = MacroCalculationService.validateUserProfile(profile);
       if (errors.length > 0) {
@@ -200,9 +201,28 @@ export function SettingsProvider({ children }) {
         return;
       }
 
-      // Calculate personalized nutrition
-      const personalizedNutrition = MacroCalculationService.calculatePersonalizedNutrition(profile);
-      console.log('Calculated personalized targets:', personalizedNutrition);
+      let personalizedNutrition;
+
+      if (adjustedTargets) {
+        // Use the provided adjusted targets instead of recalculating
+        console.log('Using provided adjusted targets instead of calculating from scratch');
+
+        // Calculate the full nutrition structure with adjusted targets
+        const baseNutrition = MacroCalculationService.calculatePersonalizedNutrition(profile);
+        personalizedNutrition = {
+          ...baseNutrition,
+          dailyTargets: adjustedTargets,
+          calculations: {
+            ...baseNutrition.calculations,
+            targetCalories: adjustedTargets.calories
+          }
+        };
+      } else {
+        // Calculate personalized nutrition from scratch
+        personalizedNutrition = MacroCalculationService.calculatePersonalizedNutrition(profile);
+      }
+
+      console.log('Final personalized targets:', personalizedNutrition);
 
       dispatch({ type: ACTIONS.SET_PERSONALIZED_TARGETS, payload: personalizedNutrition });
 

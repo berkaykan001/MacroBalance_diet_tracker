@@ -10,15 +10,16 @@ import TimeService from '../../services/TimeService';
 export default function SettingsScreen() {
   const { foods, reloadFoods } = useFood();
   const { meals, updateMeal, addMeal, deleteMeal, reloadMeals } = useMeal();
-  const { 
-    selectedQuickFoods, 
+  const {
+    selectedQuickFoods,
     appPreferences,
     userProfile,
-    updateQuickFoods, 
-    updateAppPreferences, 
+    personalizedTargets,
+    updateQuickFoods,
+    updateAppPreferences,
     updateUserProfile,
-    resetSettings, 
-    clearAllData 
+    resetSettings,
+    clearAllData
   } = useSettings();
   
   const [activeSection, setActiveSection] = useState('profile');
@@ -547,46 +548,27 @@ export default function SettingsScreen() {
                         <Text style={styles.sectionDividerText}>Current Calculated Targets</Text>
                       </View>
                       
-                      {(() => {
-                        try {
-                          const calculatedTargets = require('../../services/MacroCalculationService').default.calculatePersonalizedNutrition(userProfile);
-                          return (
-                            <>
-                              <View style={styles.preferenceItem}>
-                                <View style={styles.preferenceInfo}>
-                                  <Text style={styles.preferenceTitle}>Daily Calories</Text>
-                                  <Text style={styles.preferenceDescriptionHighlight}>
-                                    {calculatedTargets?.calculations?.targetCalories || 'Not calculated'} calories
-                                  </Text>
-                                </View>
-                              </View>
-                              
-                              <View style={styles.preferenceItem}>
-                                <View style={styles.preferenceInfo}>
-                                  <Text style={styles.preferenceTitle}>Daily Macros</Text>
-                                  <Text style={styles.preferenceDescriptionHighlight}>
-                                    {calculatedTargets?.dailyTargets?.protein || 0}g protein • {' '}
-                                    {calculatedTargets?.dailyTargets?.carbs || 0}g carbs • {' '}
-                                    {calculatedTargets?.dailyTargets?.fat || 0}g fat
-                                  </Text>
-                                </View>
-                              </View>
-                            </>
-                          );
-                        } catch (error) {
-                          console.error('Error calculating targets for display:', error);
-                          return (
-                            <View style={styles.preferenceItem}>
-                              <View style={styles.preferenceInfo}>
-                                <Text style={styles.preferenceTitle}>Calculated Targets</Text>
-                                <Text style={styles.preferenceDescription}>
-                                  Complete your profile to see calculated targets
-                                </Text>
-                              </View>
-                            </View>
-                          );
-                        }
-                      })()}
+                      <>
+                        <View style={styles.preferenceItem}>
+                          <View style={styles.preferenceInfo}>
+                            <Text style={styles.preferenceTitle}>Daily Calories</Text>
+                            <Text style={styles.preferenceDescriptionHighlight}>
+                              {personalizedTargets?.dailyTargets?.calories || 'Not calculated'} calories
+                            </Text>
+                          </View>
+                        </View>
+
+                        <View style={styles.preferenceItem}>
+                          <View style={styles.preferenceInfo}>
+                            <Text style={styles.preferenceTitle}>Daily Macros</Text>
+                            <Text style={styles.preferenceDescriptionHighlight}>
+                              {personalizedTargets?.dailyTargets?.protein || 0}g protein • {' '}
+                              {personalizedTargets?.dailyTargets?.carbs || 0}g carbs • {' '}
+                              {personalizedTargets?.dailyTargets?.fat || 0}g fat
+                            </Text>
+                          </View>
+                        </View>
+                      </>
                     </>
                   )}
 

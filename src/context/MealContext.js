@@ -309,7 +309,12 @@ export function MealProvider({ children }) {
 
   // Generate meals from personalized targets
   const generatePersonalizedMeals = () => {
+    console.log('generatePersonalizedMeals called');
+    console.log('personalizedTargets:', personalizedTargets);
+    console.log('mealDistribution:', personalizedTargets?.mealDistribution);
+
     if (!personalizedTargets || !personalizedTargets.mealDistribution) {
+      console.log('No personalized targets available, using default meals');
       return defaultMeals;
     }
 
@@ -327,6 +332,11 @@ export function MealProvider({ children }) {
       personalizedGenerated: true,
       createdAt: TimeService.getCurrentDate().toISOString()
     }));
+
+    console.log('Generated personalized meals with targets:', personalizedMeals.map(meal => ({
+      name: meal.name,
+      targets: meal.macroTargets
+    })));
 
     // Always add the Extra meal
     personalizedMeals.push({

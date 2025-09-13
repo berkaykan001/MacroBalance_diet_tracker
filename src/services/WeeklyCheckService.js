@@ -15,6 +15,22 @@ import TimeService from './TimeService';
 export class WeeklyCheckService {
 
   /**
+   * Get effective date string accounting for day reset hour
+   * If current time is before reset hour, consider it the previous day
+   */
+  static getEffectiveDateString(dayResetHour = 4) {
+    const currentDate = TimeService.getCurrentDate();
+    const effectiveDate = new Date(currentDate);
+
+    // If it's before the reset hour, consider it as the previous day
+    if (currentDate.getHours() < dayResetHour) {
+      effectiveDate.setDate(effectiveDate.getDate() - 1);
+    }
+
+    return effectiveDate.toISOString().split('T')[0]; // Return YYYY-MM-DD format
+  }
+
+  /**
    * Check if user needs to log their weekly weight
    */
   static checkIfWeeklyWeightDue(weightEntries, weightSettings, userProfile) {
@@ -33,18 +49,23 @@ export class WeeklyCheckService {
       };
     }
 
+    // Get day reset hour from user profile app preferences
+    const dayResetHour = userProfile?.appPreferences?.dayResetHour || 4;
+
     // Sort entries by date (most recent first)
-    const sortedEntries = [...weightEntries].sort((a, b) => 
+    const sortedEntries = [...weightEntries].sort((a, b) =>
       new Date(b.date) - new Date(a.date)
     );
 
     const lastEntry = sortedEntries[0];
     const lastEntryDateStr = lastEntry.date; // YYYY-MM-DD format
-    const todayStr = TimeService.formatShort(); // Also YYYY-MM-DD format
 
-    // Calculate days difference using date strings to avoid timezone issues
-    const lastEntryDate = new Date(lastEntryDateStr + 'T00:00:00'); // Force local midnight
-    const todayDate = new Date(todayStr + 'T00:00:00'); // Force local midnight
+    // Use TimeService to get today's date accounting for day reset hour
+    const todayStr = this.getEffectiveDateString(dayResetHour);
+
+    // Calculate days difference using date strings
+    const lastEntryDate = new Date(lastEntryDateStr + 'T00:00:00');
+    const todayDate = new Date(todayStr + 'T00:00:00');
     const daysSinceLastEntry = Math.floor((todayDate - lastEntryDate) / (1000 * 60 * 60 * 24));
 
 

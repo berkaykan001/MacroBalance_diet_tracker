@@ -225,9 +225,9 @@ export function useWeeklyCheck() {
   /**
    * Dismiss weekly check notification
    */
-  const dismissWeeklyCheck = useCallback((action = 'dismiss') => {
+  const dismissWeeklyCheck = useCallback(async (action = 'dismiss') => {
     setWeeklyCheckNotification(null);
-    
+
     // If user chooses to skip or remind later, set a delay
     if (action === 'remind_later') {
       // Show again in 2 hours
@@ -235,10 +235,24 @@ export function useWeeklyCheck() {
         checkWeeklyWeightStatus();
       }, 2 * 60 * 60 * 1000);
     } else if (action === 'skip_week') {
-      // Mark as if they weighed in today to reset the 7-day cycle
+      // Add a "skip" entry to reset the 7-day cycle without requiring actual weight
+      // This prevents the check from immediately re-triggering
+      try {
+        const entryDate = TimeService.formatShort();
+        await addWeightEntry({
+          weight: weightEntries?.length > 0 ? weightEntries[0].weight : 70, // Use last weight or default
+          date: entryDate,
+          notes: 'Skipped weekly check',
+          source: 'weekly_check_skip',
+          isSkipped: true
+        });
+        console.log('Added skip entry to reset weekly check cycle');
+      } catch (error) {
+        console.error('Failed to add skip entry:', error);
+      }
       setLastCheckTime(TimeService.now());
     }
-  }, [checkWeeklyWeightStatus]);
+  }, [checkWeeklyWeightStatus, addWeightEntry, weightEntries]);
 
   /**
    * Dismiss macro adjustment notification

@@ -69,12 +69,13 @@ export class WeeklyCheckService {
     const daysSinceLastEntry = Math.floor((todayDate - lastEntryDate) / (1000 * 60 * 60 * 24));
 
 
-    // Special case: If last entry was from weekly_check and it's been less than a week,
+    // Special case: If last entry was from weekly_check or skip, and it's been less than a week,
     // don't trigger another weekly check (prevents immediate re-triggering)
-    if (lastEntry.source === 'weekly_check' && daysSinceLastEntry < 7) {
+    if ((lastEntry.source === 'weekly_check' || lastEntry.source === 'weekly_check_skip') && daysSinceLastEntry < 7) {
+      const entryType = lastEntry.source === 'weekly_check_skip' ? 'skipped weekly check' : 'weekly check';
       return {
         isDue: false,
-        reason: `Last weekly check was ${daysSinceLastEntry} days ago`,
+        reason: `Last ${entryType} was ${daysSinceLastEntry} days ago`,
         daysSinceLastEntry,
         daysUntilNext: 7 - daysSinceLastEntry
       };

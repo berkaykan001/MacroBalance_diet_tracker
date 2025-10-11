@@ -150,7 +150,7 @@ export function GenderSelector({ selectedGender, onGenderSelect }) {
   );
 }
 
-// Main container for onboarding screens - FIXED with HTML div scrolling
+// Main container for onboarding screens
 export function OnboardingContainer({ children, showProgress = true, currentStep, totalSteps, contentContainerStyle }) {
   return (
     <LinearGradient
@@ -160,21 +160,13 @@ export function OnboardingContainer({ children, showProgress = true, currentStep
       {showProgress && (
         <ProgressIndicator currentStep={currentStep} totalSteps={totalSteps} />
       )}
-      {/* Use HTML div for scrolling instead of broken ScrollView */}
-      <div style={{
-        flex: 1,
-        height: showProgress ? 'calc(100vh - 100px)' : '100vh',
-        overflowY: 'scroll',
-        WebkitOverflowScrolling: 'touch'
-      }}>
-        <div style={{
-          padding: '24px',
-          paddingBottom: '20px',
-          ...contentContainerStyle
-        }}>
-          {children}
-        </div>
-      </div>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={[styles.contentContainer, contentContainerStyle]}
+        showsVerticalScrollIndicator={false}
+      >
+        {children}
+      </ScrollView>
     </LinearGradient>
   );
 }

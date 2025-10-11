@@ -223,45 +223,55 @@ function AppContent() {
 
   // Fix React Navigation mouse wheel blocking on web
   useEffect(() => {
-    if (Platform.OS === 'web' && typeof document !== 'undefined') {
-      // Add CSS to prevent hidden React Navigation overlays from blocking mouse events
-      const style = document.createElement('style');
-      style.innerHTML = `
-        /* Fix for React Navigation blocking mouse wheel events */
-        [aria-hidden="true"] {
-          pointer-events: none !important;
-        }
-        [aria-hidden="true"] * {
-          pointer-events: none !important;
-        }
-        [style*="display: none"] {
-          pointer-events: none !important;
-        }
-        
-        /* Re-enable for visible content */
-        [aria-hidden="false"] {
-          pointer-events: auto !important;
-        }
-        [aria-hidden="false"] * {
-          pointer-events: auto !important;
-        }
-        
-        /* Hide web scrollbars to match dashboard style */
-        ::-webkit-scrollbar {
-          display: none;
-        }
-        * {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-        }
-      `;
-      document.head.appendChild(style);
-      
-      return () => {
-        if (document.head.contains(style)) {
-          document.head.removeChild(style);
-        }
-      };
+    // Only run web-specific code on web platform
+    if (Platform.OS !== 'web') {
+      return; // Exit early for mobile platforms
+    }
+
+    // Use dynamic import to avoid bundler issues with 'document' on mobile
+    try {
+      if (typeof window !== 'undefined' && window.document) {
+        const style = window.document.createElement('style');
+        style.innerHTML = `
+          /* Fix for React Navigation blocking mouse wheel events */
+          [aria-hidden="true"] {
+            pointer-events: none !important;
+          }
+          [aria-hidden="true"] * {
+            pointer-events: none !important;
+          }
+          [style*="display: none"] {
+            pointer-events: none !important;
+          }
+
+          /* Re-enable for visible content */
+          [aria-hidden="false"] {
+            pointer-events: auto !important;
+          }
+          [aria-hidden="false"] * {
+            pointer-events: auto !important;
+          }
+
+          /* Hide web scrollbars to match dashboard style */
+          ::-webkit-scrollbar {
+            display: none;
+          }
+          * {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+          }
+        `;
+        window.document.head.appendChild(style);
+
+        return () => {
+          if (window.document.head.contains(style)) {
+            window.document.head.removeChild(style);
+          }
+        };
+      }
+    } catch (error) {
+      // Silently fail on mobile - this is web-only code
+      console.log('Web-only CSS injection skipped on mobile');
     }
   }, []);
   

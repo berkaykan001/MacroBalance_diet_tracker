@@ -31,7 +31,7 @@ const defaultMeals = [
       fat: 15
     },
     userCustom: false,
-    createdAt: TimeService.getCurrentDate().toISOString()
+    createdAt: new Date().toISOString()
   },
   {
     id: '2',
@@ -44,7 +44,7 @@ const defaultMeals = [
       fat: 15
     },
     userCustom: false,
-    createdAt: TimeService.getCurrentDate().toISOString()
+    createdAt: new Date().toISOString()
   },
   {
     id: '3',
@@ -57,7 +57,7 @@ const defaultMeals = [
       fat: 8
     },
     userCustom: false,
-    createdAt: TimeService.getCurrentDate().toISOString()
+    createdAt: new Date().toISOString()
   },
   {
     id: '4',
@@ -70,7 +70,7 @@ const defaultMeals = [
       fat: 12
     },
     userCustom: false,
-    createdAt: TimeService.getCurrentDate().toISOString()
+    createdAt: new Date().toISOString()
   },
   {
     id: '5',
@@ -83,7 +83,7 @@ const defaultMeals = [
       fat: 0
     },
     userCustom: false,
-    createdAt: TimeService.getCurrentDate().toISOString()
+    createdAt: new Date().toISOString()
   }
 ];
 
@@ -136,9 +136,9 @@ function mealReducer(state, action) {
     case ACTIONS.ADD_MEAL:
       const newMeal = {
         ...action.payload,
-        id: TimeService.now().toString(),
+        id: Date.now().toString(),
         userCustom: true,
-        createdAt: TimeService.getCurrentDate().toISOString()
+        createdAt: new Date().toISOString()
       };
       return {
         ...state,
@@ -166,24 +166,20 @@ function mealReducer(state, action) {
       };
     
     case ACTIONS.CREATE_MEAL_PLAN:
-      const now = TimeService.getCurrentDate();
+      const now = new Date();
       const newMealPlan = {
         ...action.payload,
-        id: TimeService.now().toString(),
+        id: Date.now().toString(),
         createdAt: now.toISOString(), // Keep timestamp for precision
         isCheatMeal: action.payload.isCheatMeal || false // Default to false if not specified
       };
-      
+
       // DEBUG: Log meal plan creation with date mapping info
       // This helps us understand if dates are being mapped correctly
       const createdDateKey = now.toDateString();
-      const myTodayKey = newMealPlan.createdAt ? (() => {
-        return TimeService.getTodayString(4); // Use TimeService for consistency
-      })() : null;
-      
+
       console.log(`REDUCER CREATE_MEAL_PLAN: Created at ${newMealPlan.createdAt}`);
       console.log(`REDUCER CREATE_MEAL_PLAN: Regular date key = ${createdDateKey}`);
-      console.log(`REDUCER CREATE_MEAL_PLAN: Custom date key = ${myTodayKey}`);
       
       return {
         ...state,
@@ -330,7 +326,7 @@ export function MealProvider({ children }) {
       },
       userCustom: false,
       personalizedGenerated: true,
-      createdAt: TimeService.getCurrentDate().toISOString()
+      createdAt: new Date().toISOString()
     }));
 
     console.log('Generated personalized meals with targets:', personalizedMeals.map(meal => ({
@@ -351,7 +347,7 @@ export function MealProvider({ children }) {
       },
       userCustom: false,
       personalizedGenerated: false,
-      createdAt: TimeService.getCurrentDate().toISOString()
+      createdAt: new Date().toISOString()
     });
 
     return personalizedMeals;
@@ -400,19 +396,31 @@ export function MealProvider({ children }) {
   };
 
   const loadMealPlans = async () => {
+    const timestamp = new Date().toISOString();
+    console.log('\n=== 🔍 [MEALPLAN-LOAD] START ===');
+    console.log('🔍 [MEALPLAN-LOAD] Time:', timestamp);
+
     try {
       const storedMealPlans = await AsyncStorage.getItem('mealPlans');
+
       if (storedMealPlans) {
+        console.log('✅ [MEALPLAN-LOAD] Data found! Size:', (storedMealPlans.length / 1024).toFixed(2), 'KB');
         const mealPlans = JSON.parse(storedMealPlans);
-        console.log('Loaded meal plans:', mealPlans.length, 'plans');
+        console.log('✅ [MEALPLAN-LOAD] Loaded', mealPlans.length, 'meal plans');
         dispatch({ type: ACTIONS.LOAD_MEAL_PLANS, payload: mealPlans });
       } else {
-        console.log('No stored meal plans found');
+        console.log('⚠️ [MEALPLAN-LOAD] NO DATA - AsyncStorage returned NULL');
+        console.log('⚠️ [MEALPLAN-LOAD] Starting with empty array');
         dispatch({ type: ACTIONS.LOAD_MEAL_PLANS, payload: [] });
       }
+
+      console.log('=== 🔍 [MEALPLAN-LOAD] END ===\n');
     } catch (error) {
-      console.error('Error loading meal plans:', error);
+      console.error('\n❌ [MEALPLAN-LOAD] ERROR!');
+      console.error('❌ [MEALPLAN-LOAD]:', error.message);
+      console.error('❌ [MEALPLAN-LOAD] Full error:', error);
       dispatch({ type: ACTIONS.LOAD_MEAL_PLANS, payload: [] });
+      console.error('=== 🔍 [MEALPLAN-LOAD] END (ERROR) ===\n');
     }
   };
 
@@ -426,10 +434,40 @@ export function MealProvider({ children }) {
   };
 
   const saveMealPlans = async () => {
+    const timestamp = new Date().toISOString();
+    const startTime = Date.now();
+
+    console.log('\n=== 💾 [MEALPLAN-SAVE] START ===');
+    console.log('💾 [MEALPLAN-SAVE] Time:', timestamp);
+    console.log('💾 [MEALPLAN-SAVE] Current meal plans count:', state.mealPlans.length);
+
     try {
-      await AsyncStorage.setItem('mealPlans', JSON.stringify(state.mealPlans));
+      const jsonString = JSON.stringify(state.mealPlans);
+      const sizeKB = (jsonString.length / 1024).toFixed(2);
+
+      console.log('💾 [MEALPLAN-SAVE] Data size:', sizeKB, 'KB');
+      console.log('💾 [MEALPLAN-SAVE] Writing to AsyncStorage...');
+
+      await AsyncStorage.setItem('mealPlans', jsonString);
+
+      const duration = Date.now() - startTime;
+      console.log('✅ [MEALPLAN-SAVE] SUCCESS! Saved in', duration, 'ms');
+
+      // Verification
+      const verification = await AsyncStorage.getItem('mealPlans');
+      if (verification) {
+        const verified = JSON.parse(verification);
+        console.log('✅ [MEALPLAN-SAVE] VERIFIED - Read back', verified.length, 'plans');
+      } else {
+        console.error('❌ [MEALPLAN-SAVE] VERIFICATION FAILED - NULL returned!');
+      }
+
+      console.log('=== 💾 [MEALPLAN-SAVE] END ===\n');
     } catch (error) {
-      console.error('Error saving meal plans:', error);
+      console.error('\n❌ [MEALPLAN-SAVE] SAVE ERROR!');
+      console.error('❌ [MEALPLAN-SAVE]:', error.message);
+      console.error('❌ [MEALPLAN-SAVE] Full error:', error);
+      console.error('=== 💾 [MEALPLAN-SAVE] END (ERROR) ===\n');
     }
   };
 
@@ -690,7 +728,7 @@ export function MealProvider({ children }) {
       nutrientResults,
       topFoods,
       isCheatDay: false, // Default to false, can be toggled by user
-      createdAt: TimeService.getCurrentDate().toISOString()
+      createdAt: new Date().toISOString()
     };
   };
 
@@ -729,8 +767,7 @@ export function MealProvider({ children }) {
   const getDailySummariesForPeriod = (days = 7) => {
     const summaries = [];
     const todayKey = getMyTodayDate(); // Use custom day reset logic
-    // Use TimeService's current date instead of parsing the string
-    const todayDate = TimeService.getCurrentDate();
+    const todayDate = new Date();
     
     for (let i = 0; i < days; i++) {
       const date = new Date(todayDate);
@@ -818,20 +855,44 @@ export function MealProvider({ children }) {
 
   // Data Lifecycle Management
   const processDataLifecycle = async (retentionDays = 90) => {
+    console.log('\n=== 🔄 [LIFECYCLE-DEBUG] START ===');
+    console.log('📊 [LIFECYCLE-DEBUG] Total meal plans:', state.mealPlans.length);
+
     // Use consistent date calculation with getMyTodayDate logic
     const myToday = getMyTodayDate(); // Use custom day reset logic
     const myTodayDate = new Date(myToday);
-    
+
+    console.log('📅 [LIFECYCLE-DEBUG] myToday string:', myToday);
+    console.log('📅 [LIFECYCLE-DEBUG] myTodayDate parsed:', myTodayDate.toISOString());
+    console.log('📅 [LIFECYCLE-DEBUG] myTodayDate valid?', !isNaN(myTodayDate.getTime()));
+
     const sevenDaysAgo = new Date(myTodayDate);
     sevenDaysAgo.setDate(myTodayDate.getDate() - 7);
-    
+
+    console.log('📅 [LIFECYCLE-DEBUG] sevenDaysAgo:', sevenDaysAgo.toISOString());
+    console.log('📅 [LIFECYCLE-DEBUG] sevenDaysAgo valid?', !isNaN(sevenDaysAgo.getTime()));
+
     const retentionCutoff = new Date(myTodayDate);
     retentionCutoff.setDate(myTodayDate.getDate() - retentionDays);
 
     // Step 1: Convert meal plans older than 7 days to daily summaries
-    const mealPlansToConvert = state.mealPlans.filter(plan => {
-      const planDate = new Date(getMyTodayDate(new Date(plan.createdAt)));
-      return planDate < sevenDaysAgo;
+    console.log('\n🔍 [LIFECYCLE-DEBUG] Checking each meal plan:');
+    const mealPlansToConvert = state.mealPlans.filter((plan, index) => {
+      const planDateObj = new Date(plan.createdAt);
+      const planDateString = getMyTodayDate(planDateObj);
+      const planDate = new Date(planDateString);
+      const isOld = planDate < sevenDaysAgo;
+
+      console.log(`  Plan ${index + 1}:`);
+      console.log(`    - createdAt: ${plan.createdAt}`);
+      console.log(`    - planDateObj: ${planDateObj.toISOString()}`);
+      console.log(`    - planDateString: ${planDateString}`);
+      console.log(`    - planDate parsed: ${planDate.toISOString()}`);
+      console.log(`    - planDate valid? ${!isNaN(planDate.getTime())}`);
+      console.log(`    - Is older than 7 days? ${isOld}`);
+      console.log(`    - Comparison: ${planDate.getTime()} < ${sevenDaysAgo.getTime()}`);
+
+      return isOld;
     });
 
     // Group meal plans by date
@@ -856,9 +917,22 @@ export function MealProvider({ children }) {
     });
 
     // Step 2: Remove old meal plans (now converted to summaries)
-    const remainingMealPlans = state.mealPlans.filter(plan => {
-      const planDate = new Date(getMyTodayDate(new Date(plan.createdAt)));
-      return planDate >= sevenDaysAgo;
+    console.log('\n🗑️ [LIFECYCLE-DEBUG] Filtering to keep recent plans:');
+    const remainingMealPlans = state.mealPlans.filter((plan, index) => {
+      const planDateObj = new Date(plan.createdAt);
+      const planDateString = getMyTodayDate(planDateObj);
+      const planDate = new Date(planDateString);
+      const shouldKeep = planDate >= sevenDaysAgo;
+
+      console.log(`  Plan ${index + 1}:`);
+      console.log(`    - createdAt: ${plan.createdAt}`);
+      console.log(`    - planDateString: ${planDateString}`);
+      console.log(`    - planDate: ${planDate.toISOString()}`);
+      console.log(`    - planDate valid? ${!isNaN(planDate.getTime())}`);
+      console.log(`    - Should keep? ${shouldKeep}`);
+      console.log(`    - Comparison: ${planDate.getTime()} >= ${sevenDaysAgo.getTime()}`);
+
+      return shouldKeep;
     });
 
     // Step 3: Remove old daily summaries based on retention period
@@ -887,10 +961,12 @@ export function MealProvider({ children }) {
       });
     });
 
-    console.log(`Data lifecycle processed: 
+    console.log('\n=== 🔄 [LIFECYCLE-DEBUG] RESULTS ===');
+    console.log(`Data lifecycle processed:
       - Converted ${Object.keys(newSummaries).length} days to summaries
       - Kept ${remainingMealPlans.length} recent meal plans
       - Kept ${Object.keys(remainingSummaries).length} daily summaries`);
+    console.log('=== 🔄 [LIFECYCLE-DEBUG] END ===\n');
 
     return {
       summariesCreated: Object.keys(newSummaries).length,
@@ -943,18 +1019,15 @@ export function MealProvider({ children }) {
   // Helper function to get "today" based on user's custom reset hour instead of midnight
   const getMyTodayDate = (date = null) => {
     const dayResetHour = appPreferences?.dayResetHour || 4;
-    
-    if (date) {
-      // For specific dates (like from meal plans), calculate based on that date
-      const currentDate = new Date(date);
-      if (currentDate.getHours() < dayResetHour) {
-        currentDate.setDate(currentDate.getDate() - 1);
-      }
-      return currentDate.toDateString();
+
+    const currentDate = date ? new Date(date) : new Date();
+
+    // If it's before the reset hour, consider it as the previous day
+    if (currentDate.getHours() < dayResetHour) {
+      currentDate.setDate(currentDate.getDate() - 1);
     }
-    
-    // For "today", use TimeService which respects simulation
-    return TimeService.getTodayString(dayResetHour);
+
+    return currentDate.toDateString();
   };
 
   const getDailyProgress = () => {

@@ -28,6 +28,34 @@
 
 ## ✅ RESOLVED - Recent Fixes
 
+### Session 2025-01-20: Reanimated 4 Compatibility & Onboarding Issues
+
+#### Bug #3: CustomEvent Not Available in React Native
+- **Status**: ✅ RESOLVED
+- **Severity**: CRITICAL (Blocked onboarding completion)
+- **Reported**: 2025-01-20
+- **Error Message**:
+  ```
+  Error updating user profile: ReferenceError: Property 'CustomEvent' doesn't exist
+  Call Stack: updateUserProfile (src\context\SettingsContext.js)
+  ```
+- **Trigger**: Occurred when user clicked "Continue" button after entering basic information (gender, age, etc.) in onboarding
+- **Root Cause**:
+  - Lines 194-199 in SettingsContext.js tried to use `window.dispatchEvent(new CustomEvent(...))`
+  - CustomEvent is a browser API not available in React Native
+  - The code was wrapped in `if (typeof window !== 'undefined')` check, but `window` exists in React Native as a global object
+  - This caused the check to pass, then fail when trying to instantiate CustomEvent
+- **Solution**:
+  - Removed the web-specific event dispatching code (lines 194-199)
+  - Not needed in React Native - Context API already handles state updates and component re-renders
+  - Components consuming SettingsContext will automatically update when `dispatch()` is called
+- **Files Changed**:
+  - `src/context/SettingsContext.js`: Removed CustomEvent code (lines 194-199)
+- **Commit**: Not yet committed (waiting for user permission)
+- **Verified**: ⏳ Awaiting user testing
+
+---
+
 ### Session 2025-01-20: Reanimated 4 Compatibility Issues
 
 #### Bug #1: Babel Bundling Error - Cannot Find Worklets Plugin
@@ -135,8 +163,8 @@
 ## 📊 Session Summary
 
 ### Session 2025-01-20
-- **Bugs Fixed**: 2
-- **Critical Fixes**: 2
-- **Files Modified**: 3 (package.json, package-lock.json, MealContext.js)
-- **Commits**: 1 (`6027d5c`)
-- **Status**: All critical bugs resolved, app fully functional
+- **Bugs Fixed**: 3
+- **Critical Fixes**: 3
+- **Files Modified**: 4 (package.json, package-lock.json, MealContext.js, SettingsContext.js)
+- **Commits**: 2 (`6027d5c`, `29ef588`, + pending)
+- **Status**: All critical bugs resolved, awaiting user verification

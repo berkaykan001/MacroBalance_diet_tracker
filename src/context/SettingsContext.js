@@ -94,19 +94,33 @@ export function SettingsProvider({ children }) {
   }, []);
 
   const loadSettings = async () => {
+    const timestamp = new Date().toISOString();
+    console.log('\n=== 🔍 [SETTINGS-LOAD] START ===');
+    console.log('🔍 [SETTINGS-LOAD] Time:', timestamp);
+
     try {
       const storedSettings = await AsyncStorage.getItem('appSettings');
+
       if (storedSettings) {
+        console.log('✅ [SETTINGS-LOAD] Data found! Size:', (storedSettings.length / 1024).toFixed(2), 'KB');
         const parsedSettings = JSON.parse(storedSettings);
+        console.log('✅ [SETTINGS-LOAD] Has user profile:', !!parsedSettings.userProfile);
+        console.log('✅ [SETTINGS-LOAD] Has personalized targets:', !!parsedSettings.personalizedTargets);
         dispatch({ type: ACTIONS.LOAD_SETTINGS, payload: parsedSettings });
       } else {
-        // Save default settings to storage
+        console.log('⚠️ [SETTINGS-LOAD] NO DATA - Using defaults');
         await AsyncStorage.setItem('appSettings', JSON.stringify(defaultSettings));
+        console.log('⚠️ [SETTINGS-LOAD] Saved defaults to storage');
         dispatch({ type: ACTIONS.LOAD_SETTINGS, payload: defaultSettings });
       }
+
+      console.log('=== 🔍 [SETTINGS-LOAD] END ===\n');
     } catch (error) {
-      console.error('Error loading settings:', error);
+      console.error('\n❌ [SETTINGS-LOAD] ERROR!');
+      console.error('❌ [SETTINGS-LOAD]:', error.message);
+      console.error('❌ [SETTINGS-LOAD] Full error:', error);
       dispatch({ type: ACTIONS.LOAD_SETTINGS, payload: defaultSettings });
+      console.error('=== 🔍 [SETTINGS-LOAD] END (ERROR) ===\n');
     }
   };
 
@@ -176,13 +190,6 @@ export function SettingsProvider({ children }) {
       const updatedSettings = { ...state, userProfile: updatedProfile };
       await AsyncStorage.setItem('appSettings', JSON.stringify(updatedSettings));
       console.log('User profile updated and saved successfully');
-      
-      // Trigger a global refresh event
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('profileUpdated', { 
-          detail: { userProfile: updatedProfile, personalizedTargets: state.personalizedTargets } 
-        }));
-      }
 
     } catch (error) {
       console.error('Error updating user profile:', error);

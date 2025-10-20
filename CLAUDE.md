@@ -1,31 +1,39 @@
 # MacroBalance - Macro Calculator Mobile App
 
+## 🚨 IMPORTANT DEVELOPMENT RULES
+
+**READ THESE RULES BEFORE EVERY SESSION:**
+
+1. **NEVER commit or push changes** until explicitly asked by the user
+2. **NEVER build the app** until explicitly asked by the user
+3. **ALWAYS update current_bugs.md** whenever fixing bugs or encountering new issues
+4. **Project Status**: Development is COMPLETE - we are in DEBUGGING PHASE only
+5. **Keep this file up to date**: There isnt much left to do, but if there is new information that might be important to be known, include them here.
+
 ## Project Overview
 
-MacroBalance is a React Native mobile application designed to help users calculate the exact portions (in grams) of foods needed to meet specific macro targets for each meal. The app solves the common problem of knowing what macros you need but not knowing how much of each food to eat to achieve those targets.
+MacroBalance is a React Native mobile application that calculates exact food portions (in grams) needed to meet specific macro targets for each meal. The app features automatic optimization - when a user adjusts one food's portion, all other portions automatically recalculate to maintain macro targets.
 
-## Core Problem Statement
-
-Users know:
-- Their macro targets for each meal (protein, carbs, fat)
-- What foods they want to eat
-- The nutritional content of foods
-
-Users need:
-- Exact portion sizes (in grams) to meet their macro targets
-- Interactive adjustment of portions with automatic recalculation
-- Meal-based macro planning with customizable targets
+### Core Value Proposition
+- **Input**: Macro targets (protein, carbs, fat) + selected foods
+- **Output**: Exact portion sizes in grams for each food
+- **Magic**: Real-time automatic optimization when any portion is adjusted
 
 ## Technical Stack
 
-- **Framework**: React Native with Expo
-- **Development**: Expo Go for testing
-- **State Management**: React Hooks (useState, useContext)
-- **Storage**: AsyncStorage for local data persistence
-- **Navigation**: React Navigation
+- **Framework**: React Native with Expo SDK 54
+- **Runtime**: Expo Go / APK builds
+- **State Management**: React Context API (FoodContext, MealContext, SettingsContext, WeightContext, PresetContext)
+- **Storage**: AsyncStorage (local persistence)
+- **Navigation**: React Navigation (Bottom Tabs + Stack)
 - **Testing**: Jest + React Native Testing Library
-- **Code Quality**: ESLint + Prettier
-- **Version Control**: Git with frequent commits
+- **Animations**: React Native Reanimated 4
+- **Dependencies**:
+  - `react-native-reanimated`: ~4.1.1
+  - `react-native-worklets`: ^0.6.1 (required by Reanimated 4)
+  - `@react-navigation/bottom-tabs`: ^7.3.16
+  - `@react-navigation/stack`: ^7.4.1
+  - `@react-native-community/slider`: 5.0.1
 
 ## Data Models
 
@@ -34,22 +42,16 @@ Users need:
 {
   id: string,
   name: string,
-  category: string, // "protein", "carbs", "fats", "vegetables", etc.
+  category: string,
   nutritionPer100g: {
-    calories: number,
-    protein: number,
-    carbs: number,
-    fiber: number,
-    sugar: number,
-    fat: number,
-    // Micronutrients (optional for now)
-    vitaminD: number,
-    magnesium: number,
-    // ... other micros
+    calories, protein, carbs, fiber, sugar, fat,
+    omega3, saturatedFat, monounsaturatedFat, polyunsaturatedFat, transFat,
+    addedSugars, naturalSugars,
+    iron, calcium, zinc, magnesium, sodium, potassium,
+    vitaminB6, vitaminB12, vitaminC, vitaminD
   },
   userAdded: boolean,
-  createdAt: string,
-  lastUsed: string
+  createdAt: string
 }
 ```
 
@@ -57,15 +59,10 @@ Users need:
 ```javascript
 {
   id: string,
-  name: string, // "Breakfast", "Lunch", "Post-Workout", etc.
-  macroTargets: {
-    protein: number,
-    carbs: number,
-    minFiber: number,
-    maxSugar: number,
-    fat: number
-  },
+  name: string,
+  macroTargets: { protein, carbs, minFiber, maxSugar, fat },
   userCustom: boolean,
+  personalizedGenerated: boolean,
   createdAt: string
 }
 ```
@@ -75,447 +72,206 @@ Users need:
 {
   id: string,
   mealId: string,
-  selectedFoods: [
-    {
-      foodId: string,
-      portionGrams: number
-    }
-  ],
-  calculatedMacros: {
-    protein: number,
-    carbs: number,
-    fiber: number,
-    sugar: number,
-    fat: number,
-    calories: number
-  },
+  selectedFoods: [{ foodId, portionGrams }],
+  calculatedMacros: { protein, carbs, fiber, sugar, fat, calories, ... },
+  isCheatMeal: boolean,
   createdAt: string
 }
 ```
 
-## Core Features
+## Project Structure
 
-### Phase 1: Foundation
-1. **Food Database Management**
-   - Pre-populated with common foods
-   - Add/edit/delete custom foods
-   - Search functionality with real-time filtering
-   - Category-based organization
+```
+MacroBalance_diet_tracker/
+├── src/
+│   ├── components/           # UI components
+│   │   ├── charts/          # Chart components (trends, heatmap, progress)
+│   │   ├── dashboard/       # Dashboard widgets
+│   │   ├── notifications/   # Dialogs and alerts
+│   │   └── *.js            # Modals, buttons, controls
+│   ├── screens/             # Screen components
+│   │   ├── Home/           # Dashboard screen
+│   │   ├── MealPlanning/   # Main macro calculator interface
+│   │   ├── FoodManagement/ # Food CRUD operations
+│   │   ├── DishCreator/    # Custom dish creation
+│   │   ├── Settings/       # App settings
+│   │   ├── WeightTracking/ # Weight history and entry
+│   │   └── Onboarding/     # User onboarding flow
+│   ├── context/            # React Context providers
+│   │   ├── FoodContext.js  # Food database management
+│   │   ├── MealContext.js  # Meal plans, daily summaries
+│   │   ├── SettingsContext.js # User profile, preferences
+│   │   ├── WeightContext.js   # Weight tracking
+│   │   └── PresetContext.js   # Meal presets
+│   ├── services/           # Business logic
+│   │   ├── calculationService.js      # Macro optimization engine
+│   │   ├── MacroCalculationService.js # User profile macros
+│   │   ├── MacroAdjustmentService.js  # Macro adjustments
+│   │   ├── WeightTrackingService.js   # Weight analytics
+│   │   ├── WeeklyCheckService.js      # Weekly reminders
+│   │   └── TimeService.js             # Time management
+│   ├── hooks/              # Custom React hooks
+│   ├── data/               # Static data
+│   │   └── defaultFoods.js # 186 pre-populated foods
+│   └── navigation/         # Navigation config
+├── __tests__/              # Jest test suite
+├── assets/                 # Images, fonts
+├── babel.config.js         # Babel config
+├── app.json               # Expo config
+├── eas.json               # EAS Build config
+├── CLAUDE.md              # This file (read at session start)
+└── current_bugs.md        # Active bug tracking (update always!)
+```
 
-2. **Meal Configuration**
-   - Pre-defined meal types (Breakfast, Lunch, Dinner, Post-Workout)
-   - Custom meal creation with macro targets
-   - Edit existing meals
+## Key Features (All Implemented)
 
-### Phase 2: Core Functionality
-3. **Macro Calculator Engine**
-   - Multi-variable optimization algorithm
-   - Real-time calculation of portions
-   - Constraint satisfaction for macro targets
+### Core Functionality
+- ✅ **Automatic Macro Optimization**: Slider-based portion control with real-time recalculation
+- ✅ **Food Database**: 186 foods with complete nutritional profiles
+- ✅ **Meal Planning**: Create and track meal plans with macro targets
+- ✅ **Dashboard**: Daily progress, macro trends, consistency tracking
+- ✅ **Weight Tracking**: Track weight, view trends, get insights
+- ✅ **User Onboarding**: Personalized macro calculation based on user profile
+- ✅ **Cheat Meals/Days**: Flexible diet management
+- ✅ **Dish Creator**: Create custom dishes from multiple foods
+- ✅ **Meal Presets**: Save and load favorite meal configurations
+- ✅ **Data Lifecycle**: Automatic cleanup of old meal plans (7+ days → daily summaries)
 
-4. **Interactive Meal Planning**
-   - Select meal type
-   - Choose foods from searchable database
-   - Interactive sliders for portion adjustment
-   - Automatic recalculation of other portions
-   - Visual feedback for macro achievement
+### Advanced Features
+- ✅ **Macro Trend Charts**: 7-day and 30-day visualization
+- ✅ **Consistency Heatmap**: Visual habit tracking
+- ✅ **Weekly Weight Check**: Smart notifications
+- ✅ **Macro Adjustments**: Automatic macro recalculation based on weight progress
+- ✅ **Custom Day Reset Hour**: Configurable "day" start time (default 4 AM)
+- ✅ **Sub-macros & Micronutrients**: Track fiber, omega-3, vitamins, minerals
 
-### Phase 3: Enhanced UX
-5. **Advanced Search & Filtering**
-   - Real-time search with auto-complete
-   - Filter by categories
-   - Recent/frequently used foods
-   - Favorites system
+## Important Context Providers
 
-6. **Progress Visualization**
-   - Macro target progress bars
-   - Color-coded feedback (green=target met, red=over, yellow=under)
-   - Nutritional breakdown charts
+### MealContext
+- Manages meals, meal plans, daily summaries
+- Handles data lifecycle (converts old plans to summaries)
+- Provides dashboard helper functions
+- **Key Methods**: `createMealPlan`, `getDailyProgress`, `getTodaysSummary`
+- **Important**: Uses `TimeService` for day reset logic
 
-### Phase 4: Future Enhancements
-7. **User Profiles**
-   - Personal macro calculation based on age, height, weight, activity level
-   - Multiple user support
-   - Goal-based recommendations (cutting, bulking, maintenance)
+### FoodContext
+- Manages food database with 186 default foods
+- Search, filter, CRUD operations
+- **Key Methods**: `searchFoods`, `addFood`, `updateFood`, `deleteFood`
 
-8. **Cloud Sync & Sharing**
-   - User account system
-   - Sync across devices
-   - Share food database entries
-   - Community features
+### SettingsContext
+- User profile, personalized targets, app preferences
+- Macro calculation based on TDEE
+- **Key Methods**: `updateUserProfile`, `generatePersonalizedTargets`
 
-## User Stories
+### WeightContext
+- Weight entries, trends, progress analytics
+- **Key Methods**: `addWeight`, `getWeightTrend`, `getWeightProgress`
 
-### Primary User Flows
+## Critical Dependencies
 
-1. **As a user, I want to plan my breakfast macros**
-   - Select "Breakfast" meal
-   - See my macro targets (e.g., 30g protein, 45g carbs, 15g fat)
-   - Search and select foods (e.g., oats, whey protein, banana)
-   - Adjust portions with sliders until macros are met
-   - Save meal plan for reference
+### TimeService
+- **Location**: `src/services/TimeService.js`
+- **Purpose**: Manages custom day reset hour (default 4 AM)
+- **Used by**: MealContext, HomeScreen, WeeklyCheckService
+- **Important**: Singleton instance - must be imported correctly
+- **Common Issue**: Missing import causes "Property 'TimeService' doesn't exist" error
 
-2. **As a user, I want to add a new food to my database**
-   - Navigate to food management
-   - Add new food with nutritional information
-   - Categorize the food
-   - Use it immediately in meal planning
-
-3. **As a user, I want to customize my meal targets**
-   - Edit existing meal (e.g., Post-Workout)
-   - Adjust macro targets based on my current goals
-   - Save changes for future use
-
-## UI/UX Requirements
-
-### Design Principles
-- **Modern & Elegant**: Clean, minimalist design with smooth animations
-- **Tech-Forward**: Dark theme with accent colors, gradient elements
-- **Intuitive**: Clear navigation, logical information hierarchy
-- **Responsive**: Optimized for various screen sizes
-
-### Key Screens
-1. **Home/Dashboard**: Quick access to recent meals, daily overview
-2. **Meal Planning**: Main calculator interface with sliders
-3. **Food Search**: Searchable database with filters
-4. **Food Management**: Add/edit foods
-5. **Meal Configuration**: Customize meal targets
-6. **Settings**: App preferences, user profile
-
-### Interaction Patterns
-- **Sliders**: Primary interaction for portion adjustment
-- **Cards**: Food items, meal summaries
-- **Progress Bars**: Macro target achievement
-- **Search**: Real-time filtering with suggestions
-- **Swipe Gestures**: Quick actions (delete, favorite)
-
-## Algorithm Design
-
-### Macro Calculation Engine
-The core challenge is solving a system of equations where:
-- Each food contributes macros proportional to its weight
-- Total macros must meet targets
-- User adjusts one food, others auto-adjust
-
-**Approach**: Proportional redistribution algorithm
-1. User adjusts Food A portion
-2. Calculate remaining macro needs
-3. Redistribute remaining needs among other foods proportionally
-4. Apply constraints (minimum portions, food availability)
-
-## Testing Strategy
-
-### Unit Tests
-- Food data validation
-- Macro calculation accuracy
-- Search algorithm correctness
-- Storage operations
-
-### Integration Tests
-- Complete meal planning workflow
-- Food database CRUD operations
-- Settings persistence
-- Navigation flows
-
-### E2E Tests
-- User onboarding flow
-- Complete meal planning session
-- Food management workflow
-- Cross-platform compatibility
-
-### Performance Tests
-- Search performance with large food database
-- Calculation speed with multiple foods
-- Memory usage optimization
-- Battery impact assessment
-
-## Development Workflow
-
-### Git Strategy
-- **main**: Production-ready code
-- **develop**: Integration branch
-- **feature/**: Individual features
-- **hotfix/**: Critical fixes
-
-### Commit Standards
-- Frequent commits with descriptive messages
-- Test before every commit
-- Follow conventional commit format
-- Include ticket/issue references
-
-### Code Quality
-- ESLint + Prettier for consistent formatting
-- TypeScript for better development experience (future)
-- Component documentation
-- Performance monitoring
+### React Native Reanimated 4
+- **Package**: `react-native-reanimated` ~4.1.1
+- **Required Peer Dependency**: `react-native-worklets` (NOT `react-native-worklets-core`)
+- **Babel Plugin**: `react-native-reanimated/plugin` (in babel.config.js)
+- **Common Issue**: Wrong worklets package causes bundling errors
 
 ## Common Commands
 
 ```bash
 # Development
-npm start                 # Start Expo dev server
-npm run android          # Run on Android emulator/device
-npm run ios              # Run on iOS simulator (macOS only)
-npm run web              # Run in web browser
+npm start                   # Start Expo dev server
+npx expo start --tunnel     # Start with tunnel (for mobile testing)
+npx expo start --clear      # Clear cache and start
 
 # Testing
-npm test                 # Run unit tests
-npm run test:watch       # Run tests in watch mode
-npm run test:coverage    # Generate coverage report
-
-# Code Quality
-npm run lint             # Run ESLint
-npm run lint:fix         # Fix auto-fixable lint issues
-npm run format           # Run Prettier
-
-# Build
-npm run build            # Build for production
-expo build:android       # Build Android APK
-expo build:ios           # Build iOS IPA
-```
-
-## File Structure
-
-```
-MacroBalance/
-├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── common/         # Generic components
-│   │   ├── food/           # Food-related components
-│   │   └── meal/           # Meal-related components
-│   ├── screens/            # Screen components
-│   │   ├── Home/
-│   │   ├── MealPlanning/
-│   │   ├── FoodManagement/
-│   │   └── Settings/
-│   ├── services/           # Business logic
-│   │   ├── foodService.js
-│   │   ├── mealService.js
-│   │   └── calculationService.js
-│   ├── utils/              # Helper functions
-│   │   ├── storage.js
-│   │   ├── calculations.js
-│   │   └── validation.js
-│   ├── data/               # Static data
-│   │   └── defaultFoods.json
-│   ├── context/            # React Context
-│   │   ├── FoodContext.js
-│   │   └── MealContext.js
-│   └── navigation/         # Navigation configuration
-│       └── AppNavigator.js
-├── assets/                 # Images, fonts, etc.
-├── __tests__/              # Test files
-└── docs/                   # Additional documentation
-```
-
-## Future Considerations
-
-### Scalability
-- Move to Redux for complex state management
-- Implement caching strategies
-- Consider SQLite for large datasets
-- API integration for food database updates
-
-### Monetization (Future)
-- Premium features (advanced analytics, unlimited custom foods)
-- Nutrition coaching integrations
-- Meal plan export/sharing
-
-### Accessibility
-- Screen reader support
-- High contrast mode
-- Font size adjustments
-- Voice control integration
-
-## Success Metrics
-
-### MVP Success
-- Users can successfully plan a meal with macro targets
-- Calculation accuracy >99%
-- App loads in <3 seconds
-- No critical bugs in core functionality
-
-### Long-term Success
-- Daily active users retention >60%
-- Average session duration >5 minutes
-- User-generated food database growth
-- Positive app store ratings >4.5/5
-
----
-
-## Current Development Status
-
-### ✅ Completed Features (Phase 1 & 2)
-
-#### Core Infrastructure
-- **React Native + Expo Setup**: Complete with Expo SDK 53
-- **Navigation System**: Bottom tab navigation with 4 main screens
-- **State Management**: Context API implementation with FoodContext and MealContext
-- **Data Persistence**: AsyncStorage integration for local data storage
-- **Testing Framework**: Jest + React Native Testing Library setup with coverage reporting
-
-#### Food Database Management
-- **Default Food Database**: 20 comprehensive food items with complete nutritional profiles
-- **Food Context**: Full CRUD operations, search functionality, category organization
-- **Nutritional Data**: Protein, carbs, fat, calories, fiber, sugar, vitamins, minerals per 100g
-
-#### Meal Configuration
-- **Predefined Meals**: Breakfast, Lunch, Dinner, Post-Workout with macro targets
-- **Meal Context**: Custom meal creation and macro target management
-- **Flexible Targets**: Configurable protein, carbs, fat goals for each meal
-
-#### Macro Calculator Engine ⭐ (Core Feature)
-- **Automatic Optimization**: Multi-variable algorithm that adjusts all food portions when user modifies one
-- **Real-time Calculations**: Instant recalculation of macros and portions
-- **Constraint Satisfaction**: Maintains portion limits (10g-500g) while optimizing
-- **Proportional Redistribution**: Intelligently distributes remaining macro needs across foods
-
-#### Interactive Meal Planning UI
-- **Slider-based Portion Control**: Smooth 5g increment sliders (10g-500g range)
-- **Real-time Visual Feedback**: Automatic optimization triggers on slider adjustment
-- **Target-Centered Progress Bars**: Goals positioned at 66% of bar, not maximum
-- **Color-coded Status**: Green (within 5%), Orange (under), Red (over target)
-- **Compact Modern Design**: Elegant dark theme with gradients and minimal spacing
-
-#### Advanced UI/UX Features
-- **Modern Dark Theme**: Sophisticated color scheme with linear gradients
-- **Progress Visualization**: Target-centered bars showing precise goal achievement
-- **Responsive Layout**: Optimized information density for mobile screens
-- **Interactive Food Selection**: Expandable food list with category organization
-- **Real-time Macro Display**: Live updates of protein, carbs, fat, calories per food item
-
-### 🏗️ Technical Implementation Details
-
-#### File Structure (Actual)
-```
-MacroBalance/
-├── src/
-│   ├── screens/
-│   │   ├── MealPlanning/MealPlanningScreen.js  # Core optimization interface
-│   │   ├── Home/HomeScreen.js                  # Dashboard (placeholder)
-│   │   ├── FoodManagement/FoodManagementScreen.js # Food CRUD (placeholder)
-│   │   └── Settings/SettingsScreen.js          # Settings (placeholder)
-│   ├── services/
-│   │   └── calculationService.js               # Optimization algorithms
-│   ├── context/
-│   │   ├── FoodContext.js                      # Food state management
-│   │   └── MealContext.js                      # Meal state management
-│   ├── data/
-│   │   └── defaultFoods.js                     # Comprehensive food database
-│   └── navigation/
-│       └── AppNavigator.js                     # Bottom tab navigation
-├── __tests__/                                  # Jest test suite
-│   ├── services/calculationService.test.js     # Algorithm testing
-│   └── screens/MealPlanningScreen.test.js      # Integration testing
-├── babel.config.js                            # Babel configuration
-├── jest.config.js                             # Testing configuration
-└── jest.setup.js                              # Test environment setup
-```
-
-#### Key Algorithms
-1. **Macro Optimization Algorithm** (`calculationService.js:47-77`):
-   - User adjusts one food portion via slider
-   - Algorithm calculates remaining macro needs
-   - Redistributes portions across other foods proportionally
-   - Maintains constraints while optimizing target achievement
-
-2. **Progress Calculation** (`calculationService.js:136-180`):
-   - Target-centered visualization (target at 66% of progress bar)
-   - 5% tolerance for "met" status
-   - Color-coded feedback system
-
-3. **Real-time Recalculation** (`MealPlanningScreen.js:31-42`):
-   - Slider `onValueChange` triggers optimization
-   - Automatic redistribution of all other food portions
-   - Instant UI updates with new macro totals
-
-### 🧪 Testing Infrastructure
-
-#### Unit Tests
-- **CalculationService**: 10 comprehensive tests covering all algorithms
-- **Macro Calculations**: Portion scaling, total calculations, progress tracking
-- **Optimization Logic**: Multi-food optimization scenarios
-- **Edge Cases**: Zero targets, single foods, boundary conditions
-
-#### Test Coverage
-- **Services**: 100% coverage on calculation algorithms
-- **Core Logic**: All optimization functions tested
-- **Progress Tracking**: Status and percentage calculations verified
-
-#### Test Commands
-```bash
 npm test                    # Run all tests
-npm run test:watch          # Watch mode for development
-npm run test:coverage       # Generate coverage report
+npm run test:watch          # Watch mode
+npm run test:coverage       # Coverage report
+
+# Debugging
+# Check Expo Go logs for runtime errors
+# Check Metro bundler logs for bundling errors
+# Use React DevTools for component inspection
 ```
 
-### 🎯 Current Capabilities
+## Recent Critical Fixes
 
-#### User Workflow (Fully Functional)
-1. **Select Meal Type**: Choose from Breakfast, Lunch, Dinner, Post-Workout
-2. **View Macro Targets**: See protein, carbs, fat goals for selected meal
-3. **Add Foods**: Browse and select from 20 available foods
-4. **Adjust Portions**: Use sliders to modify food quantities
-5. **Automatic Optimization**: Watch other portions adjust automatically
-6. **Track Progress**: Monitor macro achievement with color-coded bars
-7. **Real-time Feedback**: See live macro totals and target achievement
+### Session 2025-01-20: Reanimated 4 Compatibility
+**Problem 1**: Babel bundling error - "Cannot find module 'react-native-worklets/plugin'"
+- **Cause**: Had `react-native-worklets-core` (by Margelo) instead of `react-native-worklets` (by Software Mansion)
+- **Fix**: Installed correct package `react-native-worklets@^0.6.1`
 
-#### Technical Achievements
-- ✅ **Automatic Portion Optimization**: Core value proposition working
-- ✅ **Slider-based Interface**: Smooth, responsive portion control
-- ✅ **Modern UI Design**: Elegant, compact, professional appearance
-- ✅ **Real-time Calculations**: Instant feedback and optimization
-- ✅ **Target-centered Progress**: Intuitive goal-focused visualization
-- ✅ **Comprehensive Testing**: Reliable calculation algorithms
-- ✅ **Mobile-optimized**: Works perfectly in web browser (Expo Go compatible)
+**Problem 2**: Runtime crash - "Property 'TimeService' doesn't exist"
+- **Cause**: MealContext used `TimeService` but didn't import it
+- **Fix**: Added `import TimeService from '../services/TimeService'` to MealContext.js line 4
 
-### 🔄 Development Workflow
+**Commit**: `6027d5c` - "fix: Resolve bundling and runtime errors for Reanimated 4 compatibility"
 
-#### Testing & Documentation Standard
-- **Before Every Commit**: Run tests and update documentation
-- **Test-Driven Development**: All algorithms have comprehensive test coverage
-- **Documentation Updates**: CLAUDE.md maintained with current status
-- **Git Workflow**: Descriptive commits with feature completion tracking
+## Debugging Workflow
 
-#### Quality Assurance
-- **Jest Testing**: Unit and integration tests for core functionality
-- **Algorithm Validation**: Mathematical correctness of optimization logic
-- **UI Testing**: Component behavior and user interaction flows
-- **Performance**: Real-time calculation efficiency verified
+1. **Start Session**: Read CLAUDE.md and current_bugs.md
+2. **Encounter Bug**: Add to current_bugs.md immediately
+3. **Fix Bug**: Update current_bugs.md with solution
+4. **Test Fix**: Verify app works before marking bug as resolved
+5. **Document**: Keep current_bugs.md updated throughout session
+6. **WAIT for user**: Do NOT commit/push until user explicitly asks
 
-### 📱 Platform Status
+## Common Bug Patterns
 
-#### Web Browser (Primary Development)
-- ✅ **Fully Functional**: Complete app experience in browser
-- ✅ **Real-time Testing**: Instant feedback during development
-- ✅ **Performance**: Smooth animations and calculations
+### Import Errors
+- Missing service imports (especially TimeService)
+- Wrong package imports (worklets-core vs worklets)
 
-#### Mobile (Expo Go)
-- ⚠️ **Connection Issues**: Expo Go loading problems on mobile
-- ✅ **Fallback Available**: Web version provides full functionality
-- 🔧 **Troubleshooting**: Ongoing investigation of mobile connectivity
+### Context Errors
+- Using context before provider is mounted
+- Missing context imports
+- Circular dependencies between contexts
 
-### 🚀 Next Development Phases
+### Runtime Crashes
+- Undefined property access (use optional chaining)
+- AsyncStorage null values (always check before JSON.parse)
+- Date parsing issues (always validate date strings)
 
-#### Phase 3: Enhanced UX (Planned)
-- **Food Management Screen**: Add/edit/delete custom foods
-- **Dashboard**: Daily overview and meal summaries
-- **Settings Screen**: User preferences and app configuration
-- **Advanced Filtering**: Search, favorites, recently used foods
+### Bundling Errors
+- Missing dependencies in package.json
+- Babel plugin misconfiguration
+- Metro cache issues (fix with --clear flag)
 
-#### Phase 4: Advanced Features (Future)
-- **User Profiles**: Personal macro calculations
-- **Cloud Sync**: Cross-device synchronization
-- **Meal History**: Save and replay successful meal plans
-- **Analytics**: Nutrition tracking over time
+## Key Algorithms
 
----
+### Macro Optimization (`calculationService.js`)
+```javascript
+// When user adjusts one food's portion:
+1. Calculate current total macros
+2. Calculate deviation from targets
+3. Distribute deviation across other foods proportionally
+4. Apply constraints (10g-500g range)
+5. Return optimized portions
+```
 
-## Notes for Claude Code Development
+### Data Lifecycle (`MealContext.js`)
+```javascript
+// Automatic cleanup (runs daily):
+1. Meal plans < 7 days old: Keep as-is
+2. Meal plans > 7 days old: Convert to daily summaries
+3. Daily summaries < 90 days old: Keep
+4. Daily summaries > 90 days old: Delete
+```
 
-- **Core Achievement**: Automatic optimization is working perfectly
-- **UI Excellence**: Modern, compact design with excellent user experience
-- **Testing First**: All algorithms thoroughly tested before implementation
-- **Mobile Ready**: Architecture supports immediate mobile deployment
-- **Performance Optimized**: Real-time calculations are smooth and responsive
-- **User-Centric**: Every feature serves the core use case of macro optimization
+## Notes for Claude
+
+- Project is COMPLETE - only debugging and bug fixes
+- Always update current_bugs.md when working on issues
+- Never commit/push without explicit user permission
+- Never build without explicit user permission
+- All core features are implemented and working
+- Focus on fixing bugs, not adding features (unless explicitly asked)
+- Check current_bugs.md at start of every session for context
